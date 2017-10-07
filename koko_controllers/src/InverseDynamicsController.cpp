@@ -1,4 +1,4 @@
-#include <my_controller/InverseDynamicsController.h>
+#include <koko_controllers/InverseDynamicsController.h>
 #include <pluginlib/class_list_macros.h>
 #include <angles/angles.h>
 #include <kdl/frames.hpp>
@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <math.h>
 #include <numeric>
-namespace my_controller{
+namespace koko_controllers{
   bool InverseDynamicsController::init(hardware_interface::EffortJointInterface *robot, ros::NodeHandle &n)
   {
   
@@ -299,4 +299,4 @@ namespace my_controller{
   
 }
 
-PLUGINLIB_EXPORT_CLASS(my_controller::InverseDynamicsController, controller_interface::ControllerBase)
+PLUGINLIB_EXPORT_CLASS(koko_controllers::InverseDynamicsController, controller_interface::ControllerBase)

@@ -3,7 +3,7 @@ project(koko_controllers)
 
 find_package(catkin REQUIRED COMPONENTS
   controller_interface
-  urdf 
+  urdf
   angles
   kdl_parser
   sensor_msgs
@@ -18,16 +18,16 @@ find_package(
 
 
 catkin_package(
-#  INCLUDE_DIRS include
+   INCLUDE_DIRS include
 #  LIBRARIES koko_controllers
 #  CATKIN_DEPENDS geometry_msgs roscpp sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 
 
+include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(InverseDynamicsController src/InverseDynamicsController.cpp)
-target_link_libraries(InverseDynamicsController ${catkin_LIBRARIES})
+add_library(${PROJECT_NAME} src/InverseDynamicsController.cpp)
