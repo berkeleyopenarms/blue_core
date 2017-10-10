@@ -227,7 +227,7 @@ namespace koko_controllers{
       return 0.0;
     double error_dot = joint_vector[index].d_error;
     if (dt.toSec() > 0.0)  {
-      error_dot = (error - joint_vector[index].p_error_last) /dt.toSec();
+      error_dot = (error - joint_vector[index].p_error_last) / dt.toSec();
       joint_vector[index].p_error_last = error;
     }
     if (std::isnan(error_dot) || std::isinf(error_dot))

@@ -1,0 +1,33 @@
+<launch>
+  <include
+    file="$(find koko_gazebo)/launch/gazebo_6dof.launch" />
+  <include 
+    file="$(find koko_gazebo)/launch/gazebo_controller_6dof.launch" />
+ <arg
+    name="model" />
+  <arg
+    name="gui"
+    default="True" />
+  <param
+    name="robot_dyn_description"
+    textfile="$(find koko_gazebo)/robots/6dof_dyn2.urdf" />
+  <param
+    name="robot_kin_description"
+    textfile="$(find koko_gazebo)/robots/6dof_kin2.urdf" />
+  <param
+    name="use_gui"
+    value="$(arg gui)" />
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find koko_gazebo)/urdf.rviz" />
+  <node 
+    name="visualcontroller"
+    pkg="1DOF_URDF"
+    type="visualcontroller"/>
+  <node name="pos_plot"
+    pkg="rqt_plot"
+    type="rqt_plot"
+    args="/koko_gazebo/joint_position_controller/command/data[2]" />
+</launch>

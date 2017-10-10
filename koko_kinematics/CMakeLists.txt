@@ -17,8 +17,5 @@ include_directories(
 )
 catkin_package()
 
-add_executable(ik_vive src/ik_vive.cpp)
-target_link_libraries(ik_vive ${catkin_LIBRARIES})
-
-add_executable(ik_target src/ik_target.cpp)
-target_link_libraries(ik_target ${catkin_LIBRARIES})
+add_executable(pose_target src/pose_target.cpp)
+target_link_libraries(pose_target ${catkin_LIBRARIES})

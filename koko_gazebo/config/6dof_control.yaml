@@ -1,0 +1,61 @@
+koko_gazebo:
+  joint_names: ['lift_joint', 'sroll_joint', 'elbow_joint', 'eroll_joint', 'wrist_joint', 'wroll_joint']
+  # Publish all joint states -----------------------------------
+  endlink_tracker: 'wroll_link'
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 100  
+  # Position Controllers ---------------------------------------
+  joint_position_controller:
+    endlink: 'wroll_link'
+    paired_constraints: []
+    type: my_controller/CartesianPoseController
+    root_name: koko_gazebo
+    filter_length: 1
+    p_gains: [12, 6, 12, 0.03, 0.06, 0.03]
+    d_gains: [24, 24, 24, 0.15, 0.15, 0.15]
+    z_offset_controller: -2.0
+    target_mode: "rviz"
+    lift_joint:
+      p: 25
+      d: 15
+      max_torque: 30
+      min_torque: -30
+      max_angle: 3.15
+      min_angle: -3.15
+    sroll_joint:
+      p: 25
+      d: 15
+      max_torque: 10
+      min_torque: -10
+      max_angle: 3.15
+      min_angle: -3.15
+    elbow_joint:f
+      p: 25
+      d: 15
+      max_torque: 10
+      min_torque: -10
+      max_angle: 3.15
+      min_angle: -3.15
+    eroll_joint:
+      p: 4
+      d: 5
+      max_torque: 10
+      min_torque: -10
+      max_angle: 3.15
+      min_angle: -3.15
+    wrist_joint:
+      p: 4
+      d: 5
+      max_torque: 10
+      min_torque: -10
+      max_angle: 3.15
+      min_angle: -3.15
+    wroll_joint:
+      p: 4
+      d: 5
+      max_torque: 10
+      min_torque: -10
+      max_angle: 3.15
+      min_angle: -3.15
+

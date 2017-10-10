@@ -1,0 +1,12 @@
+<launch>
+<rosparam file="$(find koko_gazebo)/config/6dof_control.yaml" command="load"/>
+
+<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+output="screen" ns="/koko_gazebo" args="joint_position_controller joint_state_controller"/>
+
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+	respawn="false" output="screen">
+    <remap from="/joint_states" to="/koko_gazebo/joint_states" />
+</node>
+
+</launch>
