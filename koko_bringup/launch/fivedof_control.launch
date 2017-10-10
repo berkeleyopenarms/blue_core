@@ -1,0 +1,65 @@
+<launch>
+  <node
+    name="console"
+    pkg="rqt_console"
+    type="rqt_console" />
+  <arg
+    name="model" />
+  <arg
+    name="gui"
+    default="True" />
+  <param
+    name="robot_description"
+    textfile="$(find fivedof_tracker_kin_v5)/robots/fivedof_tracker_kin_v5.urdf" />
+  <param
+    name="/DOF/robot_dyn_description"
+    textfile="$(find fivedof_tracker_dyn_v4)/robots/fivedof_tracker_dyn_v4.urdf" />
+  <param
+    name="use_gui"
+    value="$(arg gui)" />
+  <rosparam file="$(find fourDOF_tracker_kin_v2)/config/control_5dof.yaml" command="load"/>
+  <!--node
+    name="joint_state_publisher"
+    pkg="joint_state_publisher"
+    type="joint_state_publisher" /-->
+  <node
+    name="robot_state_publisher"
+    pkg="robot_state_publisher"
+    type="state_publisher" />
+  <remap 
+    from="/joint_state_tracker" 
+    to="/DOF/joint_state_tracker" />
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find fivedof_tracker_kin_v5)/urdf.rviz" />
+  <node
+    name="inverse_kin_four_pose"
+    pkg="fourDOF_tracker_kin_v2"
+    type="inverse_kin_four_pose" />
+  <node
+    name="koko_controller_manager"
+    pkg="koko_control"
+    type="KokoControllerManager"
+    ns="DOF" /> 
+  <node
+    name="joint_state_relay"
+    pkg="topic_tools"
+    type="relay"
+    args="/DOF/joint_states /joint_states" />
+  <node
+    name="inverse_kin_target_four"
+    pkg="fourDOF_tracker_kin_v2"
+    type="inverse_kin_target_four" />
+  <node
+    name="visual_pos_controller_four"
+    pkg="fourDOF_tracker_kin_v2"
+    type="visual_controller_four" />
+  <include
+    file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+  <!--node
+    name="calibration_writter"
+    pkg="calibration"
+    type="Writer" /-->
+</launch>
