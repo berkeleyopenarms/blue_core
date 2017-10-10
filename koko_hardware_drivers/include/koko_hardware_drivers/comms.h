@@ -1,0 +1,31 @@
+#ifndef COMMS_H
+#define COMMS_H
+
+const int COMM_ERRORS_NONE = 0;
+const int COMM_ERRORS_OP_FAILED = 1;
+const int COMM_ERRORS_MALFORMED = 2;
+const int COMM_ERRORS_INVALID_FC = 4;
+const int COMM_ERRORS_INVALID_ARGS = 8;
+const int COMM_ERRORS_BUF_LEN_MISMATCH = 16;
+
+const uint8_t COMM_FC_NOP = 0x00;
+const uint8_t COMM_FC_READ_REGS = 0x01;
+const uint8_t COMM_FC_WRITE_REGS = 0x02;
+const uint8_t COMM_FC_ENTER_BOOTLOADER = 0x80;
+const uint8_t COMM_FC_LEAVE_BOOTLOADER = 0x81;
+const uint8_t COMM_FC_FLASH_SECTOR_COUNT = 0x82;
+const uint8_t COMM_FC_FLASH_SECTOR_START = 0x83;
+const uint8_t COMM_FC_FLASH_SECTOR_SIZE = 0x84;
+const uint8_t COMM_FC_FLASH_SECTOR_ERASE = 0x85;
+const uint8_t COMM_FC_FLASH_PROGRAM = 0x86;
+const uint8_t COMM_FC_FLASH_READ = 0x87;
+const uint8_t COMM_FC_FLASH_VERIFY = 0x88;
+const uint8_t COMM_FC_FLASH_VERIFY_ERASED = 0x89;
+
+unsigned const int COMM_DEFAULT_FIRMWARE_OFFSET = 0x08004000;
+unsigned const int COMM_DEFAULT_BAUD_RATE = 3000000;
+
+size_t COMM_SINGLE_PROGRAM_LENGTH = 128;
+size_t COMM_SINGLE_READ_LENGTH = 128;
+size_t COMM_SINGLE_VERIFY_LENGTH = 128;
+#endif /* COMMS_H */
