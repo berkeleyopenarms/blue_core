@@ -20,8 +20,9 @@ class BLDCControllerClient {
     uint16_t getEncoder(uint8_t id);
     bool leaveBootloader(uint8_t server_id, unsigned int jump_addr);
     bool setDuty(uint8_t id, float value);
+    void flushSerial();
     BLDCControllerClient(std::string port, unsigned int baud, serial::Timeout to);
 };
 
-void sleep(unsigned int milliseconds);
+void n_sleep(unsigned int milliseconds);
 #endif /* BLDCCONTROLLERCLIENT_H */
