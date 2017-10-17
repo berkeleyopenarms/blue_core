@@ -60,8 +60,8 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
   ser.read(&errorsh, 1);
   uint16_t errors = errorsl + (errorsh << 8);
   if (message_server_id != server_id || message_func_code != func_code) {
-    std::cout << "Received unexpected server ID or function code\n";
-    throw std::string("Received unexpected server ID or function code");
+    std::cerr << "Received unexpected server ID or function code\n";
+    throw "error";
   }
   if (errors) {
     if (errors & COMM_ERRORS_OP_FAILED) {
@@ -137,8 +137,8 @@ bytebuf_t BLDCControllerClient::readRegisters(uint8_t server_id, uint16_t start_
 
   bytebuf_t data = BLDCControllerClient::doTransaction(server_id, COMM_FC_READ_REGS, buffer);
   if (data.size() == 0) {
-    std::cout << "Register read failed\n";
-    throw std::string("Register read failed");
+    std::cerr << "Register read failed\n";
+    throw "error";
   }
   return data;
 }
@@ -151,7 +151,7 @@ uint16_t BLDCControllerClient::getEncoder(uint8_t id) {
 
 bool BLDCControllerClient::leaveBootloader(uint8_t server_id, unsigned int jump_addr) {
   if (jump_addr == 0) {
-    jump_addr = COMM_DEFAULT_FIRMWARE_OFFSET;
+    jump_addr = COMM_FIRMWARE_OFFSET;
   }
   uint8_t* src = (uint8_t*) &jump_addr;
   bytebuf_t buffer;
@@ -161,7 +161,7 @@ bool BLDCControllerClient::leaveBootloader(uint8_t server_id, unsigned int jump_
   buffer.push_back(src[1]);
   buffer.push_back(src[2]);
   buffer.push_back(src[3]);
-  BLDCControllerClient::writeRequest(server_id, COMM_FC_LEAVE_BOOTLOADER, buffer);
+  BLDCControllerClient::writeRequest(server_id, COMM_FC_JUMP_TO_ADDR, buffer);
   return true;
 }
 

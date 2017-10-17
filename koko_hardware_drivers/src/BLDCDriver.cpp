@@ -7,12 +7,11 @@
 #include "koko_hardware_drivers/BLDCControllerClient.h"
 #include <vector>
 #include <string>
-#include <sstream>
 #include "math.h"
 #include "time.h"
 
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
-const double MAX_CURRENT = 2.8;
+/* const double MAX_CURRENT = 2.8; */
 const unsigned int CONTROL_LOOP_FREQ = 1000;
 const unsigned int BAUD_RATE = 1000000;
 
@@ -22,32 +21,41 @@ class SetCommand {
   private:
     uint8_t id_;
   public:
-    void callback(const std_msgs::Float64::ConstPtr& msg) {
-      double effort_raw = msg->data;
-      double effort = effort_raw;
-      if (effort > MAX_CURRENT) {
-        effort = MAX_CURRENT;
-      } else if (effort < -MAX_CURRENT) {
-        effort = -MAX_CURRENT;
-      }
-      g_command_queue[id_] = effort * 10;
-      // print "I heard " + effort
-    }
-    SetCommand(uint8_t id) {
-      id_ = id;
-    }
+    void callback(const std_msgs::Float64::ConstPtr& msg);
+    SetCommand(uint8_t id);
 };
+
+void SetCommand::callback(const std_msgs::Float64::ConstPtr& msg) {
+  double effort_raw = msg->data;
+  g_command_queue[id_] = effort_raw;
+}
+
+SetCommand::SetCommand(uint8_t id) {
+  id_ = id;
+}
 
 void initMaps(std::map<uint8_t, std::string>& joint_mapping,
     std::map<uint8_t, uint16_t>& angle_mapping) {
-  joint_mapping[1] = "left_motor";
-  joint_mapping[2] = "right_motor";
-  joint_mapping[3] = "right_motor2";
-  joint_mapping[4] = "left_motor2";
-  angle_mapping[1] = 10356;
-  angle_mapping[2] = 13430;
-  angle_mapping[3] = 12164;
-  angle_mapping[4] = 8132;
+  /* joint_mapping[1] = "left_motor"; */
+  /* joint_mapping[2] = "right_motor"; */
+  /* joint_mapping[3] = "right_motor2"; */
+  /* joint_mapping[4] = "left_motor2"; */
+  joint_mapping[10] = "test_motor";
+  angle_mapping[10] = 7568;
+  /* std::map<std::string, int> angles; */
+  /* ros::param::get("/koko_hardware_drivers/calibrations", angles); */
+  /* if (angles.size() < 5) { */
+  /*   std::cerr << "did not get correct map, size " << angles.size() << "\n"; */
+  /* } */
+
+  /* for(std::map<std::string, int>::iterator it = angles.begin(); it != angles.end(); it++) { */
+  /*   uint16_t angle = (uint16_t) it->second; */
+  /*   uint8_t id = atoi(it->first.c_str()); */
+  /*   if (id == 0) { */
+  /*     return; */
+  /*   } */
+  /*   angle_mapping[id] = angle; */
+  /* } */
 }
 
 double getEncoderAngleRadians(BLDCControllerClient& device, uint8_t id) {
@@ -62,11 +70,8 @@ int main(int argc, char **argv) {
   std::map<uint8_t, uint16_t> angle_mapping;
   initMaps(joint_mapping, angle_mapping);
 
-  //TODO: make publisher and subscribers
-  /* ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 1000); */
-  /* ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback); */
   char* port = argv[1];
-  BLDCControllerClient device(port, BAUD_RATE, serial::Timeout::simpleTimeout(1));
+  BLDCControllerClient device(port, BAUD_RATE, serial::Timeout::simpleTimeout(10));
 
   ros::Rate r(CONTROL_LOOP_FREQ);
 
@@ -97,8 +102,9 @@ int main(int argc, char **argv) {
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
     uint8_t* angle = (uint8_t*) &it2->second;
     device.writeRegisters(it2->first, 0x101, 1, angle, 2);
-    uint8_t r1 = 1;
-    device.writeRegisters(it2->first, 0x109, 1, &r1, 1);
+    uint8_t r = 0;
+    device.writeRegisters(it2->first, 0x102, 1, &r, 1);
+    device.writeRegisters(it2->first, 0x109, 1, &r, 1);
   }
 
   while (ros::ok()) {
@@ -116,17 +122,16 @@ int main(int argc, char **argv) {
       joint_msg.velocity = std::vector<double>(1, 0.0);
       joint_msg.effort = std::vector<double>(1, 0.0);
       publishers[id].publish(joint_msg);
-      //print("name: " + joint_name + " position: " + str(joint_msg.position)
       
       std_msgs::Float32 curr_msg;
       curr_msg.data = (float) 0.0;
       publishers_curr[id].publish(curr_msg);
+      ros::spinOnce();
       if (g_command_queue.find(id) != g_command_queue.end()) {
+        std::cerr << "setting duty to " << g_command_queue[id];
         device.setDuty(id, g_command_queue[id]);
       }
     }
-
-    //ros::spinOnce();
 
     g_command_queue.clear();
     r.sleep();
