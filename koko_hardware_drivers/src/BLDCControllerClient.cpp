@@ -2,12 +2,12 @@
 #include <time.h>
 #include <iostream>
 #include <vector>
-#include <comms.h>
-#include <BLDCControllerClient.h>
+#include <koko_hardware_drivers/comms.h>
+#include <koko_hardware_drivers/BLDCControllerClient.h>
 #include <string>
 #include <stdio.h>
 
-void sleep(unsigned int milliseconds) {
+void n_sleep(unsigned int milliseconds) {
   struct timespec time_out, remains;
 
   time_out.tv_sec = 0;
@@ -20,6 +20,10 @@ BLDCControllerClient::BLDCControllerClient(std::string port, unsigned int baud, 
   ser.setBaudrate(baud);
   ser.setTimeout(to);
   ser.open();
+}
+
+void BLDCControllerClient::flushSerial() {
+  ser.flush();
 }
 
 void BLDCControllerClient::writeRequest(uint8_t server_id, uint8_t func_code, bytebuf_t& data) {
@@ -36,7 +40,7 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
   uint8_t lb = 0;
   for (size_t i = 0; i < num_tries && lb == 0; i++) {
     ser.read(&lb, 1);
-    sleep(try_interval);
+    n_sleep(try_interval);
   }
   bytebuf_t empty(0);
   if (lb == 0) {
@@ -45,7 +49,6 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
     return empty;
   }
 
-  //TODO: confirm endianness
   uint8_t message_server_id = 0;
   uint8_t message_func_code = 0;
   uint8_t errorsh = 0;
@@ -57,8 +60,8 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
   ser.read(&errorsh, 1);
   uint16_t errors = errorsl + (errorsh << 8);
   if (message_server_id != server_id || message_func_code != func_code) {
-    std::cout << "Received unexpected server ID or function code\n";
-    throw std::string("Received unexpected server ID or function code");
+    std::cerr << "Received unexpected server ID or function code\n";
+    throw "error";
   }
   if (errors) {
     if (errors & COMM_ERRORS_OP_FAILED) {
@@ -79,13 +82,6 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
     return empty;
   }
 
-  /** DEBUG **/
-  std::cout << "message server id: " << (unsigned int) message_server_id << "\n";
-  std::cout << "message func code: " << (unsigned int) message_func_code << "\n";
-  std::cout << "errorsh: " << (unsigned int) errorsh << "\n";
-  std::cout << "errorsl: " << (unsigned int) errorsl << "\n";
-  /** DEBUG **/
-
   bytebuf_t message;
   message.reserve(lb - 4);
   if (lb - 4 == 0 || ser.read(message, lb - 4) < (size_t) (lb - 4)) {
@@ -104,8 +100,6 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
   }
 
   // TODO: CRC check
-  // Add more errors
-
 
   return message;
 }
@@ -120,7 +114,6 @@ bool BLDCControllerClient::writeRegisters(uint8_t server_id, uint16_t start_addr
   bytebuf_t buffer;
   buffer.reserve(size + 8);
   buffer.push_back(0); buffer.push_back(0); buffer.push_back(0);
-  //TODO: confirm endianness
   buffer.push_back(start_addr & 0xFF);
   buffer.push_back(start_addr >> 8);
   buffer.push_back(count);
@@ -138,15 +131,14 @@ bytebuf_t BLDCControllerClient::readRegisters(uint8_t server_id, uint16_t start_
   bytebuf_t buffer;
   buffer.reserve(8);
   buffer.push_back(0); buffer.push_back(0); buffer.push_back(0);
-  //TODO: confirm endianness
   buffer.push_back(start_addr & 0xFF);
   buffer.push_back(start_addr >> 8);
   buffer.push_back(count);
 
   bytebuf_t data = BLDCControllerClient::doTransaction(server_id, COMM_FC_READ_REGS, buffer);
   if (data.size() == 0) {
-    std::cout << "Register read failed\n";
-    throw std::string("Register read failed");
+    std::cerr << "Register read failed\n";
+    throw "error";
   }
   return data;
 }
@@ -158,6 +150,9 @@ uint16_t BLDCControllerClient::getEncoder(uint8_t id) {
 }
 
 bool BLDCControllerClient::leaveBootloader(uint8_t server_id, unsigned int jump_addr) {
+  if (jump_addr == 0) {
+    jump_addr = COMM_FIRMWARE_OFFSET;
+  }
   uint8_t* src = (uint8_t*) &jump_addr;
   bytebuf_t buffer;
   buffer.reserve(9);
@@ -166,7 +161,7 @@ bool BLDCControllerClient::leaveBootloader(uint8_t server_id, unsigned int jump_
   buffer.push_back(src[1]);
   buffer.push_back(src[2]);
   buffer.push_back(src[3]);
-  BLDCControllerClient::writeRequest(server_id, COMM_FC_LEAVE_BOOTLOADER, buffer);
+  BLDCControllerClient::writeRequest(server_id, COMM_FC_JUMP_TO_ADDR, buffer);
   return true;
 }
 
