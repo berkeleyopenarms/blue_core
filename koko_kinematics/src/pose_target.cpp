@@ -101,7 +101,6 @@ public:
   void jointCallback(const sensor_msgs::JointState msg)
   {
 
-    ROS_ERROR("Joint Callback");
     unsigned int nj = my_tree.getNrOfJoints();
     KDL::JntArray jointPositions = KDL::JntArray(nj);
 

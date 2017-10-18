@@ -10,18 +10,14 @@
     default="True" />
   <param
     name="robot_description"
-    textfile="$(find fivedof_tracker_kin_v5)/robots/fivedof_tracker_kin_v5.urdf" />
+    textfile="$(find koko_description_fivedof_kin)/robots/fivedof_tracker_kin_v5.urdf" />
   <param
     name="/DOF/robot_dyn_description"
-    textfile="$(find fivedof_tracker_dyn_v4)/robots/fivedof_tracker_dyn_v4.urdf" />
+    textfile="$(find koko_description_fivedof_dyn)/robots/fivedof_tracker_dyn_v4.urdf" />
   <param
     name="use_gui"
     value="$(arg gui)" />
-  <rosparam file="$(find fourDOF_tracker_kin_v2)/config/control_5dof.yaml" command="load"/>
-  <!--node
-    name="joint_state_publisher"
-    pkg="joint_state_publisher"
-    type="joint_state_publisher" /-->
+  <rosparam file="$(find koko_bringup)/config/control_5dof.yaml" command="load"/>
   <node
     name="robot_state_publisher"
     pkg="robot_state_publisher"
@@ -35,13 +31,13 @@
     type="rviz"
     args="-d $(find fivedof_tracker_kin_v5)/urdf.rviz" />
   <node
-    name="inverse_kin_four_pose"
-    pkg="fourDOF_tracker_kin_v2"
-    type="inverse_kin_four_pose" />
+    name="ik_vive"
+    pkg="koko_vive"
+    type="ik_vive" />
   <node
     name="koko_controller_manager"
     pkg="koko_control"
-    type="KokoControllerManager"
+    type="koko_controller_manager"
     ns="DOF" /> 
   <node
     name="joint_state_relay"
@@ -49,9 +45,9 @@
     type="relay"
     args="/DOF/joint_states /joint_states" />
   <node
-    name="inverse_kin_target_four"
-    pkg="fourDOF_tracker_kin_v2"
-    type="inverse_kin_target_four" />
+    name="pose_target"
+    pkg="koko_kinematics"
+    type="pose_target" />
   <node
     name="visual_pos_controller_four"
     pkg="fourDOF_tracker_kin_v2"

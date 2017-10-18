@@ -74,7 +74,7 @@ public:
       joint_state_initial[i] = 0.0;
     }
 
-    calibration_num = 50;
+    calibration_num = 500;
 
     jnt_state_tracker_subscriber = nh.subscribe("joint_state_tracker", 1000, &KokoHW::CalibrateJointState, this);
 
@@ -88,8 +88,6 @@ public:
   }
 
   void UpdateJointState(const sensor_msgs::JointState msg) {
-
-
     int index = -1;
 
     for (int i = 0; i < motor_names.size(); i++) {
@@ -154,7 +152,6 @@ public:
   }
 
   void CalibrateJointState(const sensor_msgs::JointState msg) {
-    ROS_ERROR("calibrated index %d", calibrated);
     if (calibrated == calibration_num)
     {
       for (int i = 0; i < joint_state_initial.size(); i++) {
@@ -173,6 +170,7 @@ public:
         ROS_ERROR("calibrated initial joint state %f", joint_state_initial[i]);
       }
       calibrated++;
+      ROS_ERROR("calibrated index %d", calibrated);
     }
   }
 
@@ -237,18 +235,18 @@ private:
   std::vector<ros::Publisher> jnt_cmd_publishers;
   ros::Subscriber jnt_state_tracker_subscriber;
   ros::Time last_time;
-  std::vector<std::string> joint_names; 
-  std::vector<std::string> motor_names; 
+  std::vector<std::string> joint_names;
+  std::vector<std::string> motor_names;
   std::vector<double> gear_ratios;
   std::vector<double> cmd;
   std::vector<double> pos;
   std::vector<double> vel;
-  std::vector<double> eff;  
+  std::vector<double> eff;
   std::vector<double> current_slope;
   std::vector<double> current_offset;
   std::vector<int> paired_constraints;
   std::vector<double> motor_pos;
-  std::vector<double> motor_vel;  
+  std::vector<double> motor_vel;
   int position_read;
   int calibrated;
   std::vector<double> joint_state_initial;
@@ -256,7 +254,7 @@ private:
   double i_to_T_slope;
   double i_to_T_intercept;
   int calibration_num;
-  std::vector<double> angle_accumulated; 
+  std::vector<double> angle_accumulated;
   std::vector<double> angle_previous_mod;
   int is_calibrated;
 };

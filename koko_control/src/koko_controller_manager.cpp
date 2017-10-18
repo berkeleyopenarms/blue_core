@@ -28,69 +28,68 @@ void *ExecuteUpdate(void *threadarg) {
 
 int main(int argc, char** argv)
 {
-  // ros::init(argc, argv, "handler");
-  //
-  // [>
-  // if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
-  //   ros::console::notifyLoggerLevelsChanged();
-  // }
-  // if( ros::console::set_logger_level("ros.controller_manager.pluginlib.ClassLoader", ros::console::levels::Debug) ) {
-  //   ros::console::notifyLoggerLevelsChanged();
-  // }
-  // if( ros::console::set_logger_level("ros.controller_manager", ros::console::levels::Debug) ) {
-  //   ros::console::notifyLoggerLevelsChanged();
-  // }
-  // */
-  // ros::NodeHandle nh("");
-  // KokoHW robot(nh);
-  // controller_manager::ControllerManager cm(&robot, nh);
-  // ros::spinOnce();
-  //
-  //
-  // ros::Rate loop_rate(500);
-  // ros::Rate loop_rate2(100);
-  //
-  //
-  // thread_struct ts;
-  // ts.manager = &cm;
-  // ts.robot = &robot;
-  // ts.loop_rate = &loop_rate;
-  // pthread_t thread;
-  // int rc = pthread_create(&thread, NULL, ExecuteUpdate, (void *) &ts);
-  //
-  // cm.loadController("joint_state_controller");
-  // ROS_INFO("Loaded Joint State Controller");
-  // ROS_ERROR("A");
-  // std::vector<std::string> controllers_state_start;
-  // controllers_state_start.push_back("joint_state_controller");
-  // std::vector<std::string> controllers_stop;
-  // ROS_ERROR("B");
-  // cm.switchController(controllers_state_start, controllers_stop, 1);
-  //
-  //
-  // while (robot.getPositionRead() != 1) {
-  //   ROS_INFO("Waiting for first joint state message read");
-  // }
-  // ROS_ERROR("C");
-  //
-  // cm.loadController("simple_controller");
-  // ROS_INFO("Loaded Controller");
-  // ROS_ERROR("D");
-  //
-  // std::vector<std::string> controllers_start;
-  // controllers_start.push_back("simple_controller");
-  // ROS_ERROR("E");
-  //
-  //
-  //
-  // cm.switchController(controllers_start, controllers_stop, 1);
-  // ROS_ERROR("F");
-  // //ROS_INFO("Here2");
-  // while (ros::ok())
-  // {
-  //   //ROS_INFO("running in parallel");
-  //   loop_rate2.sleep();
-  // }
-  //
+  ros::init(argc, argv, "handler");
+  
+  if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+    ros::console::notifyLoggerLevelsChanged();
+  }
+  if( ros::console::set_logger_level("ros.controller_manager.pluginlib.ClassLoader", ros::console::levels::Debug) ) {
+    ros::console::notifyLoggerLevelsChanged();
+  }
+  if( ros::console::set_logger_level("ros.controller_manager", ros::console::levels::Debug) ) {
+    ros::console::notifyLoggerLevelsChanged();
+  }
+
+  ros::NodeHandle nh("");
+  KokoHW robot(nh);
+  controller_manager::ControllerManager cm(&robot, nh);
+  ros::spinOnce();
+  
+  
+  ros::Rate loop_rate(500);
+  ros::Rate loop_rate2(100);
+  
+  
+  thread_struct ts;
+  ts.manager = &cm;
+  ts.robot = &robot;
+  ts.loop_rate = &loop_rate;
+  pthread_t thread;
+  int rc = pthread_create(&thread, NULL, ExecuteUpdate, (void *) &ts);
+  
+  cm.loadController("joint_state_controller");
+  ROS_INFO("Loaded Joint State Controller");
+  ROS_ERROR("AA");
+  std::vector<std::string> controllers_state_start;
+  controllers_state_start.push_back("joint_state_controller");
+  std::vector<std::string> controllers_stop;
+  ROS_ERROR("B");
+  cm.switchController(controllers_state_start, controllers_stop, 1);
+  
+  
+  while (robot.getPositionRead() != 1) {
+    ROS_INFO("Waiting for first joint state message read");
+  }
+  ROS_ERROR("C");
+  
+  cm.loadController("simple_controller");
+  ROS_INFO("Loaded Controller");
+  ROS_ERROR("D");
+  
+  std::vector<std::string> controllers_start;
+  controllers_start.push_back("simple_controller");
+  ROS_ERROR("E");
+  
+  
+  
+  cm.switchController(controllers_start, controllers_stop, 1);
+  ROS_ERROR("F");
+  //ROS_INFO("Here2");
+  while (ros::ok())
+  {
+    //ROS_INFO("running in parallel");
+    loop_rate2.sleep();
+  }
+  
 
 }

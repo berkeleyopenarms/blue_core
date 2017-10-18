@@ -30,7 +30,7 @@ koko_gazebo:
       min_torque: -10
       max_angle: 3.15
       min_angle: -3.15
-    elbow_joint:f
+    elbow_joint:
       p: 25
       d: 15
       max_torque: 10
