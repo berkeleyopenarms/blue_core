@@ -14,7 +14,7 @@
   <param
     name="/DOF/robot_dyn_description"
     textfile="$(find koko_description_fivedof_dyn)/robots/fivedof_tracker_dyn_v4.urdf" />
-  <param
+  <param 
     name="use_gui"
     value="$(arg gui)" />
   <rosparam file="$(find koko_bringup)/config/control_5dof.yaml" command="load"/>
