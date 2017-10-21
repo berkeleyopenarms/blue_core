@@ -63,7 +63,7 @@ namespace koko_controllers{
         jointPD.joint = robot->getHandle(jointName);
         double p_gain;
         double d_gain;
-        double i_gain;
+        double id_gain;
         double max_torque;
         double min_torque;
         double min_angle;
@@ -76,7 +76,7 @@ namespace koko_controllers{
           ROS_ERROR("No %s/d given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
           return false;
         }
-        if (!n.getParam(jointName + "/i", i_gain)) {
+        if (!n.getParam(jointName + "/id", id_gain)) {
           ROS_ERROR("No %s/i given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
           return false;
         }
@@ -103,7 +103,7 @@ namespace koko_controllers{
         jointPD.min_angle = min_angle;
         jointPD.p_gain = p_gain;
         jointPD.d_gain = d_gain;
-        jointPD.i_gain = i_gain;
+        jointPD.id_gain = id_gain;
         jointPD.joint_name = jointName;
         jointPD.err_dot_filter_length = filter_length;
         joint_vector.push_back(jointPD);
@@ -252,7 +252,7 @@ namespace koko_controllers{
     d_term = joint_vector[index].d_gain * err_dot_average;
 
     //return 0.0;
-    return (p_term + d_term) + id_torques(index) * joint_vector[index].i_gain;
+    return (p_term + d_term) + id_torques(index) * joint_vector[index].id_gain;
     //return p_term + d_term + 0.3 * id_torques(index);
   }
 

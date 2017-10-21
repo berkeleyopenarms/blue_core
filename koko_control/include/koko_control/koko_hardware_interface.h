@@ -27,6 +27,9 @@ public:
     if (!nh.getParam("directions", directions)) {
       ROS_ERROR("No gear_ratio given (namespace: %s)", nh.getNamespace().c_str());
     }
+    if (!nh.getParam("torque_directions", torque_directions)) {
+      ROS_ERROR("No gear_ratio given (namespace: %s)", nh.getNamespace().c_str());
+    }
     if (!nh.getParam("current_slope", current_slope)) {
       ROS_ERROR("No current_slope given (namespace: %s)", nh.getNamespace().c_str());
     }
@@ -54,6 +57,7 @@ public:
     angle_accumulated.resize(joint_names.size());
     angle_previous_mod.resize(joint_names.size());
     for (int i = 0; i < joint_names.size(); i++) {
+      cmd[i] = 0.0;
       hardware_interface::JointStateHandle state_handle_a(joint_names[i], &pos[i], &vel[i], &eff[i]);
       //ROS_INFO("joint %s", joint_names[i].c_str());
       jnt_state_interface.registerHandle(state_handle_a);
@@ -74,7 +78,7 @@ public:
       joint_state_initial[i] = 0.0;
     }
 
-    calibration_num = 500;
+    calibration_num = 100;
 
     jnt_state_tracker_subscriber = nh.subscribe("joint_state_tracker", 1000, &KokoHW::CalibrateJointState, this);
 
@@ -106,21 +110,28 @@ public:
       angle_previous_mod[index] = msg.position[0];
     } else if (is_calibrated == 1){
 
-      double mod_angle = msg.position[0];
+//      ROS_ERROR("c0");
+//      double mod_angle = msg.position[0];
+//      ROS_ERROR("c1");
+//
+//      double delta_angle = mod_angle - angle_previous_mod[index];
+//      delta_angle = std::fmod(delta_angle + M_PI, 2 * M_PI);
+//      ROS_ERROR("c2");
+//      if (delta_angle< 0) delta_angle +=  2 * M_PI;
+//      delta_angle = delta_angle -  M_PI;
+//
+//      angle_previous_mod[index] = mod_angle;
+//      ROS_ERROR("c3");
+//
+//      angle_accumulated[index] += delta_angle; 
+//      ROS_ERROR("%d", index);
 
-      double delta_angle = mod_angle - angle_previous_mod[index];
-      delta_angle = std::fmod(delta_angle + M_PI, 2 * M_PI);
-      if (delta_angle< 0) delta_angle +=  2 * M_PI;
-      delta_angle = delta_angle -  M_PI;
 
-      angle_previous_mod[index] = mod_angle;
 
-      angle_accumulated[index] += delta_angle; 
-      ROS_ERROR("%d", index);
-      motor_pos[index] = angle_accumulated[index];
+      motor_pos[index] = msg.position[0] - angle_previous_mod[index];
       motor_vel[index] = msg.velocity[0];
 
-      double pre_pos = angle_accumulated[index];
+      double pre_pos = msg.position[0] - angle_previous_mod[index];
       double pre_vel = msg.velocity[0];
 
 
@@ -145,7 +156,7 @@ public:
 
       pos[index] = directions[index] * (pre_pos / gear_ratios[index]) + joint_state_initial[index];
       vel[index] = directions[index] * pre_vel / gear_ratios[index];
-      eff[index] = directions[index] * msg.effort[0] * gear_ratios[index];
+      eff[index] = torque_directions[index] * msg.effort[0] * gear_ratios[index];
       position_read = 1;
     }
 
@@ -199,27 +210,42 @@ public:
   void PublishJointCommand() {
 
     if (calibrated == calibration_num + 1) {
+      //ROS_ERROR("d0");
       std::vector<double> pre(joint_names.size());
+      std::vector<double> cmd_oriented(joint_names.size());
+      
       for (int k = 0; k < joint_names.size(); k++) {
         pre[k] = cmd[k];
+        cmd_oriented[k] = torque_directions[k] * cmd[k];
         //ROS_INFO("cmd %d = %f", k, cmd[k]);
       }
+      //ROS_ERROR("d1");
 
       for (int j = 0; j < paired_constraints.size(); j = j + 2) {
-        double index_a = paired_constraints[j];
-        double index_b = paired_constraints[j + 1];
-        pre[index_a] = -.5 * cmd[index_a] + .5 * cmd[index_b];
-        pre[index_b] = .5 * cmd[index_a] + .5 * cmd[index_b];
+        int index_a = paired_constraints[j];
+        int index_b = paired_constraints[j + 1];
+        //ROS_ERROR("index_a %d", index_a);
+        //ROS_ERROR("index_b %d", index_b);
+        pre[index_a] = -0.5 * cmd_oriented[index_a] +  0.5 * cmd_oriented[index_b];
+        pre[index_b] =  0.5 * cmd_oriented[index_a] +  0.5 * cmd_oriented[index_b];
       }    
+      //ROS_ERROR("d2");
 
       for (int i = 0; i < joint_names.size(); i++) {
 
+        //ROS_ERROR("d3");
         double motor_torque =  pre[i] / gear_ratios[i];
+        //ROS_ERROR("d4");
         double motor_current = convertMotorTorqueToCurrent(motor_torque, i);
+        //ROS_ERROR("d5");
         std_msgs::Float64 commandMsg; 
+        //ROS_ERROR("d6");
         commandMsg.data =  motor_current;
+        //ROS_ERROR("d7");
         jnt_cmd_publishers[i].publish(commandMsg);
+        //ROS_ERROR("d8");
         //ROS_ERROR("current command for %s is %f", joint_names[i].c_str(), commandMsg.data);
+        
       }
     }
   }
@@ -251,6 +277,7 @@ private:
   int calibrated;
   std::vector<double> joint_state_initial;
   std::vector<double> directions;
+  std::vector<double> torque_directions;
   double i_to_T_slope;
   double i_to_T_intercept;
   int calibration_num;

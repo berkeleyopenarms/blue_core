@@ -25,6 +25,9 @@
   <remap 
     from="/joint_state_tracker" 
     to="/DOF/joint_state_tracker" />
+  <!--remap 
+    from="/joint_state_tracker" 
+    to="/joint_states" /-->
   <node
     name="rviz"
     pkg="rviz"
@@ -44,10 +47,17 @@
     pkg="topic_tools"
     type="relay"
     args="/DOF/joint_states /joint_states" />
-  <node
+  <!--node
+    name="tracker_example"
+    pkg="rosbag"
+    type="play"
+    args="-l $(find koko_control)/tracker_example.bag" /-->
+  <!--node
     name="pose_target"
     pkg="koko_kinematics"
-    type="pose_target" />
+    type="pose_target" /-->
+  <include
+    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
   <node
     name="visual_pos_controller_four"
     pkg="fourDOF_tracker_kin_v2"

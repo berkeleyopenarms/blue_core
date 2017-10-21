@@ -46,8 +46,8 @@ int main(int argc, char** argv)
   ros::spinOnce();
   
   
-  ros::Rate loop_rate(500);
-  ros::Rate loop_rate2(100);
+  ros::Rate loop_rate(50);
+  ros::Rate loop_rate2(500);
   
   
   thread_struct ts;
@@ -65,6 +65,7 @@ int main(int argc, char** argv)
   std::vector<std::string> controllers_stop;
   ROS_ERROR("B");
   cm.switchController(controllers_state_start, controllers_stop, 1);
+  ROS_ERROR("BB-8");
   
   
   while (robot.getPositionRead() != 1) {

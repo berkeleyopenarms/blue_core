@@ -1,18 +1,23 @@
 <!-- -*- mode: XML -*- -->
 <launch>
 
-  <node pkg="vesc_driver" type="vesc_driver_node" args="broll_motor" name="broll_motor" output="screen" launch-prefix="" >
+  <!--node pkg="vesc_driver" type="vesc_driver_node" args="broll_motor" name="broll_motor" output="screen" launch-prefix="" >
     <param name="port" value="/dev/serial/by-id/usb-STMicroelectronics_ChibiOS_RT_Virtual_COM_Port_301-if00" />
     <param name="rotor_position_source" value="encoder" />
-  </node>
-
+  </node-->
  <node
     name="lift_motor_interface"
     pkg="koko_hardware_drivers"
-    type="koko_hardware_drivers_node"
+    type="ros_bldc.py"
     args="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0" />
+    
+ <!--node
+    name="lift_motor_interface"
+    pkg="koko_hardware_drivers"
+    type="koko_hardware_drivers_node"
+    args="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0" /-->
 <!--args="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI057K87-if00-port0" />-->
 
-<rosparam command="load" file="src/koko/config/constants.yaml" ns="koko_hardware_drivers" />
+<!--rosparam command="load" file="src/koko/config/constants.yaml" ns="koko_hardware_drivers" /-->
 
 </launch>

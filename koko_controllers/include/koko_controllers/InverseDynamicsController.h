@@ -35,7 +35,7 @@ private:
     hardware_interface::JointHandle joint;
     double p_gain;
     double d_gain;
-    double i_gain;
+    double id_gain;
     double d_error; 
     double p_error_last;
     double max_torque;

@@ -17,8 +17,8 @@ COMM_ERRORS_BUF_LEN_MISMATCH = 16
 COMM_FC_NOP = 0x00
 COMM_FC_READ_REGS = 0x01
 COMM_FC_WRITE_REGS = 0x02
-COMM_FC_ENTER_BOOTLOADER = 0x80
-COMM_FC_LEAVE_BOOTLOADER = 0x81
+COMM_FC_SYSTEM_RESET = 0x80
+COMM_FC_JUMP_TO_ADDR = 0x81
 COMM_FC_FLASH_SECTOR_COUNT = 0x82
 COMM_FC_FLASH_SECTOR_START = 0x83
 COMM_FC_FLASH_SECTOR_SIZE = 0x84
@@ -28,8 +28,10 @@ COMM_FC_FLASH_READ = 0x87
 COMM_FC_FLASH_VERIFY = 0x88
 COMM_FC_FLASH_VERIFY_ERASED = 0x89
 
-COMM_DEFAULT_FIRMWARE_OFFSET = 0x08004000
-COMM_DEFAULT_BAUD_RATE = 3000000
+COMM_BOOTLOADER_OFFSET = 0x08000000
+COMM_NVPARAMS_OFFSET = 0x08004000
+COMM_FIRMWARE_OFFSET = 0x08008000
+COMM_DEFAULT_BAUD_RATE = 1000000
 
 COMM_SINGLE_PROGRAM_LENGTH = 128
 COMM_SINGLE_READ_LENGTH = 128
@@ -93,7 +95,7 @@ class BLDCControllerClient:
 
     def getEncoder(self, id):
         print(id)
-        angle = struct.unpack('<H', self.readRegisters(id, 0x100, 1))[0]
+        angle = struct.unpack('<f', self.readRegisters(id, 0x10b, 1))[0]
     	return angle
 
     def setDuty(self, id, value):
@@ -102,6 +104,12 @@ class BLDCControllerClient:
     
     def setControlEnabled(self, id, logical):
         self.writeRegisters(id, 0x0102, 1, struct.pack('<B', logical))
+
+    def leaveBootloader(self, server_id):
+        self.jumpToAddress(server_id, COMM_FIRMWARE_OFFSET)
+
+    def enterBootloader(self, server_id):
+        self.resetSystem(server_id)
 
     def readRegisters(self, server_id, start_addr, count):
         success, data = self.doTransaction(server_id, COMM_FC_READ_REGS, struct.pack('<HB', start_addr, count))
@@ -113,12 +121,12 @@ class BLDCControllerClient:
         success, _ = self.doTransaction(server_id, COMM_FC_WRITE_REGS, struct.pack('<HB', start_addr, count) + data)
         return success
 
-    def enterBootloader(self, server_id):
-        self.writeRequest(server_id, COMM_FC_ENTER_BOOTLOADER)
+    def resetSystem(self, server_id):
+        self.writeRequest(server_id, COMM_FC_SYSTEM_RESET)
         return True
 
-    def leaveBootloader(self, server_id, jump_addr=COMM_DEFAULT_FIRMWARE_OFFSET):
-        self.writeRequest(server_id, COMM_FC_LEAVE_BOOTLOADER, struct.pack('<I', jump_addr))
+    def jumpToAddress(self, server_id, jump_addr=COMM_FIRMWARE_OFFSET):
+        self.writeRequest(server_id, COMM_FC_JUMP_TO_ADDR, struct.pack('<I', jump_addr))
         return True
 
     def getFlashSectorCount(self, server_id):
