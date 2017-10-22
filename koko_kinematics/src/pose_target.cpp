@@ -299,7 +299,7 @@ int main(int argc, char** argv)
 
   if(!kdl_parser::treeFromString(robot_desc_string, my_tree)){
     ROS_ERROR("Failed to contruct kdl tree");
-    return false; 
+    return false;
   }
   std::string end_tracker_link;
 
@@ -308,9 +308,9 @@ int main(int argc, char** argv)
   }
 
   bool exit_value = my_tree.getChain("base_link", end_tracker_link, chain);
-  SubscribeAndPublish sp; 
+  SubscribeAndPublish sp;
 
   ros::spin();
 
-  return 0; 
+  return 0;
 }

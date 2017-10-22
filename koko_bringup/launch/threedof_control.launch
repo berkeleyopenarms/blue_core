@@ -14,7 +14,7 @@
   <param
     name="/DOF/robot_dyn_description"
     textfile="$(find koko_description_threedof_dyn)/robots/koko_description_threedof_dyn.urdf" />
-  <param 
+  <param
     name="use_gui"
     value="$(arg gui)" />
   <rosparam file="$(find koko_bringup)/config/control_3dof.yaml" command="load"/>
@@ -22,11 +22,11 @@
     name="robot_state_publisher"
     pkg="robot_state_publisher"
     type="state_publisher" />
-  <remap 
-    from="/joint_state_tracker" 
+  <remap
+    from="/joint_state_tracker"
     to="/DOF/joint_state_tracker" />
-  <!--remap 
-    from="/joint_state_tracker" 
+  <!--remap
+    from="/joint_state_tracker"
     to="/joint_states" /-->
   <node
     name="rviz"
@@ -41,7 +41,7 @@
     name="koko_controller_manager"
     pkg="koko_control"
     type="koko_controller_manager"
-    ns="DOF" /> 
+    ns="DOF" />
   <node
     name="joint_state_relay"
     pkg="topic_tools"
@@ -59,9 +59,9 @@
   <include
     file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
   <node
-    name="visual_pos_controller_four"
-    pkg="fourDOF_tracker_kin_v2"
-    type="visual_controller_four" />
+    name="visual_pos_controller"
+    pkg="koko_misc"
+    type="visual_controller" />
   <include
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
   <!--node
