@@ -22,7 +22,7 @@ CONTROL_LOOP_FREQ = 500
 
 
 #mapping = {15: "base_roll_motor"} # mapping of id to joints
-mapping = {12: "left_motor", 11: "right_motor", 15: "base_roll_motor"} # mapping of id to joints
+mapping = {12: "left_motor1", 11: "right_motor1", 15: "base_roll_motor"} # mapping of id to joints
 #angle_mapping = {15: 13002} # mapping of id to joints
 angle_mapping = {12: 1200, 11: 2164, 15: 13002} # mapping of id to joints
 erevs_per_mrev_mapping = {12: 14, 11: 14, 15: 14}

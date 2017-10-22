@@ -57,7 +57,7 @@
     pkg="koko_kinematics"
     type="pose_target" /-->
   <include
-    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
+    file="$(find koko_hardware_drivers)/launch/motor_drivers_c.launch" />
   <node
     name="visual_pos_controller"
     pkg="koko_misc"

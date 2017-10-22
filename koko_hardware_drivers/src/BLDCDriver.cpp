@@ -27,12 +27,12 @@ class SetCommand {
 
 void SetCommand::callback(const std_msgs::Float64::ConstPtr& msg) {
   double effort_raw = msg->data;
+  ROS_ERROR("%d", id_);
+  ROS_ERROR("%f", effort_raw);
   g_command_queue[id_] = effort_raw;
 }
 
-SetCommand::SetCommand(uint8_t id) {
-  id_ = id;
-}
+SetCommand::SetCommand(uint8_t id) : id_(id) {}
 
 void initMaps(std::map<uint8_t, std::string>& joint_mapping,
     std::map<uint8_t, uint16_t>& angle_mapping,
@@ -108,8 +108,8 @@ int main(int argc, char **argv) {
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
     publishers[it->first] = n.advertise<sensor_msgs::JointState>("/DOF/" + it->second + "_State", 10);
     publishers_curr[it->first] = n.advertise<std_msgs::Float32>("/DOF/" + it->second + "_Current", 10);
-    SetCommand cmd(it->first);
-    subscribers[it->first] = n.subscribe("/DOF/" + it->second + "_Cmd", 1, &SetCommand::callback, &cmd);
+    SetCommand *cmd = new SetCommand(it->first);
+    subscribers[it->first] = n.subscribe("/DOF/" + it->second + "_Cmd", 1, &SetCommand::callback, cmd);
   }
   std::map<uint8_t, double> angle_previous_mod;
   std::map<uint8_t, double> angle_accumulated;
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
       publishers_curr[id].publish(curr_msg);
       ros::spinOnce();
       if (g_command_queue.find(id) != g_command_queue.end()) {
-        std::cerr << "setting duty to " << g_command_queue[id];
+        // std::cerr << "setting duty to " << g_command_queue[id];
         device.setDuty(id, g_command_queue[id]);
       }
     }
