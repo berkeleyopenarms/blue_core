@@ -143,9 +143,22 @@ bytebuf_t BLDCControllerClient::readRegisters(uint8_t server_id, uint16_t start_
   return data;
 }
 
+float BLDCControllerClient::getEncoderRadians(uint8_t id) {
+  bytebuf_t message = BLDCControllerClient::readRegisters(id, 0x10b, 1);
+  // This is a hack
+  uint8_t temp[4];
+  temp[0] = message.at(0);
+  temp[1] = message.at(1);
+  temp[2] = message.at(2);
+  temp[3] = message.at(3);
+  float *angle = reinterpret_cast<float *>(temp);
+  // float angle = reinterpret_cast<float>(message.at(0) | (message.at(1) << 8) | (message.at(2) << 16) | (message.at(3) << 24));
+  return *angle;
+}
+
 uint16_t BLDCControllerClient::getEncoder(uint8_t id) {
   bytebuf_t message = BLDCControllerClient::readRegisters(id, 0x100, 1);
-  uint16_t angle = message.at(0) + (message.at(1) << 8);
+  uint16_t angle = message.at(0) | (message.at(1) << 8);
   return angle;
 }
 

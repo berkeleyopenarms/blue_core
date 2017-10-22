@@ -35,13 +35,31 @@ SetCommand::SetCommand(uint8_t id) {
 }
 
 void initMaps(std::map<uint8_t, std::string>& joint_mapping,
-    std::map<uint8_t, uint16_t>& angle_mapping) {
+    std::map<uint8_t, uint16_t>& angle_mapping,
+    std::map<uint8_t, uint8_t>& invert_mapping,
+    std::map<uint8_t, uint8_t>& erevs_mapping) {
+    joint_mapping[15] = "base_roll_motor";
+    joint_mapping[11] = "right_motor1";
+    joint_mapping[12] = "left_motor1";
+
+    angle_mapping[15] = 13002;
+    angle_mapping[11] = 2164;
+    angle_mapping[12] = 1200;
+
+    invert_mapping[15] = 0;
+    invert_mapping[11] = 0;
+    invert_mapping[12] = 0;
+
+    erevs_mapping[15] = 14;
+    erevs_mapping[11] = 14;
+    erevs_mapping[12] = 14;
+
   /* joint_mapping[1] = "left_motor"; */
   /* joint_mapping[2] = "right_motor"; */
   /* joint_mapping[3] = "right_motor2"; */
   /* joint_mapping[4] = "left_motor2"; */
-  joint_mapping[10] = "test_motor";
-  angle_mapping[10] = 7568;
+//  joint_mapping[10] = "test_motor";
+//  angle_mapping[10] = 7568;
   /* std::map<std::string, int> angles; */
   /* ros::param::get("/koko_hardware_drivers/calibrations", angles); */
   /* if (angles.size() < 5) { */
@@ -59,7 +77,8 @@ void initMaps(std::map<uint8_t, std::string>& joint_mapping,
 }
 
 double getEncoderAngleRadians(BLDCControllerClient& device, uint8_t id) {
-  return ((double) device.getEncoder(id)) / ENCODER_ANGLE_PERIOD * 2 * M_PI;
+  double x = ((double) device.getEncoderRadians(id));
+  return x;
 }
 
 int main(int argc, char **argv) {
@@ -68,7 +87,9 @@ int main(int argc, char **argv) {
   ros::NodeHandle n;
   std::map<uint8_t, std::string> joint_mapping;
   std::map<uint8_t, uint16_t> angle_mapping;
-  initMaps(joint_mapping, angle_mapping);
+  std::map<uint8_t, uint8_t> invert_mapping;
+  std::map<uint8_t, uint8_t> erevs_mapping;
+  initMaps(joint_mapping, angle_mapping, invert_mapping, erevs_mapping);
 
   char* port = argv[1];
   BLDCControllerClient device(port, BAUD_RATE, serial::Timeout::simpleTimeout(10));
@@ -102,9 +123,11 @@ int main(int argc, char **argv) {
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
     uint8_t* angle = (uint8_t*) &it2->second;
     device.writeRegisters(it2->first, 0x101, 1, angle, 2);
+
     uint8_t r = 0;
     device.writeRegisters(it2->first, 0x102, 1, &r, 1);
-    device.writeRegisters(it2->first, 0x109, 1, &r, 1);
+    device.writeRegisters(it2->first, 0x109, 1, &invert_mapping[it2->first], 1);
+    device.writeRegisters(it2->first, 0x10A, 1, &erevs_mapping[it2->first], 1);
   }
 
   while (ros::ok()) {
