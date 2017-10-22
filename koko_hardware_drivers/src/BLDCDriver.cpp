@@ -111,13 +111,11 @@ int main(int argc, char **argv) {
     SetCommand *cmd = new SetCommand(it->first);
     subscribers[it->first] = n.subscribe("/DOF/" + it->second + "_Cmd", 1, &SetCommand::callback, cmd);
   }
-  std::map<uint8_t, double> angle_previous_mod;
-  std::map<uint8_t, double> angle_accumulated;
+  std::map<uint8_t, double> angle_zero;
   n_sleep(200);
 
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
-    angle_previous_mod[it->first] = getEncoderAngleRadians(device, it->first);
-    angle_accumulated[it->first] = 0.0;
+    angle_zero[it->first] = getEncoderAngleRadians(device, it->first);
   }
 
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
@@ -134,14 +132,11 @@ int main(int argc, char **argv) {
     for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
       uint8_t id = it->first;
       std::string joint_name = it->second;
-      double mod_angle = getEncoderAngleRadians(device, id);
-      double delta_angle = fmod(mod_angle - angle_previous_mod[id] + M_PI, 2 * M_PI) - M_PI;
-      angle_previous_mod[id] = mod_angle;
-      angle_accumulated[id] += delta_angle;
+      double curr_angle = getEncoderAngleRadians(device, id) - angle_zero[id];
 
       sensor_msgs::JointState joint_msg;
       joint_msg.name = std::vector<std::string>(1, joint_name);
-      joint_msg.position = std::vector<double>(1, mod_angle);
+      joint_msg.position = std::vector<double>(1, curr_angle);
       joint_msg.velocity = std::vector<double>(1, 0.0);
       joint_msg.effort = std::vector<double>(1, 0.0);
       publishers[id].publish(joint_msg);
