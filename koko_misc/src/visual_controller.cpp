@@ -45,27 +45,27 @@ InteractiveMarkerControl& makeBoxControl( InteractiveMarker &msg )
 }
 // %EndTag(Box)%
 
-// %Tag(frameCallback)%
-void frameCallback(const ros::TimerEvent&)
-{
-  static uint32_t counter = 0;
-
-  static tf::TransformBroadcaster br;
-
-  tf::Transform t;
-
-  ros::Time time = ros::Time::now();
-
-  t.setOrigin(tf::Vector3(0.0, 0.0, sin(float(counter)/140.0) * 2.0));
-  t.setRotation(tf::Quaternion(0.0, 0.0, 0.0, 1.0));
-  br.sendTransform(tf::StampedTransform(t, time, "base_link", "moving_frame"));
-
-  t.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
-  t.setRotation(tf::createQuaternionFromRPY(0.0, float(counter)/140.0, 0.0));
-  br.sendTransform(tf::StampedTransform(t, time, "base_link", "rotating_frame"));
-
-  counter++;
-}
+// // %Tag(frameCallback)%
+// void frameCallback(const ros::TimerEvent&)
+// {
+//   static uint32_t counter = 0;
+//
+//   static tf::TransformBroadcaster br;
+//
+//   tf::Transform t;
+//
+//   ros::Time time = ros::Time::now();
+//
+//   t.setOrigin(tf::Vector3(0.0, 0.0, sin(float(counter)/140.0) * 2.0));
+//   t.setRotation(tf::Quaternion(0.0, 0.0, 0.0, 1.0));
+//   br.sendTransform(tf::StampedTransform(t, time, "base_link", "moving_frame"));
+//
+//   t.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
+//   t.setRotation(tf::createQuaternionFromRPY(0.0, float(counter)/140.0, 0.0));
+//   br.sendTransform(tf::StampedTransform(t, time, "base_link", "rotating_frame"));
+//
+//   counter++;
+// }
 // %EndTag(frameCallback)%
 
 // %Tag(processFeedback)%
@@ -498,7 +498,7 @@ int main(int argc, char** argv)
   ros::NodeHandle n;
 
   // create a timer to update the published transforms
-  ros::Timer frame_timer = n.createTimer(ros::Duration(0.01), frameCallback);
+  // ros::Timer frame_timer = n.createTimer(ros::Duration(0.01), frameCallback);
 
   server.reset( new interactive_markers::InteractiveMarkerServer("basic_controls","",false) );
 
