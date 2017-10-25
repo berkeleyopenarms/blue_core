@@ -1,0 +1,308 @@
+<robot
+  name="koko_description_fivedof_dyn">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.0128424654307168 -0.162261711643048 0.155657622910268"
+        rpy="0 0 0" />
+      <mass
+        value="2.50668095471534" />
+      <inertia
+        ixx="0.0599827724543488"
+        ixy="-0.00761117858508908"
+        ixz="0.000334029187700718"
+        iyy="0.0597504740015784"
+        iyz="-0.000387733898574592"
+        izz="0.0375364118295859" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="shoulder_link">
+    <inertial>
+      <origin
+        xyz="-0.00747857948149683 -2.49197817350222E-05 0.0799282586709638"
+        rpy="0 0 0" />
+      <mass
+        value="4.0726802774157" />
+      <inertia
+        ixx="0.00617143853870932"
+        ixy="-6.35617393597009E-07"
+        ixz="-7.28586368309064E-06"
+        iyy="0.00633184758208093"
+        iyz="-4.26825696645809E-07"
+        izz="0.00593999200778494" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/shoulder_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.6 0.6 0.6 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/shoulder_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="base_roll_joint"
+    type="continuous">
+    <origin
+      xyz="0.0966447291250239 -0.0908049999999999 0.218621617367798"
+      rpy="6.83851519316138E-15 0.785398163397447 4.83556046633164E-15" />
+    <parent
+      link="base_link" />
+    <child
+      link="shoulder_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="shoulder_lift_link">
+    <inertial>
+      <origin
+        xyz="-0.000509420379059794 0.00189435487419076 -3.04426530650659E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.437261345267004" />
+      <inertia
+        ixx="0.00102610459108985"
+        ixy="-1.55407005616958E-05"
+        ixz="-6.48354364237729E-07"
+        iyy="0.00108268590910931"
+        iyz="-6.86831903511075E-07"
+        izz="0.000657530055811328" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/shoulder_lift_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/shoulder_lift_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder_lift_joint"
+    type="continuous">
+    <origin
+      xyz="0.0114299285786579 4.04065193964076E-05 0.201676000000001"
+      rpy="1.5707963267949 -0.785395039094458 0.0035351359132397" />
+    <parent
+      link="shoulder_link" />
+    <child
+      link="shoulder_lift_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="upper_arm_link">
+    <inertial>
+      <origin
+        xyz="0.00864576079421958 -2.07747901390665E-05 0.0557209659264426"
+        rpy="0 0 0" />
+      <mass
+        value="4.27427958313188" />
+      <inertia
+        ixx="0.0080865233254023"
+        ixy="1.63838828827827E-06"
+        ixz="-0.000143654954709802"
+        iyy="0.00870932867485313"
+        iyz="2.30257411173754E-06"
+        izz="0.00654125373069757" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/upper_arm_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.298039215686275 0.298039215686275 0.298039215686275 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/upper_arm_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder_roll_joint"
+    type="continuous">
+    <origin
+      xyz="0.0185369364262471 -0.0681800004148113 0"
+      rpy="1.5707963267949 -0.00259045364213944 0.265465420981425" />
+    <parent
+      link="shoulder_lift_link" />
+    <child
+      link="upper_arm_link" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+  <link
+    name="upper_arm_lift_link">
+    <inertial>
+      <origin
+        xyz="-0.000218842264423369 0.00199077302946288 2.90342883069172E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.424523142326092" />
+      <inertia
+        ixx="0.00101023115127483"
+        ixy="-1.07390832021077E-05"
+        ixz="-1.8153680449928E-06"
+        iyy="0.00107183736033294"
+        iyz="-8.37681560089103E-07"
+        izz="0.000658499001313836" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/upper_arm_lift_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/upper_arm_lift_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow_lift_joint"
+    type="continuous">
+    <origin
+      xyz="-0.0114299616526613 2.96089129253052E-05 0.181015691674818"
+      rpy="-1.5707963267949 -0.265459172375448 -0.00259045364213955" />
+    <parent
+      link="upper_arm_link" />
+    <child
+      link="upper_arm_lift_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="forearm_link">
+    <inertial>
+      <origin
+        xyz="0.0061350260642222 -5.60473732281741E-05 0.0735973927085572"
+        rpy="0 0 0" />
+      <mass
+        value="4.75126456671681" />
+      <inertia
+        ixx="0.0159809883318945"
+        ixy="4.42180267785987E-07"
+        ixz="0.00123160938390481"
+        iyy="0.0165207600339414"
+        iyz="-6.92907820518099E-06"
+        izz="0.00791860018544832" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/forearm_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.298039215686275 0.298039215686275 0.298039215686275 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_fivedof_dyn/meshes/forearm_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow_roll_joint"
+    type="continuous">
+    <origin
+      xyz="0.0118025765520783 -0.069662254165997 0"
+      rpy="1.5707963267949 -0.00253533924781029 0.167831940552949" />
+    <parent
+      link="upper_arm_lift_link" />
+    <child
+      link="forearm_link" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+</robot>
