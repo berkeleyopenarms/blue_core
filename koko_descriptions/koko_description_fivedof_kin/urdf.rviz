@@ -8,6 +8,8 @@ Panels:
         - /Status1
         - /Grid1
         - /InteractiveMarkers1
+        - /Pose1
+        - /Pose2
       Splitter Ratio: 0.522222
     Tree Height: 565
   - Class: rviz/Selection
@@ -70,32 +72,37 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        broll_link:
+        forearm_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        ee_tracker_link:
+        forearm_tracker_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        elbow_link:
+        shoulder_lift_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        eroll_link:
+        shoulder_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lift_link:
+        upper_arm_lift_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        sroll_link:
+        upper_arm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        upper_arm_tracker_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -114,6 +121,36 @@ Visualization Manager:
       Show Descriptions: true
       Show Visual Aids: false
       Update Topic: /basic_controls/update
+      Value: true
+    - Alpha: 1
+      Axes Length: 0.1
+      Axes Radius: 0.01
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Axes
+      Topic: /base_tracker_pose
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Axes Length: 0.1
+      Axes Radius: 0.01
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Axes
+      Topic: /forearm_tracker_pose
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
@@ -139,22 +176,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.34798
+      Distance: 0.856344
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.191026
-        Y: 0.165267
-        Z: 0.16989
+        X: 0.372171
+        Y: -0.0302087
+        Z: -0.0819257
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.710398
+      Pitch: 0.350398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.91358
+      Yaw: 5.47358
     Saved: ~
 Window Geometry:
   Displays:
@@ -172,5 +209,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 234
-  Y: 49
+  X: 224
+  Y: 39

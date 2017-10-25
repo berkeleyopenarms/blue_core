@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   controller_manager
   geometry_msgs
   geometry_msgs
+  koko_hardware_drivers
   # interface
   kdl_parser
   orocos_kdl

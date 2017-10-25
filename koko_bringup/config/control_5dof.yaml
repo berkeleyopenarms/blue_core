@@ -1,59 +1,68 @@
 DOF:
-  joint_names: ['broll_joint', 'lift_joint', 'sroll_joint', 'elbow_joint', 'eroll_joint']
-  motor_names: ['broll_motor', 'right_motor', 'left_motor', 'right_motor2', 'left_motor2']
+  joint_names: ['base_roll_joint', 'shoulder_lift_joint', 'shoulder_roll_joint', 'elbow_lift_joint', 'elbow_roll_joint']
+  motor_names: ['base_roll_motor', 'right_motor1', 'left_motor1', 'right_motor2', 'left_motor2']
   gear_ratio: [7.1875, 7.1875, 7.1875, 7.1875, 7.1875]
-  current_slope: [0.626, 0.626, 0.626, 1.67, 1.67]
+  current_slope: [0.626, 0.626, 0.626, 0.626, 0.626]
   current_offset: [0.0, 0.0, 0.0, 0.0, 0.0]
-  calibration_initial_angles: [-1.33, 1.24, 0.4, 1.02, -1.42]
-  directions: [-1.0, 1.0, 1.0, 1.0, 1.0]
-  calibration_encoder: [4.4834423477927574, 4.4834423477927574, 3.5856800916826863, 4.4834423477927574, 3.5856800916826863]
-  calibration_joint_vive: [-0.2689415593931021, -0.2689415593931021, 0.085327798760949689, -0.2689415593931021, 0.085327798760949689]
+  calibration_initial_angles: [0.0, 0.0, 0.0, 0.0, 0.0]
+  directions: [1.0, -1.0, -1.0, -1.0, -1.0]
+  torque_directions: [1.0, -1.0, -1.0, -1.0, -1.0]
+  calibration_encoder: [4.4834423477927574, 4.4834423477927574, 3.5856800916826863, 4.4834423477927574, 3.5856800916826863] # deprecated
+  calibration_joint_vive: [-0.2689415593931021, -0.2689415593931021, 0.085327798760949689, -0.2689415593931021, 0.085327798760949689] #deprecated
   #vive or rviz
   target_mode: "rviz"
   # Publish all joint states -----------------------------------
   joint_state_controller:
     type: joint_state_controller/JointStateController
     publish_rate: 100  
-  endlink_tracker: 'ee_tracker_link'
+  endlink_tracker: 'forearm_tracker_link'
   # Position Controllers ---------------------------------------
   simple_controller:
-    endlink: 'eroll_link'
+    endlink: 'forearm_link'
     paired_constraints: [1, 2, 3, 4]
     filter_length: 20
     type: my_controller/InverseDynamicsController
     root_name: DOF
-    broll_joint:
-      p: 15
+    base_roll_joint:
+      p: 40
       d: 0.0
+      id: 1.0
       max_torque: 30
       min_torque: -30
       max_angle: 1.6
       min_angle: -1.4  
-    lift_joint:
-      p: 15
+    shoulder_lift_joint:
+      p: 20
       d: 0.0
+      id: 1.0
       max_torque: 30
       min_torque: -30
       max_angle: 1.6
       min_angle: -1.4  
-    sroll_joint:
-      p: 15
+    shoulder_roll_joint:
+      p: 20
       d: 0.0
-      max_torque: 20
-      min_torque: -20
+      id: 1.0
+      max_torque: 30
+      min_torque: -30
       max_angle: 1.5
       min_angle: -1.5  
-    elbow_joint:
-      p: 10
+    elbow_lift_joint:
+      p: 20
       d: 0.02
-      max_torque: 10
-      min_torque: -10
+      id: 1.0
+      max_torque: 30
+      min_torque: -30
       max_angle: 1.6
       min_angle: -1.4  
-    eroll_joint:
-      p: 10
+    elbow_roll_joint:
+      p: 20
       d: 0.02
-      max_torque: 10
-      min_torque: -10
+      id: 1.0
+      max_torque: 30
+      min_torque: -30
       max_angle: 1.5
       min_angle: -1.5
+
+
+

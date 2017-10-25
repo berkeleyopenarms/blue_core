@@ -3,10 +3,10 @@
     name="model" />
   <arg
     name="gui"
-    default="True" />
+    default="False" />
   <param
     name="robot_description"
-    textfile="$(find fivedof_tracker_kin_v5)/robots/fivedof_tracker_kin_v5.urdf" />
+    textfile="$(find koko_description_fivedof_kin)/robots/koko_description_fivedof_kin.urdf" />
   <param
     name="use_gui"
     value="$(arg gui)" />
@@ -22,5 +22,5 @@
     name="rviz"
     pkg="rviz"
     type="rviz"
-    args="-d $(find fivedof_tracker_kin_v5)/urdf.rviz" />
+    args="-d $(find koko_description_fivedof_kin)/urdf.rviz" />
 </launch>

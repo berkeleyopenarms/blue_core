@@ -1,5 +1,5 @@
 <robot
-  name="sixDOF_tracker_dyn_v11">
+  name="koko_gazebo">
   <link name="world"/>
   <link name="base_link">
     <inertial>
@@ -22,7 +22,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/base_link.STL" />
+          filename="package://koko_gazebo/meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -36,7 +36,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/base_link.STL" />
+          filename="package://koko_gazebo/meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -62,7 +62,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/lift_link.STL" />
+          filename="package://koko_gazebo/meshes/lift_link.STL" />
       </geometry>
       <material
         name="">
@@ -76,7 +76,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/lift_link.STL" />
+          filename="package://koko_gazebo/meshes/lift_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -115,7 +115,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/sroll_link.STL" />
+          filename="package://koko_gazebo/meshes/sroll_link.STL" />
       </geometry>
       <material
         name="">
@@ -129,7 +129,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/sroll_link.STL" />
+          filename="package://koko_gazebo/meshes/sroll_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -168,7 +168,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/elbow_link.STL" />
+          filename="package://koko_gazebo/meshes/elbow_link.STL" />
       </geometry>
       <material
         name="">
@@ -182,7 +182,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/elbow_link.STL" />
+          filename="package://koko_gazebo/meshes/elbow_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -221,7 +221,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/eroll_link.STL" />
+          filename="package://koko_gazebo/meshes/eroll_link.STL" />
       </geometry>
       <material
         name="">
@@ -235,7 +235,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/eroll_link.STL" />
+          filename="package://koko_gazebo/meshes/eroll_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -274,7 +274,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/wrist_link.STL" />
+          filename="package://koko_gazebo/meshes/wrist_link.STL" />
       </geometry>
       <material
         name="">
@@ -288,7 +288,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/wrist_link.STL" />
+          filename="package://koko_gazebo/meshes/wrist_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -327,7 +327,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/wroll_link.STL" />
+          filename="package://koko_gazebo/meshes/wroll_link.STL" />
       </geometry>
       <material
         name="">
@@ -341,7 +341,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sixDOF_tracker_dyn_v11/meshes/wroll_link.STL" />
+          filename="package://koko_gazebo/meshes/wroll_link.STL" />
       </geometry>
     </collision>
   </link>

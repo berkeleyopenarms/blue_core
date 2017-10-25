@@ -10,7 +10,7 @@
     name="spawn_model"
     pkg="gazebo_ros"
     type="spawn_model"
-    args="-file $(find fivedof_tracker_kin_v5)/robots/fivedof_tracker_kin_v5.urdf -urdf -model fivedof_tracker_kin_v5"
+    args="-file $(find koko_description_fivedof_kin)/robots/koko_description_fivedof_kin.urdf -urdf -model koko_description_fivedof_kin"
     output="screen" />
   <node
     name="fake_joint_calibration"

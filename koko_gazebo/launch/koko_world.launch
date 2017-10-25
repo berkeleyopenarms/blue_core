@@ -12,9 +12,6 @@
     name="robot_dyn_description"
     textfile="$(find koko_gazebo)/robots/6dof_dyn2.urdf" />
   <param
-    name="robot_kin_description"
-    textfile="$(find koko_gazebo)/robots/6dof_kin2.urdf" />
-  <param
     name="use_gui"
     value="$(arg gui)" />
   <node

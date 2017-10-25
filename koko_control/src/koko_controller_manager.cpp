@@ -46,7 +46,7 @@ int main(int argc, char** argv)
   ros::spinOnce();
   
   
-  ros::Rate loop_rate(50);
+  ros::Rate loop_rate(100);
   ros::Rate loop_rate2(500);
   
   

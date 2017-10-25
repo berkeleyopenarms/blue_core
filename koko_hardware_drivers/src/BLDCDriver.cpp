@@ -1,58 +1,49 @@
-#include "ros/ros.h"
-#include "serial/serial.h"
-#include "std_msgs/String.h"
-#include "std_msgs/Float64.h"
-#include "std_msgs/Float32.h"
-#include "sensor_msgs/JointState.h"
-#include "koko_hardware_drivers/BLDCControllerClient.h"
-#include <vector>
-#include <string>
-#include "math.h"
-#include "time.h"
+#include <koko_hardware_drivers/BLDCDriver.h>
 
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 /* const double MAX_CURRENT = 2.8; */
 const unsigned int CONTROL_LOOP_FREQ = 1000;
 const unsigned int BAUD_RATE = 1000000;
 
-std::map<uint8_t, float> g_command_queue;
-
-class SetCommand {
-  private:
-    uint8_t id_;
-  public:
-    void callback(const std_msgs::Float64::ConstPtr& msg);
-    SetCommand(uint8_t id);
-};
-
-void SetCommand::callback(const std_msgs::Float64::ConstPtr& msg) {
-  double effort_raw = msg->data;
-  ROS_ERROR("%d", id_);
-  ROS_ERROR("%f", effort_raw);
-  g_command_queue[id_] = effort_raw;
-}
-
-SetCommand::SetCommand(uint8_t id) : id_(id) {}
-
-void initMaps(std::map<uint8_t, std::string>& joint_mapping,
+void initMaps(std::vector<uint8_t>& angle_id_mapping, 
+    std::map<uint8_t, std::string>& motor_mapping,
     std::map<uint8_t, uint16_t>& angle_mapping,
     std::map<uint8_t, uint8_t>& invert_mapping,
-    std::map<uint8_t, uint8_t>& erevs_mapping) {
-    joint_mapping[15] = "base_roll_motor";
-    joint_mapping[11] = "right_motor1";
-    joint_mapping[12] = "left_motor1";
+    std::map<uint8_t, uint8_t>& erevs_mapping) { // TODO: make this read from config
+
+    angle_id_mapping.push_back(15);
+    angle_id_mapping.push_back(11);
+    angle_id_mapping.push_back(12);
+    angle_id_mapping.push_back(14);
+    angle_id_mapping.push_back(16);
+
+    motor_mapping[15] = "base_roll_motor";
+    motor_mapping[11] = "right_motor1";
+    motor_mapping[12] = "left_motor1";
+    motor_mapping[14] = "right_motor2";
+    motor_mapping[16] = "left_motor2";
 
     angle_mapping[15] = 13002;
     angle_mapping[11] = 2164;
     angle_mapping[12] = 1200;
+    angle_mapping[14] = 4484;
+    angle_mapping[16] = 2373;
+    //angle_mapping[21] = 5899;
+    //angle_mapping[19] = 2668;
+    //"21": 5899
+    //"19": 2668
 
     invert_mapping[15] = 0;
     invert_mapping[11] = 0;
+    invert_mapping[12] = 0;
+    invert_mapping[12] = 0;
     invert_mapping[12] = 0;
 
     erevs_mapping[15] = 14;
     erevs_mapping[11] = 14;
     erevs_mapping[12] = 14;
+    erevs_mapping[14] = 14;
+    erevs_mapping[16] = 14;
 
   /* joint_mapping[1] = "left_motor"; */
   /* joint_mapping[2] = "right_motor"; */
@@ -81,81 +72,71 @@ double getEncoderAngleRadians(BLDCControllerClient& device, uint8_t id) {
   return x;
 }
 
-int main(int argc, char **argv) {
-  ros::init(argc, argv, "jointInterface", ros::init_options::AnonymousName);
+void BLDCDriver::init(std::vector<double>* in_pos, std::vector<double>* in_vel, std::vector<double>* in_eff, const std::vector<double>* in_cmd) {
+  // Init comms/data structures
+  pos = in_pos;
+  vel = in_vel;
+  eff = in_eff;
+  cmd = in_cmd;
+  
+  initMaps(angle_id_mapping, motor_mapping, angle_mapping, invert_mapping, erevs_mapping);
 
-  ros::NodeHandle n;
-  std::map<uint8_t, std::string> joint_mapping;
-  std::map<uint8_t, uint16_t> angle_mapping;
-  std::map<uint8_t, uint8_t> invert_mapping;
-  std::map<uint8_t, uint8_t> erevs_mapping;
-  initMaps(joint_mapping, angle_mapping, invert_mapping, erevs_mapping);
-
-  char* port = argv[1];
-  BLDCControllerClient device(port, BAUD_RATE, serial::Timeout::simpleTimeout(10));
-
-  ros::Rate r(CONTROL_LOOP_FREQ);
+  std::string port = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0"; // TODO: read from launch/config
+  device.init(port, BAUD_RATE, serial::Timeout::simpleTimeout(10)); // TODO: likely candidate for the frequency issues
 
   std::map<uint8_t, std::string>::iterator it;
-  for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
+  for (it = motor_mapping.begin(); it != motor_mapping.end(); it++) {
     device.leaveBootloader(it->first, 0);
     device.flushSerial();
   }
   n_sleep(500);
-  std::map<uint8_t, ros::Publisher> publishers;
-  std::map<uint8_t, ros::Publisher> publishers_curr;
-  std::map<uint8_t, ros::Subscriber> subscribers;
-  for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
-    publishers[it->first] = n.advertise<sensor_msgs::JointState>("/DOF/" + it->second + "_State", 10);
-    publishers_curr[it->first] = n.advertise<std_msgs::Float32>("/DOF/" + it->second + "_Current", 10);
-    SetCommand *cmd = new SetCommand(it->first);
-    subscribers[it->first] = n.subscribe("/DOF/" + it->second + "_Cmd", 1, &SetCommand::callback, cmd);
-  }
-  std::map<uint8_t, double> angle_zero;
-  n_sleep(200);
 
-  for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
+
+  // Init angle
+  for (it = motor_mapping.begin(); it != motor_mapping.end(); it++) {
     angle_zero[it->first] = getEncoderAngleRadians(device, it->first);
   }
 
+  
+  // Init driver firmware data structures
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
     uint8_t* angle = (uint8_t*) &it2->second;
     device.writeRegisters(it2->first, 0x101, 1, angle, 2);
-
     uint8_t r = 0;
     device.writeRegisters(it2->first, 0x102, 1, &r, 1);
     device.writeRegisters(it2->first, 0x109, 1, &invert_mapping[it2->first], 1);
     device.writeRegisters(it2->first, 0x10A, 1, &erevs_mapping[it2->first], 1);
   }
+}
 
-  while (ros::ok()) {
-    for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
-      uint8_t id = it->first;
-      std::string joint_name = it->second;
+BLDCDriver::BLDCDriver(){
+  pos = NULL;
+  vel = NULL;
+  eff = NULL;
+  cmd = NULL;
+}
+
+
+void BLDCDriver::read(){
+  for (int i = 0; i < angle_id_mapping.size(); i++) {
+      uint8_t id = angle_id_mapping[i];
+
       double curr_angle = getEncoderAngleRadians(device, id) - angle_zero[id];
 
-      sensor_msgs::JointState joint_msg;
-      joint_msg.name = std::vector<std::string>(1, joint_name);
-      joint_msg.position = std::vector<double>(1, curr_angle);
-      joint_msg.velocity = std::vector<double>(1, 0.0);
-      joint_msg.effort = std::vector<double>(1, 0.0);
-      publishers[id].publish(joint_msg);
-      
-      std_msgs::Float32 curr_msg;
-      curr_msg.data = (float) 0.0;
-      publishers_curr[id].publish(curr_msg);
-      ros::spinOnce();
-      if (g_command_queue.find(id) != g_command_queue.end()) {
-        // std::cerr << "setting duty to " << g_command_queue[id];
-        device.setDuty(id, g_command_queue[id]);
-      }
+      (*pos)[i] = curr_angle;
+      (*vel)[i] = 0.0; // TODO: onboard velocity estimate (need kalman?)
+      (*eff)[i] = 0.0; // TODO: current estimate retrieval
     }
 
-    g_command_queue.clear();
-    r.sleep();
+}
+
+void BLDCDriver::write(){
+  for (int i = 0; i < angle_id_mapping.size(); i++) {
+      uint8_t id = angle_id_mapping[i];
+
+      const double cmd_i = (*cmd)[i];
+      
+      device.setDuty(id, (float)cmd_i);
   }
-
-
-  return 0;
 }
 

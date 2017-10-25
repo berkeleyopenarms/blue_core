@@ -23,6 +23,8 @@ class BLDCControllerClient {
     bool setDuty(uint8_t id, float value);
     void flushSerial();
     BLDCControllerClient(std::string port, unsigned int baud, serial::Timeout to);
+    BLDCControllerClient(); //requires init afterwards
+    void init(std::string port, unsigned int baud, serial::Timeout to);
 };
 
 void n_sleep(unsigned int milliseconds);
