@@ -4,9 +4,9 @@ DOF:
   gear_ratio: [7.1875, 7.1875, 7.1875, 7.1875, 7.1875]
   current_slope: [0.626, 0.626, 0.626, 0.626, 0.626]
   current_offset: [0.0, 0.0, 0.0, 0.0, 0.0]
-  calibration_initial_angles: [0.0, 0.0, 0.0, 0.0, 0.0]
-  directions: [1.0, -1.0, -1.0, -1.0, -1.0]
-  torque_directions: [1.0, -1.0, -1.0, -1.0, -1.0]
+  calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0]
+  directions:        [1.0, -1.0, 1.0, -1.0, 1.0]
+  torque_directions: [1.0, -1.0, 1.0, -1.0, 1.0]
   calibration_encoder: [4.4834423477927574, 4.4834423477927574, 3.5856800916826863, 4.4834423477927574, 3.5856800916826863] # deprecated
   calibration_joint_vive: [-0.2689415593931021, -0.2689415593931021, 0.085327798760949689, -0.2689415593931021, 0.085327798760949689] #deprecated
   #vive or rviz
@@ -26,7 +26,7 @@ DOF:
     base_roll_joint:
       p: 40
       d: 0.0
-      id: 1.0
+      id: 1.3
       max_torque: 30
       min_torque: -30
       max_angle: 1.6
@@ -34,10 +34,10 @@ DOF:
     shoulder_lift_joint:
       p: 20
       d: 0.0
-      id: 1.0
+      id: 1.5
       max_torque: 30
       min_torque: -30
-      max_angle: 1.6
+      max_angle: 3.5
       min_angle: -1.4  
     shoulder_roll_joint:
       p: 20
@@ -50,10 +50,10 @@ DOF:
     elbow_lift_joint:
       p: 20
       d: 0.02
-      id: 1.0
+      id: 1.5
       max_torque: 30
       min_torque: -30
-      max_angle: 1.6
+      max_angle: 3.5
       min_angle: -1.4  
     elbow_roll_joint:
       p: 20

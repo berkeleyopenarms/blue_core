@@ -123,9 +123,9 @@ namespace koko_controllers{
     ROS_INFO("nj %d", chain.getNrOfJoints());
 
     id_torques = KDL::JntArray(chain.getNrOfJoints());
-    commandPub = node.advertise<std_msgs::Float64MultiArray>("/commandPub", 1000);
-    deltaPub = node.advertise<std_msgs::Float64MultiArray>("/deltaPub", 1000);
-    inverseDynamicsPub = node.advertise<std_msgs::Float64MultiArray>("/inverseDynamicsPub", 1000);
+    commandPub = node.advertise<std_msgs::Float64MultiArray>("/commandPub", 1);
+    deltaPub = node.advertise<std_msgs::Float64MultiArray>("/deltaPub", 1);
+    inverseDynamicsPub = node.advertise<std_msgs::Float64MultiArray>("/inverseDynamicsPub", 1);
 
     return true;
   }
@@ -175,7 +175,7 @@ namespace koko_controllers{
     std::vector<double> commands(joint_vector.size());
     for (int i = 0; i < joint_vector.size(); i++) {
       double current_position = joint_vector[i].joint.getPosition();
-      double error = angles::shortest_angular_distance(current_position, joint_vector[i].cmd);
+      double error = angles::shortest_angular_distance(current_position, joint_vector[i].cmd); // TODO: don't use wraparound here
       deltaMsg.data.push_back(error);
       //ROS_INFO("Joint pos %f, joint cmd %f", current_position, joint_vector[i].cmd);
       //ROS_INFO("Joint %d error: %f", i, error);

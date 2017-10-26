@@ -48,14 +48,14 @@
     pkg="topic_tools"
     type="relay"
     args="/DOF/joint_states /joint_states" />
-  <!-- <node -->
-  <!--   name="pose_target" -->
-  <!--   pkg="koko_kinematics" -->
-  <!--   type="pose_target" /> -->
-  <node
-    name="visual_pos_controller_four"
-    pkg="fourDOF_tracker_kin_v2"
-    type="visual_controller_four" />
+  <!--node
+    name="pose_target"
+    pkg="koko_kinematics"
+    type="pose_target" /-->
+  <!--node
+    name="visual_pos_controller"
+    pkg="koko_misc"
+    type="visual_controller" /-->
   <include
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
   <!--node

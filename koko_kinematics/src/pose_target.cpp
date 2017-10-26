@@ -220,8 +220,8 @@ public:
       for (int k = 0; k < nj; k++) {
         jointInverseKin(k) = deltaJoint(k,0) + jointInverseKin(k);
       }
-    //  ROS_INFO("joint inverse kin: %f, %f, %f, %f", jointInverseKin(0), jointInverseKin(1), jointInverseKin(2), jointInverseKin(3));
-     // ROS_INFO("deltaJoint: %f, %f, %f, %f", deltaJoint(0), deltaJoint(1, 0), deltaJoint(2, 0), deltaJoint(3, 0));
+      // ROS_INFO("joint inverse kin: %f, %f, %f, %f", jointInverseKin(0), jointInverseKin(1), jointInverseKin(2), jointInverseKin(3));
+      // ROS_INFO("deltaJoint: %f, %f, %f, %f", deltaJoint(0), deltaJoint(1, 0), deltaJoint(2, 0), deltaJoint(3, 0));
 
     }
 
@@ -261,7 +261,7 @@ public:
       receivedVisualTarget = true;
     }
     
-    commandPose = msg.pose;
+    //commandPose = msg.pose;
     
   }
 
@@ -305,6 +305,7 @@ int main(int argc, char** argv)
 
   if (!node.getParam("/DOF/endlink_tracker",  end_tracker_link)) {
     ROS_ERROR("No /DOF/endlink_tracker loaded in rosparam");
+    return false;
   }
 
   bool exit_value = my_tree.getChain("base_link", end_tracker_link, chain);
