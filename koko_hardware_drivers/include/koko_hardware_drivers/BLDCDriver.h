@@ -21,12 +21,16 @@ class BLDCDriver {
     std::map<uint8_t, uint8_t> erevs_mapping;
 
     std::map<uint8_t, double> angle_zero;
+    std::map<uint8_t, double> prev_angle;
     BLDCControllerClient device;
 
     std::vector<double>* pos;
     std::vector<double>* vel;
     std::vector<double>* eff;
     const std::vector<double>* cmd;
+    ros::Time get_time();
+    ros::Duration get_period();
+    ros::Time last_time;
 
   public:
     void init(std::vector<double>* in_pos, std::vector<double>* in_vel, std::vector<double>* in_eff, const std::vector<double>* in_cmd);

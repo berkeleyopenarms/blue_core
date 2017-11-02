@@ -52,7 +52,7 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
   uint8_t lb = 0;
   for (size_t i = 0; i < num_tries && lb == 0; i++) {
     ser.read(&lb, 1);
-    n_sleep(try_interval);
+    //n_sleep(try_interval);
   }
   bytebuf_t empty(0);
   if (lb == 0) {

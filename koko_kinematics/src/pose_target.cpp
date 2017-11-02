@@ -261,7 +261,7 @@ public:
       receivedVisualTarget = true;
     }
     
-    //commandPose = msg.pose;
+    commandPose = msg.pose;
     
   }
 

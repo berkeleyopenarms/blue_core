@@ -33,3 +33,6 @@ include_directories(
 
 add_executable(koko_controller_manager src/koko_controller_manager.cpp)
 target_link_libraries(koko_controller_manager ${catkin_LIBRARIES})
+
+add_executable(koko_controller_manager_independent src/koko_controller_manager_independent.cpp)
+target_link_libraries(koko_controller_manager_independent ${catkin_LIBRARIES})

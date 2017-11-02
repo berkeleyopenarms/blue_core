@@ -45,27 +45,27 @@ InteractiveMarkerControl& makeBoxControl( InteractiveMarker &msg )
 }
 // %EndTag(Box)%
 
-// // %Tag(frameCallback)%
-// void frameCallback(const ros::TimerEvent&)
-// {
-//   static uint32_t counter = 0;
-//
-//   static tf::TransformBroadcaster br;
-//
-//   tf::Transform t;
-//
-//   ros::Time time = ros::Time::now();
-//
-//   t.setOrigin(tf::Vector3(0.0, 0.0, sin(float(counter)/140.0) * 2.0));
-//   t.setRotation(tf::Quaternion(0.0, 0.0, 0.0, 1.0));
-//   br.sendTransform(tf::StampedTransform(t, time, "base_link", "moving_frame"));
-//
-//   t.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
-//   t.setRotation(tf::createQuaternionFromRPY(0.0, float(counter)/140.0, 0.0));
-//   br.sendTransform(tf::StampedTransform(t, time, "base_link", "rotating_frame"));
-//
-//   counter++;
-// }
+// %Tag(frameCallback)%
+void frameCallback(const ros::TimerEvent&)
+{
+ // static uint32_t counter = 0;
+
+ // static tf::TransformBroadcaster br;
+
+ // tf::Transform t;
+
+ // ros::Time time = ros::Time::now();
+
+ // t.setOrigin(tf::Vector3(0.0, 0.0, sin(float(counter)/140.0) * 2.0));
+ // t.setRotation(tf::Quaternion(0.0, 0.0, 0.0, 1.0));
+ // br.sendTransform(tf::StampedTransform(t, time, "world", "moving_frame"));
+
+ // t.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
+ // t.setRotation(tf::createQuaternionFromRPY(0.0, float(counter)/140.0, 0.0));
+ // br.sendTransform(tf::StampedTransform(t, time, "world", "rotating_frame"));
+
+ // counter++;
+}
 // %EndTag(frameCallback)%
 
 // %Tag(processFeedback)%
@@ -164,7 +164,7 @@ void saveMarker( InteractiveMarker int_marker )
 void make6DofMarker( bool fixed, unsigned int interaction_mode, const tf::Vector3& position, bool show_6dof )
 {
   InteractiveMarker int_marker;
-  int_marker.header.frame_id = "base_link";
+  int_marker.header.frame_id = "world";
   tf::pointTFToMsg(position, int_marker.pose.position);
   int_marker.scale = .15;
 
@@ -241,7 +241,7 @@ void make6DofMarker( bool fixed, unsigned int interaction_mode, const tf::Vector
 void makeRandomDofMarker( const tf::Vector3& position )
 {
   InteractiveMarker int_marker;
-  int_marker.header.frame_id = "base_link";
+  int_marker.header.frame_id = "world";
   tf::pointTFToMsg(position, int_marker.pose.position);
   int_marker.scale = 1;
 
@@ -274,7 +274,7 @@ void makeRandomDofMarker( const tf::Vector3& position )
 void makeViewFacingMarker( const tf::Vector3& position )
 {
   InteractiveMarker int_marker;
-  int_marker.header.frame_id = "base_link";
+  int_marker.header.frame_id = "world";
   tf::pointTFToMsg(position, int_marker.pose.position);
   int_marker.scale = 1;
 
@@ -313,7 +313,7 @@ void makeViewFacingMarker( const tf::Vector3& position )
 void makeQuadrocopterMarker( const tf::Vector3& position )
 {
   InteractiveMarker int_marker;
-  int_marker.header.frame_id = "base_link";
+  int_marker.header.frame_id = "world";
   tf::pointTFToMsg(position, int_marker.pose.position);
   int_marker.scale = 1;
 
@@ -342,7 +342,7 @@ void makeQuadrocopterMarker( const tf::Vector3& position )
 void makeChessPieceMarker( const tf::Vector3& position )
 {
   InteractiveMarker int_marker;
-  int_marker.header.frame_id = "base_link";
+  int_marker.header.frame_id = "world";
   tf::pointTFToMsg(position, int_marker.pose.position);
   int_marker.scale = 1;
 
@@ -376,7 +376,7 @@ void makeChessPieceMarker( const tf::Vector3& position )
 void makePanTiltMarker( const tf::Vector3& position )
 {
   InteractiveMarker int_marker;
-  int_marker.header.frame_id = "base_link";
+  int_marker.header.frame_id = "world";
   tf::pointTFToMsg(position, int_marker.pose.position);
   int_marker.scale = 1;
 
@@ -412,7 +412,7 @@ void makePanTiltMarker( const tf::Vector3& position )
 void makeMenuMarker( const tf::Vector3& position )
 {
   InteractiveMarker int_marker;
-  int_marker.header.frame_id = "base_link";
+  int_marker.header.frame_id = "world";
   tf::pointTFToMsg(position, int_marker.pose.position);
   int_marker.scale = 1;
 
@@ -439,7 +439,7 @@ void makeMenuMarker( const tf::Vector3& position )
 void makeButtonMarker( const tf::Vector3& position )
 {
   InteractiveMarker int_marker;
-  int_marker.header.frame_id = "base_link";
+  int_marker.header.frame_id = "world";
   tf::pointTFToMsg(position, int_marker.pose.position);
   int_marker.scale = 1;
 
@@ -498,7 +498,7 @@ int main(int argc, char** argv)
   ros::NodeHandle n;
 
   // create a timer to update the published transforms
-  // ros::Timer frame_timer = n.createTimer(ros::Duration(0.01), frameCallback);
+  ros::Timer frame_timer = n.createTimer(ros::Duration(0.01), frameCallback);
 
   server.reset( new interactive_markers::InteractiveMarkerServer("basic_controls","",false) );
 
@@ -512,7 +512,7 @@ int main(int argc, char** argv)
 
   tf::Vector3 position;
 
-  position = tf::Vector3( -0.079, -0.038, 0.455);
+  position = tf::Vector3( 0.531, 0.117, 2.055);
   make6DofMarker( false, visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D, position, true );
 
   server->applyChanges();

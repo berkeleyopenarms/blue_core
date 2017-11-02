@@ -93,8 +93,10 @@ void BLDCDriver::init(std::vector<double>* in_pos, std::vector<double>* in_vel, 
 
 
   // Init angle
+  last_time = get_time();
   for (it = motor_mapping.begin(); it != motor_mapping.end(); it++) {
     angle_zero[it->first] = getEncoderAngleRadians(device, it->first);
+    prev_angle[it->first] = getEncoderAngleRadians(device, it->first);
   }
 
   
@@ -118,11 +120,13 @@ BLDCDriver::BLDCDriver(){
 
 
 void BLDCDriver::read(){
+  //double delta_time = get_period().toSec();
   for (int i = 0; i < angle_id_mapping.size(); i++) {
       uint8_t id = angle_id_mapping[i];
 
+      getEncoderAngleRadians(device, id);
       double curr_angle = getEncoderAngleRadians(device, id) - angle_zero[id];
-
+      
       (*pos)[i] = curr_angle;
       (*vel)[i] = 0.0; // TODO: onboard velocity estimate (need kalman?)
       (*eff)[i] = 0.0; // TODO: current estimate retrieval
@@ -140,3 +144,13 @@ void BLDCDriver::write(){
   }
 }
 
+ros::Time BLDCDriver::get_time() {
+  return ros::Time::now();
+} 
+
+ros::Duration BLDCDriver::get_period() {
+  ros::Time current_time = ros::Time::now();
+  ros::Duration period = current_time - last_time; 
+  last_time = current_time;
+  return period; 
+}

@@ -16,13 +16,13 @@
     value="$(arg gui)" />
   <node
     name="rviz"
-    pkg="rviz" 
+    pkg="rviz"
     type="rviz"
     args="-d $(find koko_gazebo)/urdf.rviz" />
-  <node 
-    name="visualcontroller"
-    pkg="1DOF_URDF"
-    type="visualcontroller"/>
+  <node
+    name="visual_controller"
+    pkg="koko_misc"
+    type="visual_controller"/>
   <node name="pos_plot"
     pkg="rqt_plot"
     type="rqt_plot"
