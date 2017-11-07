@@ -16,6 +16,18 @@ const unsigned int CONTROL_LOOP_FREQ = 5000;
 const unsigned int BAUD_RATE = 1000000;
 
 std::map<uint8_t, float> g_command_queue;
+ros::Time last_time;
+
+ros::Time get_time() {
+  return ros::Time::now();
+} 
+
+float get_period() {
+  ros::Time current_time = ros::Time::now();
+  ros::Duration period = current_time - last_time; 
+  last_time = current_time;
+  return period.toSec(); 
+}
 
 class SetCommand {
   private:
@@ -128,7 +140,10 @@ int main(int argc, char **argv) {
     device.writeRegisters(it2->first, 0x10A, 1, &erevs_mapping[it2->first], 1);
   }
 
+  last_time = get_time(); //
+  float dt = 0;
   while (ros::ok()) {
+    dt = get_period();
     for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
       uint8_t id = it->first;
       std::string joint_name = it->second;
