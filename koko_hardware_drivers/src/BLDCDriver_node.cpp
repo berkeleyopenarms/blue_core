@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include "math.h"
+#include <numeric>
 #include "time.h"
 
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
@@ -17,6 +18,7 @@ const unsigned int BAUD_RATE = 1000000;
 
 std::map<uint8_t, float> g_command_queue;
 ros::Time last_time;
+int filter_length = 10;
 
 ros::Time get_time() {
   return ros::Time::now();
@@ -99,6 +101,7 @@ int main(int argc, char **argv) {
   ros::NodeHandle n;
   std::map<uint8_t, std::string> joint_mapping;
   std::map<uint8_t, uint16_t> angle_mapping;
+  std::map<uint8_t, std::vector<double> > velocity_history_mapping;
   std::map<uint8_t, uint8_t> invert_mapping;
   std::map<uint8_t, uint8_t> erevs_mapping;
   initMaps(joint_mapping, angle_mapping, invert_mapping, erevs_mapping);
@@ -124,10 +127,13 @@ int main(int argc, char **argv) {
     subscribers[it->first] = n.subscribe("/DOF/" + it->second + "_Cmd", 1, &SetCommand::callback, cmd);
   }
   std::map<uint8_t, double> angle_zero;
+  std::map<uint8_t, double> past_angle;
   n_sleep(200);
 
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
     angle_zero[it->first] = getEncoderAngleRadians(device, it->first);
+    velocity_history_mapping[it->first].resize(filter_length);
+    past_angle[it->first] = angle_zero[it->first];
   }
 
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
@@ -142,17 +148,27 @@ int main(int argc, char **argv) {
 
   last_time = get_time(); //
   float dt = 0;
+  int counter = 0;
   while (ros::ok()) {
     dt = get_period();
     for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
       uint8_t id = it->first;
+      std::vector<double> v = velocity_history_mapping[id];
+
       std::string joint_name = it->second;
       double curr_angle = getEncoderAngleRadians(device, id) - angle_zero[id];
+      
+      v[counter] = (curr_angle - past_angle[id])/dt;
+      past_angle[id] = curr_angle;
 
       sensor_msgs::JointState joint_msg;
       joint_msg.name = std::vector<std::string>(1, joint_name);
       joint_msg.position = std::vector<double>(1, curr_angle);
-      joint_msg.velocity = std::vector<double>(1, 0.0);
+
+	  double sum = std::accumulate(v.begin(), v.end(), 0.0);
+	  double avg_vel = sum / v.size();
+      joint_msg.velocity = std::vector<double>(1, avg_vel);
+      
       joint_msg.effort = std::vector<double>(1, 0.0);
       publishers[id].publish(joint_msg);
       
@@ -165,6 +181,8 @@ int main(int argc, char **argv) {
         device.setDuty(id, g_command_queue[id]);
       }
     }
+    counter ++;
+    counter = counter % filter_length;
     ros::spinOnce();
     g_command_queue.clear();
     r.sleep();
