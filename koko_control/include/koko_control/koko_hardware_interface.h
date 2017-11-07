@@ -81,6 +81,7 @@ public:
     position_read = 0;
     calibrated = 0;
     prev_is_calibrated = 0;
+    is_calibrated = 0;
 
     for (int i = 0; i < num_joints; i++) {
       joint_state_initial[i] = 0.0;
@@ -149,7 +150,7 @@ public:
       ROS_ERROR("d3");
       return;
     }
-
+    ROS_ERROR("update_joints_from_motors");
     std::vector<double> pre_joint_pos(num_joints);
     std::vector<double> pre_joint_vel(num_joints);
     ROS_ERROR("d4");
@@ -225,7 +226,6 @@ public:
       double motor_torque =  post_motor_torque[i] / gear_ratios[i];
       double motor_current = convertMotorTorqueToCurrent(motor_torque, i);
       motor_cmd[i] = motor_current; 
-      
     }
     ROS_ERROR("g5");
 

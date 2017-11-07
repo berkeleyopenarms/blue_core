@@ -46,8 +46,8 @@ int main(int argc, char** argv)
   ros::spinOnce();
   
   
-  ros::Rate loop_rate(50);
-  ros::Rate loop_rate2(500);
+  ros::Rate loop_rate(700);
+  ros::Rate loop_rate2(700);
   
   
   thread_struct ts;

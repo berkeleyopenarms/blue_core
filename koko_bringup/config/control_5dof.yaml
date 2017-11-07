@@ -14,7 +14,7 @@ DOF:
   # Publish all joint states -----------------------------------
   joint_state_controller:
     type: joint_state_controller/JointStateController
-    publish_rate: 100  
+    publish_rate: 500  
   endlink_tracker: 'forearm_tracker_link'
   # Position Controllers ---------------------------------------
   simple_controller:
@@ -24,7 +24,7 @@ DOF:
     type: my_controller/InverseDynamicsController
     root_name: DOF
     base_roll_joint:
-      p: 200
+      p: 150
       d: 0.0
       id: 1.5
       max_torque: 30
@@ -32,7 +32,7 @@ DOF:
       max_angle: 1.6
       min_angle: -1.4  
     shoulder_lift_joint:
-      p: 400
+      p: 300
       d: 0.0
       id: 10
       max_torque: 30
@@ -40,7 +40,7 @@ DOF:
       max_angle: 3.5
       min_angle: -1.4  
     shoulder_roll_joint:
-      p: 200
+      p: 100
       d: 0.0
       id: 1.0
       max_torque: 30
@@ -48,7 +48,7 @@ DOF:
       max_angle: 1.5
       min_angle: -1.5  
     elbow_lift_joint:
-      p: 300
+      p: 200
       d: 0.02
       id: 5
       max_torque: 30
@@ -56,7 +56,7 @@ DOF:
       max_angle: 3.5
       min_angle: -1.4  
     elbow_roll_joint:
-      p: 200
+      p: 100
       d: 0.02
       id: 1.0
       max_torque: 30

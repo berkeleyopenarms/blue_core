@@ -120,7 +120,7 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
 bytebuf_t BLDCControllerClient::doTransaction(uint8_t server_id, uint8_t func_code, bytebuf_t& data) {
   writeRequest(server_id, func_code, data);
   ser.flush();
-  return readResponse(server_id, func_code, 10, 10);
+  return readResponse(server_id, func_code, 5, 10);
 }
 
 bool BLDCControllerClient::writeRegisters(uint8_t server_id, uint16_t start_addr, uint8_t count, uint8_t* data, size_t size) {

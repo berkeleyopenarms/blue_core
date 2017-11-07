@@ -60,12 +60,7 @@
     name="transformer"
     pkg="tf"
     type="static_transform_publisher" 
-    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>    
-  <node
-    name="transformer_pos_ee"
-    pkg="tf"
-    type="static_transform_publisher" 
-    args="0.0 0.17 -0.05 0.0 0.0 0.0 1 forearm_tracker_link test_frame 100"/>         
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>          
   <include
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
   <!--node
