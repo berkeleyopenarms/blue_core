@@ -46,8 +46,8 @@ int main(int argc, char** argv)
   ros::spinOnce();
   
   
-  ros::Rate loop_rate(700);
-  ros::Rate loop_rate2(700);
+  ros::Rate loop_rate(100);
+  ros::Rate loop_rate2(500);
   
   
   thread_struct ts;
@@ -66,7 +66,6 @@ int main(int argc, char** argv)
   ROS_ERROR("B");
   cm.switchController(controllers_state_start, controllers_stop, 1);
   ROS_ERROR("BB-8");
-  
   
   while (robot.getPositionRead() != 1) {
     ROS_INFO("Waiting for first joint state message read");

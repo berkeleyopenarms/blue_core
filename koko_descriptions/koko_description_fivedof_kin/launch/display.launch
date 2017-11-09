@@ -3,7 +3,7 @@
     name="model" />
   <arg
     name="gui"
-    default="False" />
+    default="True" />
   <param
     name="robot_description"
     textfile="$(find koko_description_fivedof_kin)/robots/koko_description_fivedof_kin.urdf" />

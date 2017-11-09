@@ -1,0 +1,5 @@
+<library path="lib/libkoko_controllers">
+  <class name="koko_controllers/InverseDynamicsController"
+         type="koko_controllers::InverseDynamicsController"
+         base_class_type="controller_interface::ControllerBase"/>
+</library>

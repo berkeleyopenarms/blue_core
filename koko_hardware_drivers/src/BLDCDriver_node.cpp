@@ -55,18 +55,26 @@ void initMaps(std::map<uint8_t, std::string>& joint_mapping,
     joint_mapping[15] = "base_roll_motor";
     joint_mapping[11] = "right_motor1";
     joint_mapping[12] = "left_motor1";
+    joint_mapping[14] = "right_motor2";
+    joint_mapping[16] = "left_motor2";
 
     angle_mapping[15] = 13002;
     angle_mapping[11] = 2164;
     angle_mapping[12] = 1200;
+    angle_mapping[14] = 4484;
+    angle_mapping[16] = 2373;
 
     invert_mapping[15] = 0;
     invert_mapping[11] = 0;
     invert_mapping[12] = 0;
+    invert_mapping[14] = 0;
+    invert_mapping[16] = 0;
 
     erevs_mapping[15] = 14;
     erevs_mapping[11] = 14;
     erevs_mapping[12] = 14;
+    erevs_mapping[14] = 14;
+    erevs_mapping[16] = 14;
 
   /* joint_mapping[1] = "left_motor"; */
   /* joint_mapping[2] = "right_motor"; */
@@ -150,6 +158,7 @@ int main(int argc, char **argv) {
   float dt = 0;
   int counter = 0;
   while (ros::ok()) {
+    ros::spinOnce();
     dt = get_period();
     for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
       uint8_t id = it->first;
@@ -157,7 +166,7 @@ int main(int argc, char **argv) {
 
       std::string joint_name = it->second;
       double curr_angle = getEncoderAngleRadians(device, id) - angle_zero[id];
-      
+
       v[counter] = (curr_angle - past_angle[id])/dt;
       past_angle[id] = curr_angle;
 
@@ -165,25 +174,25 @@ int main(int argc, char **argv) {
       joint_msg.name = std::vector<std::string>(1, joint_name);
       joint_msg.position = std::vector<double>(1, curr_angle);
 
-	  double sum = std::accumulate(v.begin(), v.end(), 0.0);
-	  double avg_vel = sum / v.size();
+      double sum = std::accumulate(v.begin(), v.end(), 0.0);
+      double avg_vel = sum / v.size();
       joint_msg.velocity = std::vector<double>(1, avg_vel);
-      
+
       joint_msg.effort = std::vector<double>(1, 0.0);
       publishers[id].publish(joint_msg);
-      
+
       std_msgs::Float32 curr_msg;
       curr_msg.data = (float) 0.0;
       publishers_curr[id].publish(curr_msg);
-
+      // ROS_ERROR("TRy to set duty");
       if (g_command_queue.find(id) != g_command_queue.end()) {
         // std::cerr << "setting duty to " << g_command_queue[id];
         device.setDuty(id, g_command_queue[id]);
+        // ROS_ERROR("Set Duty");
       }
     }
     counter ++;
     counter = counter % filter_length;
-    ros::spinOnce();
     g_command_queue.clear();
     r.sleep();
   }

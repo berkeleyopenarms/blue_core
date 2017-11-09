@@ -1,0 +1,414 @@
+<robot
+  name="koko_description_sevendof_dyn">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.0162355282130735 -0.163407878532806 0.226370025444826"
+        rpy="0 0 0" />
+      <mass
+        value="3.09843836934056" />
+      <inertia
+        ixx="0.138191233117249"
+        ixy="-0.00802218717745325"
+        ixz="0.0273663369098014"
+        iyy="0.1489873683039"
+        iyz="0.000607150072719131"
+        izz="0.0488528428887963" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="shoulder_link">
+    <inertial>
+      <origin
+        xyz="-0.00747838660084418 -2.53167397453735E-05 0.0799279660569413"
+        rpy="0 0 0" />
+      <mass
+        value="4.07265346744175" />
+      <inertia
+        ixx="0.00617131644320399"
+        ixy="-6.79147480843767E-07"
+        ixz="-7.32580477907116E-06"
+        iyy="0.00633177042367524"
+        iyz="-3.67537713326002E-07"
+        izz="0.00593988275930602" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/shoulder_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.6 0.6 0.6 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/shoulder_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="base_roll_joint"
+    type="continuous">
+    <origin
+      xyz="0.096645 -0.090805 0.21862"
+      rpy="6.8385E-15 0.7854 4.8356E-15" />
+    <parent
+      link="base_link" />
+    <child
+      link="shoulder_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="shoulder_lift_link">
+    <inertial>
+      <origin
+        xyz="-0.000676891662531348 0.0018432663880551 -4.28794612594707E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.437261742773662" />
+      <inertia
+        ixx="0.00102940527684141"
+        ixy="-2.02408910995881E-05"
+        ixz="-6.05087973021076E-07"
+        iyy="0.001079357536336"
+        iyz="-8.03807155419038E-07"
+        izz="0.000657527420914603" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/shoulder_lift_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/shoulder_lift_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder_lift_joint"
+    type="continuous">
+    <origin
+      xyz="0.01143 4.0407E-05 0.20168"
+      rpy="1.5708 -0.7854 0.0035351" />
+    <parent
+      link="shoulder_link" />
+    <child
+      link="shoulder_lift_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="upper_arm_link">
+    <inertial>
+      <origin
+        xyz="0.00857661454866698 -2.12113031742289E-05 0.0564422666576533"
+        rpy="0 0 0" />
+      <mass
+        value="4.2742818546012" />
+      <inertia
+        ixx="0.00806650357980437"
+        ixy="1.69526227813123E-06"
+        ixz="-0.000114598595246125"
+        iyy="0.00869812858041293"
+        iyz="2.2385755345772E-06"
+        izz="0.00655008331444649" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/upper_arm_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.298039215686275 0.298039215686275 0.298039215686275 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/upper_arm_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder_roll_joint"
+    type="continuous">
+    <origin
+      xyz="0.0245928594297677 -0.0662368608395588 0"
+      rpy="1.5707963267949 -0.00266644576657517 0.355511126450564" />
+    <parent
+      link="shoulder_lift_link" />
+    <child
+      link="upper_arm_link" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+  <link
+    name="upper_arm_lift_link">
+    <inertial>
+      <origin
+        xyz="-0.000105474744523243 0.00200117573112013 2.90483722076296E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.424523133438755" />
+      <inertia
+        ixx="0.00100929191200238"
+        ixy="-7.12150510142693E-06"
+        ixz="-1.82982502210976E-06"
+        iyy="0.00107278259525007"
+        iyz="-7.59659906479199E-07"
+        izz="0.000658496933664643" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/upper_arm_lift_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/upper_arm_lift_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow_lift_joint"
+    type="continuous">
+    <origin
+      xyz="-0.01143 3.0477E-05 0.18102"
+      rpy="-1.5708 -0.3555 -0.0026664" />
+    <parent
+      link="upper_arm_link" />
+    <child
+      link="upper_arm_lift_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="forearm_link">
+    <inertial>
+      <origin
+        xyz="0.00888541973696017 -7.13515637820183E-05 0.0588303767337716"
+        rpy="0 0 0" />
+      <mass
+        value="4.20066987914357" />
+      <inertia
+        ixx="0.00687560685689772"
+        ixy="1.20180076099281E-06"
+        ixz="-0.000288501383917966"
+        iyy="0.0074587420175419"
+        iyz="2.36404962100979E-06"
+        izz="0.00648161348683799" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/forearm_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.298039215686275 0.298039215686275 0.298039215686275 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/forearm_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow_roll_joint"
+    type="continuous">
+    <origin
+      xyz="0.00778446382637513 -0.0702248716030744 0"
+      rpy="1.5707963267949 -0.00251502707069075 0.11039980475715" />
+    <parent
+      link="upper_arm_lift_link" />
+    <child
+      link="forearm_link" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+  <link
+    name="wrist_lift_link">
+    <inertial>
+      <origin
+        xyz="0.000171521016215148 -6.1994461913184E-06 -3.01222572718363E-06"
+        rpy="0 0 0" />
+      <mass
+        value="0.475481880133678" />
+      <inertia
+        ixx="0.00106769616258389"
+        ixy="1.00353708433632E-05"
+        ixz="-1.91177450815128E-06"
+        iyy="0.00107965797038666"
+        iyz="1.67598694745577E-07"
+        izz="0.000709539769668008" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/wrist_lift_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/wrist_lift_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_lift_joint"
+    type="continuous">
+    <origin
+      xyz="-0.0114299638279672 2.87470080898022E-05 0.181015691624091"
+      rpy="-1.5707963267949 -0.110406053363127 -0.00251502707069052" />
+    <parent
+      link="forearm_link" />
+    <child
+      link="wrist_lift_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="wrist_link">
+    <inertial>
+      <origin
+        xyz="0.000139623841769021 0.0329651655611763 -7.15447461732688E-06"
+        rpy="0 0 0" />
+      <mass
+        value="1.09941045728339" />
+      <inertia
+        ixx="0.00136934899225814"
+        ixy="2.06067614080875E-06"
+        ixz="9.27308174086251E-07"
+        iyy="0.0015003556652471"
+        iyz="-0.000485027355563206"
+        izz="0.00119885156492127" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/wrist_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.298039215686275 0.298039215686275 0.298039215686275 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/wrist_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_joint"
+    type="continuous">
+    <origin
+      xyz="-0.0363404635750081 -0.0672158171493859 0"
+      rpy="1.57079632679489 -0.00284167609972037 -0.49563904972794" />
+    <parent
+      link="wrist_lift_link" />
+    <child
+      link="wrist_link" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+</robot>

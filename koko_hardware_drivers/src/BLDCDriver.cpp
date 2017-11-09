@@ -28,10 +28,6 @@ void initMaps(std::vector<uint8_t>& angle_id_mapping,
     angle_mapping[12] = 1200;
     angle_mapping[14] = 4484;
     angle_mapping[16] = 2373;
-    //angle_mapping[21] = 5899;
-    //angle_mapping[19] = 2668;
-    //"21": 5899
-    //"19": 2668
 
     invert_mapping[15] = 0;
     invert_mapping[11] = 0;

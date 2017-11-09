@@ -109,10 +109,10 @@ public:
       for (int i = 0; i < num_joints; i++) {
         joint_state_initial[i] = msg.position[i];
         pos[i] = joint_state_initial[i];
-        ROS_ERROR("calibrated initial joint state %f", joint_state_initial[i]);
+        // ROS_ERROR("calibrated initial joint state %f", joint_state_initial[i]);
       }
       calibrated++;
-      ROS_ERROR("calibrated index %d", calibrated);
+      // ROS_ERROR("calibrated index %d", calibrated);
     }
   }
 
@@ -138,34 +138,34 @@ public:
 
   void update_joints_from_motors(){
     if (is_calibrated && (!prev_is_calibrated)) { 
-      ROS_ERROR("d1");
+      // ROS_ERROR("d1");
       for(int i = 0; i < num_joints; i++){
         angle_after_calibration[i] = motor_pos[i];
       }
       prev_is_calibrated = 1;
-      ROS_ERROR("d2");
+      // ROS_ERROR("d2");
 
     } 
     if (!is_calibrated) {
-      ROS_ERROR("d3");
+      // ROS_ERROR("d3");
       return;
     }
     ROS_ERROR("update_joints_from_motors");
     std::vector<double> pre_joint_pos(num_joints);
     std::vector<double> pre_joint_vel(num_joints);
-    ROS_ERROR("d4");
+    // ROS_ERROR("d4");
 
     for(int i = 0; i < num_joints; i++){
       pre_joint_pos[i] = motor_pos[i] - angle_after_calibration[i];
       pre_joint_vel[i] = motor_vel[i];
     }
-    ROS_ERROR("d5");
+    // ROS_ERROR("d5");
 
     for(int i = 0; i < num_joints; i++){
       if(std::find(paired_constraints.begin(), paired_constraints.end(), i) != paired_constraints.end()) {
         int a = std::find(paired_constraints.begin(), paired_constraints.end(), i) - paired_constraints.begin();
         //trying to set index a
-        ROS_ERROR("in differential, %d", i);
+        // ROS_ERROR("in differential, %d", i);
         if (a % 2 == 0) {
           int b = a + 1;
           //Might have to change signs
@@ -179,31 +179,31 @@ public:
         }
       }
     } 
-    ROS_ERROR("d6");
+    // ROS_ERROR("d6");
     for(int i = 0; i < num_joints; i++){
       pos[i] = directions[i] * (pre_joint_pos[i] / gear_ratios[i]) + joint_state_initial[i];
       vel[i] = directions[i] * pre_joint_vel[i] / gear_ratios[i];  
       eff[i] = 0.0; // TODO: should be populated from driver current readouts
     }
-    ROS_ERROR("d7");
+    // ROS_ERROR("d7");
     position_read = 1;
     
   }
 
   void write() {
-    ROS_ERROR("f1");
+    // ROS_ERROR("f1");
     update_motor_currents_from_joint_cmd();
-    ROS_ERROR("f2");
+    // ROS_ERROR("f2");
     motor_driver.write();
-    ROS_ERROR("f3");
+    // ROS_ERROR("f3");
   }
 
   void update_motor_currents_from_joint_cmd() {
     if (!is_calibrated) {
-      ROS_ERROR("g1");
+      // ROS_ERROR("g1");
       return;
     }
-    ROS_ERROR("g2");
+    // ROS_ERROR("g2");
 
     std::vector<double> post_motor_torque(num_joints);
     std::vector<double> cmd_oriented(num_joints);
@@ -212,7 +212,7 @@ public:
       post_motor_torque[i] = cmd[i];
       cmd_oriented[i] = torque_directions[i] * cmd[i];
     }
-    ROS_ERROR("g3");
+    // ROS_ERROR("g3");
 
     for (int j = 0; j < paired_constraints.size(); j = j + 2) {
       int index_a = paired_constraints[j];
@@ -220,14 +220,14 @@ public:
       post_motor_torque[index_a] = -0.5 * cmd_oriented[index_a] +  0.5 * cmd_oriented[index_b];
       post_motor_torque[index_b] =  0.5 * cmd_oriented[index_a] +  0.5 * cmd_oriented[index_b];
     }    
-    ROS_ERROR("g4");
+    // ROS_ERROR("g4");
 
     for (int i = 0; i < num_joints; i++) {
       double motor_torque =  post_motor_torque[i] / gear_ratios[i];
       double motor_current = convertMotorTorqueToCurrent(motor_torque, i);
       motor_cmd[i] = motor_current; 
     }
-    ROS_ERROR("g5");
+    // ROS_ERROR("g5");
 
   }
   

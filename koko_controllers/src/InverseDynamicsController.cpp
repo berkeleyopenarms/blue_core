@@ -161,14 +161,14 @@ namespace koko_controllers{
 
   void InverseDynamicsController::update(const ros::Time& time, const ros::Duration& period)
   {
-    ROS_ERROR("a_update");
+    //ROS_ERROR("a_update");
     std_msgs::Float64MultiArray commandMsg;
     for (int i = 0; i < joint_vector.size(); i++) {
       commandMsg.data.push_back(joint_vector[i].cmd);
     }
-    ROS_ERROR("A_update");
+    //ROS_ERROR("A_update");
     commandPub.publish(commandMsg);
-    ROS_ERROR("B_update");
+    //ROS_ERROR("B_update");
 
     std_msgs::Float64MultiArray deltaMsg;
 
@@ -187,7 +187,7 @@ namespace koko_controllers{
       }
       commands[i] = commanded_effort;
     }
-    ROS_ERROR("C_update");
+    // ROS_ERROR("C_update");
     deltaPub.publish(deltaMsg);
 
 
@@ -217,12 +217,12 @@ namespace koko_controllers{
       commands[lift_index] *= scalar;
       commands[roll_index] *= scalar;
     }
-    ROS_ERROR("D_update");
+    // ROS_ERROR("D_update");
     for (int i = 0; i < joint_vector.size(); i++) {
       ROS_INFO("command %d: %f", i, commands[i]);
       joint_vector[i].joint.setCommand(commands[i]);
     }
-    ROS_ERROR("E_update");
+    // ROS_ERROR("E_update");
   }
 
 

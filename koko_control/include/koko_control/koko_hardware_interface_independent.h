@@ -73,6 +73,7 @@ public:
 
     position_read = 0;
     calibrated = 0;
+    is_calibrated = 0;
 
     for (int i = 0; i < joint_names.size(); i++) {
       joint_state_initial[i] = 0.0;
@@ -88,6 +89,7 @@ public:
 
     for (int i = 0; i < motor_names.size(); i++) {
       jnt_cmd_publishers[i] = nh.advertise<std_msgs::Float64>(motor_names[i] + "_Cmd", 1000);
+      ROS_ERROR("Publishers %s", motor_names[i].c_str());
     }
   }
 
@@ -151,7 +153,7 @@ public:
         }
       } 
       if (index ==2 ) {
-        ROS_ERROR("directions index %f",  directions[2]);
+        //ROS_ERROR("directions index %f",  directions[2]);
       }
 
       pos[index] = directions[index] * (pre_pos / gear_ratios[index]) + joint_state_initial[index];
