@@ -120,7 +120,7 @@ namespace koko_controllers{
     sub_command = n.subscribe("command", 1, &InverseDynamicsController::setCommand, this);
     sub_joint = node.subscribe("/" + root_name  + "/joint_states", 1000, &InverseDynamicsController::jointCallback, this);
 
-    ROS_INFO("nj %d", chain.getNrOfJoints());
+    // ROS_INFO("nj %d", chain.getNrOfJoints());
 
     id_torques = KDL::JntArray(chain.getNrOfJoints());
     commandPub = node.advertise<std_msgs::Float64MultiArray>("/commandPub", 1);
@@ -142,7 +142,7 @@ namespace koko_controllers{
 
   void InverseDynamicsController::setCommand(const std_msgs::Float64MultiArrayConstPtr& pos_commands) {
     std::vector<double> commands = pos_commands->data;
-    ROS_INFO("desired positions before wrap: %f, %f, %f, %f", commands[0], commands[1], commands[2], commands[3]);
+    //ROS_INFO("desired positions before wrap: %f, %f, %f, %f", commands[0], commands[1], commands[2], commands[3]);
 
 
     for (int i = 0; i < commands.size(); i++)  {
@@ -193,7 +193,7 @@ namespace koko_controllers{
 
     //ROS_INFO("joint name order: %s, %s, %s, %s", joint_vector[0].joint_name.c_str(), joint_vector[1].joint_name.c_str(), joint_vector[2].joint_name.c_str(), joint_vector[3].joint_name.c_str());
     //ROS_INFO("current positions: %f, %f, %f, %f", joint_vector[0].joint.getPosition(), joint_vector[1].joint.getPosition(), joint_vector[2].joint.getPosition(), joint_vector[3].joint.getPosition());
-    ROS_INFO("inverse dynamics torques: %f %f %f", id_torques(0), id_torques(1), id_torques(2));
+    //ROS_INFO("inverse dynamics torques: %f %f %f", id_torques(0), id_torques(1), id_torques(2));
 
 
     for (int i = 0; i < paired_constraints.size(); i = i + 2) {
@@ -219,7 +219,7 @@ namespace koko_controllers{
     }
     // ROS_ERROR("D_update");
     for (int i = 0; i < joint_vector.size(); i++) {
-      ROS_INFO("command %d: %f", i, commands[i]);
+      // ROS_INFO("command %d: %f", i, commands[i]);
       joint_vector[i].joint.setCommand(commands[i]);
     }
     // ROS_ERROR("E_update");
@@ -247,7 +247,7 @@ namespace koko_controllers{
     double err_dot_average = std::accumulate(joint_vector[index].err_dot_history.begin(),
                                 joint_vector[index].err_dot_history.end(),
                                 0.0) / joint_vector[index].err_dot_history.size();
-    ROS_INFO("error_dot_average %f", err_dot_average);
+    //ROS_INFO("error_dot_average %f", err_dot_average);
     p_term = joint_vector[index].p_gain * error;
     d_term = joint_vector[index].d_gain * err_dot_average;
 

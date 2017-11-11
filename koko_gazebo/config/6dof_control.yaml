@@ -1,4 +1,4 @@
-koko_gazebo:
+DOF:
   joint_names: ['lift_joint', 'sroll_joint', 'elbow_joint', 'eroll_joint', 'wrist_joint', 'wroll_joint']
   # Publish all joint states -----------------------------------
   endlink_tracker: 'wroll_link'
@@ -6,11 +6,11 @@ koko_gazebo:
     type: joint_state_controller/JointStateController
     publish_rate: 100  
   # Position Controllers ---------------------------------------
-  joint_position_controller:
+  simple_controller:
     endlink: 'wroll_link'
     paired_constraints: []
-    type: my_controller/CartesianPoseController
-    root_name: koko_gazebo
+    type: koko_controllers/InverseDynamicsController
+    root_name: DOF
     filter_length: 1
     p_gains: [12, 6, 12, 0.03, 0.06, 0.03]
     d_gains: [24, 24, 24, 0.15, 0.15, 0.15]
@@ -19,6 +19,7 @@ koko_gazebo:
     lift_joint:
       p: 55
       d: 15
+      id: 1
       max_torque: 30
       min_torque: -30
       max_angle: 3.15
@@ -26,6 +27,7 @@ koko_gazebo:
     sroll_joint:
       p: 55
       d: 15
+      id: 1
       max_torque: 10
       min_torque: -10
       max_angle: 3.15
@@ -33,6 +35,7 @@ koko_gazebo:
     elbow_joint:
       p: 55
       d: 15
+      id: 1
       max_torque: 10
       min_torque: -10
       max_angle: 3.15
@@ -40,6 +43,7 @@ koko_gazebo:
     eroll_joint:
       p: 10
       d: 8
+      id: 1
       max_torque: 10
       min_torque: -10
       max_angle: 3.15
@@ -47,6 +51,7 @@ koko_gazebo:
     wrist_joint:
       p: 10
       d: 8
+      id: 1
       max_torque: 10
       min_torque: -10
       max_angle: 3.15
@@ -54,6 +59,7 @@ koko_gazebo:
     wroll_joint:
       p: 10
       d: 8
+      id: 1
       max_torque: 10
       min_torque: -10
       max_angle: 3.15

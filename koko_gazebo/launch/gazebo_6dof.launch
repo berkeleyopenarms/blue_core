@@ -15,10 +15,7 @@
 
 
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-    args="-urdf -model koko_gazebo -param robot_description"/>
-
-  <!--include
-    file="$(find pr2_controller_manager)/controller_manager.launch" /-->
-
+    args="-urdf -model DOF -param robot_description"/>
 
 </launch>
+  
