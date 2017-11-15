@@ -28,26 +28,26 @@
     type="joint_state_publisher" /-->
   <remap 
     from="/joint_state_tracker" 
-    to="/DOF/joint_state_tracker" />
+    to="/joint_states" />
   <node
     name="rviz"
     pkg="rviz"
     type="rviz"
-    args="-d $(find koko_description_sevendof_kin)/urdf.rviz" />
+    args="-d $(find koko_description_fivedof_kin)/urdf.rviz" />
   <node
-    name="tracker_calibrate_joints"
+    name="sevendof_ik_vive"
     pkg="koko_vive"
     type="calibrate_joint_state" />
-  <node
+  <!--node
     name="koko_controller_manager"
     pkg="koko_control"
     type="koko_controller_manager_independent"
-    ns="DOF" /> 
-  <node
+    ns="DOF" /--> 
+  <!--node
     name="joint_state_relay"
     pkg="topic_tools"
     type="relay"
-    args="/DOF/joint_states /joint_states" />
+    args="/DOF/joint_states /joint_states" /-->
   <node
     name="pose_target"
     pkg="koko_kinematics"
@@ -62,7 +62,7 @@
     type="static_transform_publisher" 
     args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>    
    <node
-    name="motor_interface"
+    name="lift_motor_interface"
     pkg="koko_hardware_drivers"
     type="koko_hardware_drivers_node"
     args="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0" />
@@ -72,4 +72,10 @@
     name="calibration_writter"
     pkg="calibration"
     type="Writer" /-->
+  <!--node
+    name="tracker_bag_example"
+    pkg="rosbag"
+    type="play"
+    args="-l ~/koko_ws/bags/calibration_dataset_2017-11-09-18-25-24.bag" /-->
+
 </launch>

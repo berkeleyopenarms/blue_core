@@ -26,6 +26,7 @@ public:
   double computeCommand(double error, ros::Duration dt, int index);
   void starting(const ros::Time& time);
   void jointCallback(const sensor_msgs::JointState msg);
+  ~InverseDynamicsController();
 
 
 private:
@@ -48,7 +49,7 @@ private:
     int current_err_filter_insert;
   }; 
   std::vector<std::string> joint_names;
-  std::vector<JointPD> joint_vector; 
+  std::vector<JointPD*> joint_vector; 
   std::vector<int> paired_constraints;
   ros::Subscriber sub_command;
   ros::Subscriber sub_joint;

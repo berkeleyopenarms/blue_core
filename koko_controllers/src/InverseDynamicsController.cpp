@@ -9,6 +9,13 @@
 #include <math.h>
 #include <numeric>
 namespace koko_controllers{
+
+  InverseDynamicsController::~InverseDynamicsController() {
+    for (int i = 0; i < joint_vector.size(); i++) {
+      delete joint_vector[i];
+    }
+  }
+
   bool InverseDynamicsController::init(hardware_interface::EffortJointInterface *robot, ros::NodeHandle &n)
   {
 
@@ -56,11 +63,11 @@ namespace koko_controllers{
 
       if (seg.getJoint().getType() != 8)
       {
-        JointPD jointPD;
+        JointPD* jointPD = new JointPD();
         std::string jointName = seg.getJoint().getName();
         joint_names.push_back(jointName);
         chain.addSegment(seg);
-        jointPD.joint = robot->getHandle(jointName);
+        jointPD->joint = robot->getHandle(jointName);
         double p_gain;
         double d_gain;
         double id_gain;
@@ -97,15 +104,15 @@ namespace koko_controllers{
           return false;
         }
 
-        jointPD.max_torque = max_torque;
-        jointPD.min_torque = min_torque;
-        jointPD.max_angle = max_angle;
-        jointPD.min_angle = min_angle;
-        jointPD.p_gain = p_gain;
-        jointPD.d_gain = d_gain;
-        jointPD.id_gain = id_gain;
-        jointPD.joint_name = jointName;
-        jointPD.err_dot_filter_length = filter_length;
+        jointPD->max_torque = max_torque;
+        jointPD->min_torque = min_torque;
+        jointPD->max_angle = max_angle;
+        jointPD->min_angle = min_angle;
+        jointPD->p_gain = p_gain;
+        jointPD->d_gain = d_gain;
+        jointPD->id_gain = id_gain;
+        jointPD->joint_name = jointName;
+        jointPD->err_dot_filter_length = filter_length;
         joint_vector.push_back(jointPD);
 
       }
@@ -133,7 +140,7 @@ namespace koko_controllers{
   void InverseDynamicsController::starting(const ros::Time& time)
   {
     for (int i = 0; i < joint_vector.size(); i++) {
-      joint_vector[i].cmd = joint_vector[i].joint.getPosition();
+      joint_vector[i]->cmd = joint_vector[i]->joint.getPosition();
 
       //ROS_INFO("command start %f", joint_vector[i].cmd);
     }
@@ -150,9 +157,9 @@ namespace koko_controllers{
       commands[i] = fmod(commands[i] + 3.14159265359, 6.28318530718);
       if (commands[i] < 0) commands[i] += 6.28318530718;
       commands[i] = commands[i] - 3.1415926535;
-      commands[i] = std::min(std::max(commands[i], joint_vector[i].min_angle), joint_vector[i].max_angle);
+      commands[i] = std::min(std::max(commands[i], joint_vector[i]->min_angle), joint_vector[i]->max_angle);
 
-      joint_vector[i].cmd = commands[i];
+      joint_vector[i]->cmd = commands[i];
     }
 
     //ROS_INFO("desired positions: %f, %f, %f, %f", joint_vector[0].cmd, joint_vector[1].cmd, joint_vector[2].cmd, joint_vector[3].cmd);
@@ -161,21 +168,21 @@ namespace koko_controllers{
 
   void InverseDynamicsController::update(const ros::Time& time, const ros::Duration& period)
   {
-    //ROS_ERROR("a_update");
+    ROS_ERROR("a_update");
     std_msgs::Float64MultiArray commandMsg;
     for (int i = 0; i < joint_vector.size(); i++) {
-      commandMsg.data.push_back(joint_vector[i].cmd);
+      commandMsg.data.push_back(joint_vector[i]->cmd);
     }
-    //ROS_ERROR("A_update");
+    ROS_ERROR("A_update");
     commandPub.publish(commandMsg);
-    //ROS_ERROR("B_update");
+    ROS_ERROR("B_update");
 
     std_msgs::Float64MultiArray deltaMsg;
 
     std::vector<double> commands(joint_vector.size());
     for (int i = 0; i < joint_vector.size(); i++) {
-      double current_position = joint_vector[i].joint.getPosition();
-      double error = angles::shortest_angular_distance(current_position, joint_vector[i].cmd); // TODO: don't use wraparound here
+      double current_position = joint_vector[i]->joint.getPosition();
+      double error = angles::shortest_angular_distance(current_position, joint_vector[i]->cmd); // TODO: don't use wraparound here
       deltaMsg.data.push_back(error);
       //ROS_INFO("Joint pos %f, joint cmd %f", current_position, joint_vector[i].cmd);
       //ROS_INFO("Joint %d error: %f", i, error);
@@ -183,12 +190,13 @@ namespace koko_controllers{
 
       //ignore min max torque for lift roll pairs
       if(std::find(paired_constraints.begin(), paired_constraints.end(), i) == paired_constraints.end()) {
-        commanded_effort = std::min(std::max(commanded_effort, joint_vector[i].min_torque), joint_vector[i].max_torque);
+        commanded_effort = std::min(std::max(commanded_effort, joint_vector[i]->min_torque), joint_vector[i]->max_torque);
       }
       commands[i] = commanded_effort;
     }
-    // ROS_ERROR("C_update");
+    ROS_ERROR("C_update");
     deltaPub.publish(deltaMsg);
+    ROS_ERROR("C1_update");
 
 
     //ROS_INFO("joint name order: %s, %s, %s, %s", joint_vector[0].joint_name.c_str(), joint_vector[1].joint_name.c_str(), joint_vector[2].joint_name.c_str(), joint_vector[3].joint_name.c_str());
@@ -196,15 +204,18 @@ namespace koko_controllers{
     //ROS_INFO("inverse dynamics torques: %f %f %f", id_torques(0), id_torques(1), id_torques(2));
 
 
+
     for (int i = 0; i < paired_constraints.size(); i = i + 2) {
+      ROS_ERROR("c11");
       int lift_index = paired_constraints[i];
       int roll_index = paired_constraints[i+1];
       double lift = commands[lift_index];
       double roll = commands[roll_index];
-      //ROS_INFO("lift: %f, roll: %f", commands[lift_index],  commands[roll_index]);
+      ROS_ERROR("lift: %f, roll: %f", commands[lift_index],  commands[roll_index]);
 
-      double max_effort = joint_vector[lift_index].max_torque + joint_vector[roll_index].max_torque;
+      double max_effort = joint_vector[lift_index]->max_torque + joint_vector[roll_index]->max_torque;
       double scalar = 1;
+      ROS_ERROR("c12");
       if (lift >= 0 && roll >= 0 && (lift + roll) > max_effort) {
         scalar = max_effort / (lift + roll);
       } else if (lift < 0 && roll >= 0 && (roll - lift) > max_effort) {
@@ -214,15 +225,16 @@ namespace koko_controllers{
       } else if (lift >= 0 && roll < 0 && (lift - roll) > max_effort) {
         scalar = max_effort / (lift - roll);
       }
+      ROS_ERROR("c13");
       commands[lift_index] *= scalar;
       commands[roll_index] *= scalar;
     }
-    // ROS_ERROR("D_update");
+    ROS_ERROR("D_update");
     for (int i = 0; i < joint_vector.size(); i++) {
       // ROS_INFO("command %d: %f", i, commands[i]);
-      joint_vector[i].joint.setCommand(commands[i]);
+      joint_vector[i]->joint.setCommand(commands[i]);
     }
-    // ROS_ERROR("E_update");
+    ROS_ERROR("E_update");
   }
 
 
@@ -231,33 +243,34 @@ namespace koko_controllers{
   {
     if (dt == ros::Duration(0.0) || std::isnan(error) || std::isinf(error))
       return 0.0;
-    double error_dot = joint_vector[index].d_error;
+    double error_dot = joint_vector[index]->d_error;
     if (dt.toSec() > 0.0)  {
-      error_dot = (error - joint_vector[index].p_error_last) / dt.toSec();
-      joint_vector[index].p_error_last = error;
+      error_dot = (error - joint_vector[index]->p_error_last) / dt.toSec();
+      joint_vector[index]->p_error_last = error;
     }
     if (std::isnan(error_dot) || std::isinf(error_dot))
       return 0.0;
     double p_term, d_term;
-    joint_vector[index].d_error = error_dot;
-    joint_vector[index].err_dot_history.push_back(error_dot);
-    if (joint_vector[index].err_dot_history.size() > joint_vector[index].err_dot_filter_length) {
-      joint_vector[index].err_dot_history.erase(joint_vector[index].err_dot_history.begin());
+    joint_vector[index]->d_error = error_dot;
+    joint_vector[index]->err_dot_history.push_back(error_dot);
+    if (joint_vector[index]->err_dot_history.size() > joint_vector[index]->err_dot_filter_length) {
+      joint_vector[index]->err_dot_history.erase(joint_vector[index]->err_dot_history.begin());
     }
-    double err_dot_average = std::accumulate(joint_vector[index].err_dot_history.begin(),
-                                joint_vector[index].err_dot_history.end(),
-                                0.0) / joint_vector[index].err_dot_history.size();
+    double err_dot_average = std::accumulate(joint_vector[index]->err_dot_history.begin(),
+                                joint_vector[index]->err_dot_history.end(),
+                                0.0) / joint_vector[index]->err_dot_history.size();
     //ROS_INFO("error_dot_average %f", err_dot_average);
-    p_term = joint_vector[index].p_gain * error;
-    d_term = joint_vector[index].d_gain * err_dot_average;
+    p_term = joint_vector[index]->p_gain * error;
+    d_term = joint_vector[index]->d_gain * err_dot_average;
 
     //return 0.0;
-    return (p_term + d_term) + id_torques(index) * joint_vector[index].id_gain;
+    return (p_term + d_term) + id_torques(index) * joint_vector[index]->id_gain;
     //return p_term + d_term + 0.3 * id_torques(index);
   }
 
   void InverseDynamicsController::jointCallback(const sensor_msgs::JointState msg)
   {
+    ROS_ERROR("abc");
 
     unsigned int nj = chain.getNrOfJoints();
     KDL::JntArray jointPositions(nj);
@@ -302,6 +315,7 @@ namespace koko_controllers{
     } **/
     //ROS_INFO("id torques =  %f", id_torques(0));
 
+    ROS_ERROR("bca");
   }
 
 }
