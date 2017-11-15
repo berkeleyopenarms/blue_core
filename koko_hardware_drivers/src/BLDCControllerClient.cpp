@@ -1,7 +1,6 @@
 #include <serial/serial.h>
 #include <time.h>
 #include <iostream>
-#include <vector>
 #include <koko_hardware_drivers/comms.h>
 #include <koko_hardware_drivers/BLDCControllerClient.h>
 #include <string>
@@ -39,22 +38,38 @@ void BLDCControllerClient::flushSerial() {
 }
 
 void BLDCControllerClient::writeRequest(uint8_t server_id, uint8_t func_code, bytebuf_t& data) {
-  data.at(0) = data.size() - 1;
-  data.at(1) = server_id;
-  data.at(2) = func_code;
+  data.push_back(0xFF); // Sync flag
+  data.push_back(0xFF); // Protocol version
+  data.push_back(data.size() - 3); // Add length field, which excludes the sync, version, & length bytes
+  data.push_back(server_id);
+  data.push_back(func_code);
+
   //TODO: Make this return CRC
   data.push_back(0);
   data.push_back(0);
   ser.write(data);
 }
 
-bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_code, unsigned int num_tries, unsigned int try_interval) {
-  uint8_t lb = 0;
-  for (size_t i = 0; i < num_tries && lb == 0; i++) {
-    ser.read(&lb, 1);
-    //n_sleep(try_interval);
-  }
+bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_code) {
   bytebuf_t empty(0);
+
+  uint8_t sync = 0;
+  ser.read(&sync, 1);
+  if (sync != 0xFF) {
+    ser.flushInput();
+    return empty;
+  }
+
+  uint8_t protocol_version = 0;
+  ser.read(&protocol_version, 1);
+  if (protocol_version != 0xFF) {
+    ser.flushInput();
+    return empty;
+  }
+
+  uint8_t lb = 0;
+  ser.read(&lb, 1);
+
   if (lb == 0) {
     std::cout << "lb was zero\n";
     ser.flushInput();
@@ -67,10 +82,11 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
   uint8_t errorsl = 0;
 
   bool complete_read = true;
-  complete_read = complete_read && ser.read(&message_server_id, 1);
-  complete_read = complete_read && ser.read(&message_func_code, 1);
-  complete_read = complete_read && ser.read(&errorsl, 1);
-  complete_read = complete_read && ser.read(&errorsh, 1);
+  complete_read &= ser.read(&message_server_id, 1);
+  complete_read &= ser.read(&message_func_code, 1);
+  complete_read &= ser.read(&errorsl, 1);
+  complete_read &= ser.read(&errorsh, 1);
+
   uint16_t errors = errorsl + (errorsh << 8);
   if (!complete_read || message_server_id != server_id || message_func_code != func_code) {
     std::cerr << "Incomplete serial read or received unexpected server ID or function code\n";
@@ -96,7 +112,7 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
   }
 
   bytebuf_t message;
-  message.reserve(lb - 4);
+
   if (lb - 4 == 0 || ser.read(message, lb - 4) < (size_t) (lb - 4)) {
     std::cout << "message length was not long enough\n";
     ser.flushInput();
@@ -120,13 +136,12 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
 bytebuf_t BLDCControllerClient::doTransaction(uint8_t server_id, uint8_t func_code, bytebuf_t& data) {
   writeRequest(server_id, func_code, data);
   ser.flush();
-  return readResponse(server_id, func_code, 5, 10);
+  return readResponse(server_id, func_code);
 }
 
 bool BLDCControllerClient::writeRegisters(uint8_t server_id, uint16_t start_addr, uint8_t count, uint8_t* data, size_t size) {
   bytebuf_t buffer;
-  buffer.reserve(size + 8);
-  buffer.push_back(0); buffer.push_back(0); buffer.push_back(0);
+  buffer.insert(buffer.end(), 5, 0);
   buffer.push_back(start_addr & 0xFF);
   buffer.push_back(start_addr >> 8);
   buffer.push_back(count);
@@ -142,8 +157,7 @@ bool BLDCControllerClient::writeRegisters(uint8_t server_id, uint16_t start_addr
 
 bytebuf_t BLDCControllerClient::readRegisters(uint8_t server_id, uint16_t start_addr, uint8_t count) {
   bytebuf_t buffer;
-  buffer.reserve(8);
-  buffer.push_back(0); buffer.push_back(0); buffer.push_back(0);
+  buffer.insert(buffer.end(), 5, 0);
   buffer.push_back(start_addr & 0xFF);
   buffer.push_back(start_addr >> 8);
   buffer.push_back(count);
@@ -158,15 +172,14 @@ bytebuf_t BLDCControllerClient::readRegisters(uint8_t server_id, uint16_t start_
 
 float BLDCControllerClient::getEncoderRadians(uint8_t id) {
   bytebuf_t message = BLDCControllerClient::readRegisters(id, 0x10b, 1);
-  // This is a hack
+
   uint8_t temp[4];
   temp[0] = message.at(0);
   temp[1] = message.at(1);
   temp[2] = message.at(2);
   temp[3] = message.at(3);
-  float *angle = reinterpret_cast<float *>(temp);
-  // float angle = reinterpret_cast<float>(message.at(0) | (message.at(1) << 8) | (message.at(2) << 16) | (message.at(3) << 24));
-  return *angle;
+
+  return *reinterpret_cast<float *>(temp);
 }
 
 uint16_t BLDCControllerClient::getEncoder(uint8_t id) {
@@ -181,8 +194,7 @@ bool BLDCControllerClient::leaveBootloader(uint8_t server_id, unsigned int jump_
   }
   uint8_t* src = (uint8_t*) &jump_addr;
   bytebuf_t buffer;
-  buffer.reserve(9);
-  buffer.push_back(0); buffer.push_back(0); buffer.push_back(0);
+  buffer.insert(buffer.end(), 5, 0);
   buffer.push_back(src[0]);
   buffer.push_back(src[1]);
   buffer.push_back(src[2]);

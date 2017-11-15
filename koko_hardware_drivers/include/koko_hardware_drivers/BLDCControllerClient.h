@@ -14,7 +14,7 @@ class BLDCControllerClient {
   public:
     void writeRequest(uint8_t server_id, uint8_t func_code, bytebuf_t& data);
     bool writeRegisters(uint8_t server_id, uint16_t start_addr, uint8_t count, uint8_t* data, size_t size);
-    bytebuf_t readResponse(uint8_t server_id, uint8_t func_code, unsigned int num_tries, unsigned int try_interval);
+    bytebuf_t readResponse(uint8_t server_id, uint8_t func_code);
     bytebuf_t readRegisters(uint8_t server_id, uint16_t start_addr, uint8_t count);
     bytebuf_t doTransaction(uint8_t server_id, uint8_t func_code, bytebuf_t& data);
     float getEncoderRadians(uint8_t id);
