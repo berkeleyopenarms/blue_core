@@ -175,11 +175,13 @@ namespace koko_controllers{
     std::vector<double> commands(joint_vector.size());
     for (int i = 0; i < joint_vector.size(); i++) {
       double current_position = joint_vector[i].joint.getPosition();
+      double current_velocity = joint_vector[i].joint.getVelocity();
+      // ROS_ERROR("%f", current_velocity);
       double error = angles::shortest_angular_distance(current_position, joint_vector[i].cmd); // TODO: don't use wraparound here
       deltaMsg.data.push_back(error);
       //ROS_INFO("Joint pos %f, joint cmd %f", current_position, joint_vector[i].cmd);
       //ROS_INFO("Joint %d error: %f", i, error);
-      double commanded_effort = computeCommand(error, period, i);
+      double commanded_effort = computeCommand(error, period, i, current_velocity);
 
       //ignore min max torque for lift roll pairs
       if(std::find(paired_constraints.begin(), paired_constraints.end(), i) == paired_constraints.end()) {
@@ -188,7 +190,7 @@ namespace koko_controllers{
       commands[i] = commanded_effort;
     }
     // ROS_ERROR("C_update");
-    deltaPub.publish(deltaMsg);
+    deltaPub.publish(deltaMsg); // Tracking error for the joints
 
 
     //ROS_INFO("joint name order: %s, %s, %s, %s", joint_vector[0].joint_name.c_str(), joint_vector[1].joint_name.c_str(), joint_vector[2].joint_name.c_str(), joint_vector[3].joint_name.c_str());
@@ -227,29 +229,31 @@ namespace koko_controllers{
 
 
 
-  double InverseDynamicsController::computeCommand(double error, ros::Duration dt, int index)
+  double InverseDynamicsController::computeCommand(double error, ros::Duration dt, int index, double vel)
   {
     if (dt == ros::Duration(0.0) || std::isnan(error) || std::isinf(error))
       return 0.0;
-    double error_dot = joint_vector[index].d_error;
-    if (dt.toSec() > 0.0)  {
-      error_dot = (error - joint_vector[index].p_error_last) / dt.toSec();
-      joint_vector[index].p_error_last = error;
-    }
-    if (std::isnan(error_dot) || std::isinf(error_dot))
-      return 0.0;
+
+    // double error_dot = joint_vector[index].d_error;
+    // if (dt.toSec() > 0.0)  {
+    //   error_dot = (error - joint_vector[index].p_error_last) / dt.toSec();
+    //   joint_vector[index].p_error_last = error;
+    // }
+    // if (std::isnan(error_dot) || std::isinf(error_dot))
+    //   return 0.0;
     double p_term, d_term;
-    joint_vector[index].d_error = error_dot;
-    joint_vector[index].err_dot_history.push_back(error_dot);
-    if (joint_vector[index].err_dot_history.size() > joint_vector[index].err_dot_filter_length) {
-      joint_vector[index].err_dot_history.erase(joint_vector[index].err_dot_history.begin());
-    }
-    double err_dot_average = std::accumulate(joint_vector[index].err_dot_history.begin(),
-                                joint_vector[index].err_dot_history.end(),
-                                0.0) / joint_vector[index].err_dot_history.size();
-    //ROS_INFO("error_dot_average %f", err_dot_average);
+    // joint_vector[index].d_error = error_dot;
+    // joint_vector[index].err_dot_history.push_back(error_dot);
+    // if (joint_vector[index].err_dot_history.size() > joint_vector[index].err_dot_filter_length) {
+    //   joint_vector[index].err_dot_history.erase(joint_vector[index].err_dot_history.begin());
+    // }
+    // double err_dot_average = std::accumulate(joint_vector[index].err_dot_history.begin(),
+    //                             joint_vector[index].err_dot_history.end(),
+    //                             0.0) / joint_vector[index].err_dot_history.size();
+    // //ROS_INFO("error_dot_average %f", err_dot_average);
+    // ROS_ERROR("%f %d, error difference and index", vel+err_dot_average, index);
     p_term = joint_vector[index].p_gain * error;
-    d_term = joint_vector[index].d_gain * err_dot_average;
+    d_term = joint_vector[index].d_gain * -vel;
 
     //return 0.0;
     return (p_term + d_term) + id_torques(index) * joint_vector[index].id_gain;

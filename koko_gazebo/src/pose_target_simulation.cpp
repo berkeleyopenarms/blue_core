@@ -174,7 +174,7 @@ public:
 
     //ROS_ERROR("desired position: %f, %f, %f", ee_pose_desired(0), ee_pose_desired(1), ee_pose_desired(2));
 
-    for (int j = 0; j < 40; j++)
+    for (int j = 0; j < 50; j++)
     {
       int status = fksolver1.JntToCart(jointInverseKin, cartpos);
       //ROS_INFO("cartpos: %f, %f, %f", cartpos.p.data[0], cartpos.p.data[1], cartpos.p.data[2]);
@@ -209,16 +209,16 @@ public:
       deltaX(3, 0) = 0;
       deltaX(4, 0) = 0;
       deltaX(5, 0) = 0;
-      //deltaX(3, 0) = rotation_difference_vec(0);
-      //deltaX(4, 0) = rotation_difference_vec(1);
-      //deltaX(5, 0) = rotation_difference_vec(2);
+      deltaX(3, 0) = rotation_difference_vec(0);
+      deltaX(4, 0) = rotation_difference_vec(1);
+      deltaX(5, 0) = rotation_difference_vec(2);
 
 
       Eigen::MatrixXd deltaJoint = jacPos.transpose() * deltaX;
 
-      
+      float alpha = 0.5;
       for (int k = 0; k < nj; k++) {
-        jointInverseKin(k) = deltaJoint(k,0) + jointInverseKin(k);
+        jointInverseKin(k) = alpha * deltaJoint(k,0) + jointInverseKin(k);
       }
       // ROS_INFO("joint inverse kin: %f, %f, %f, %f", jointInverseKin(0), jointInverseKin(1), jointInverseKin(2), jointInverseKin(3));
       // ROS_INFO("deltaJoint: %f, %f, %f, %f", deltaJoint(0), deltaJoint(1, 0), deltaJoint(2, 0), deltaJoint(3, 0));
@@ -291,12 +291,13 @@ private:
 
 int main(int argc, char** argv)
 {
+  ROS_ERROR("start main");
   ros::init(argc, argv, "inverse_kin_target");
   ros::NodeHandle node;
   std::string robot_desc_string;
-
+  ROS_ERROR("robot");
   node.getParam("robot_description", robot_desc_string);
-
+  ROS_ERROR("desc");
   if(!kdl_parser::treeFromString(robot_desc_string, my_tree)){
     ROS_ERROR("Failed to contruct kdl tree");
     return false;
@@ -307,9 +308,10 @@ int main(int argc, char** argv)
     ROS_ERROR("No /DOF/endlink_tracker loaded in rosparam");
     return false;
   }
-
+  ROS_ERROR("Before_chain");
   bool exit_value = my_tree.getChain("base_link", end_tracker_link, chain);
   SubscribeAndPublish sp;
+  ROS_ERROR("After_chain");
 
   ros::spin();
 
