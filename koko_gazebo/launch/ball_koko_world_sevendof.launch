@@ -1,0 +1,63 @@
+<launch>
+  <include
+    file="$(find koko_gazebo)/launch/koko_gazebo_sevendof.launch" />
+    
+  <include 
+    file="$(find koko_gazebo)/launch/gazebo_controller_7dof.launch" />
+
+  <include 
+    file="$(find kinect2_bridge)/launch/kinect2_bridge.launch" />
+
+ <arg
+    name="model" />
+
+  <arg
+    name="gui"
+    default="True" />
+
+  <param
+    name="robot_dyn_description"
+    textfile="$(find koko_gazebo)/robots/koko_description_sevendof_kin.urdf" />
+
+  <param
+    name="use_gui"
+    value="$(arg gui)" />
+
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find koko_gazebo)/urdf.rviz" />
+
+  <node 
+    pkg="rostopic" 
+    type="rostopic" 
+    name="rostopic" 
+    args="pub /command_label std_msgs/Int32 25"/>
+
+  <node
+    name="pose_target"
+    pkg="koko_gazebo"
+    type="pose_target_simulation" />
+
+  <node
+    name="ball_kalman_filter"
+    pkg="ball_tracker"
+    type="ball_kalman_filter.py" />
+  <node
+    name="ball_tracker"
+    pkg="ball_tracker"
+    type="ball_tracker.py" />
+
+  <node name="pos_plot"
+    pkg="rqt_plot"
+    type="rqt_plot"
+    args="/koko_gazebo/simple_controller/command/data[2]" />
+
+  <node
+    name="transformer"
+    pkg="tf"
+    type="static_transform_publisher" 
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1 kinect_link kinect2_ir_optical_frame 100"/>   
+
+</launch>

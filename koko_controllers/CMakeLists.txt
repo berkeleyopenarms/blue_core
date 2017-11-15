@@ -29,7 +29,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME} src/InverseDynamicsController.cpp)
+add_library(${PROJECT_NAME} src/InverseDynamicsController.cpp src/CartesianPoseController.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
