@@ -101,7 +101,7 @@ class BLDCControllerClient:
     def setDuty(self, id, value):
         ret = self.writeRegisters(id, 0x0106, 1, struct.pack('<f', value ))
         return ret
-    
+
     def setControlEnabled(self, id, logical):
         self.writeRegisters(id, 0x0102, 1, struct.pack('<B', logical))
 
