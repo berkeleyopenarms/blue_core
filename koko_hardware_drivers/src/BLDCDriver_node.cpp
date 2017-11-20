@@ -41,8 +41,8 @@ class SetCommand {
 
 void SetCommand::callback(const std_msgs::Float64::ConstPtr& msg) {
   double effort_raw = msg->data;
-  ROS_ERROR("%d", id_);
-  ROS_ERROR("%f", effort_raw);
+  ROS_ERROR("motor id: %d", id_);
+  ROS_ERROR("command: %f", effort_raw);
   g_command_queue[id_] = effort_raw;
 }
 
@@ -57,24 +57,40 @@ void initMaps(std::map<uint8_t, std::string>& joint_mapping,
     joint_mapping[12] = "left_motor1";
     joint_mapping[14] = "right_motor2";
     joint_mapping[16] = "left_motor2";
+    joint_mapping[21] = "right_motor3";
+    joint_mapping[19] = "left_motor3";
+    //joint_mapping[17] = "left_motor3";
+    //joint_mapping[13] = "base_roll_motor";
 
     angle_mapping[15] = 13002;
     angle_mapping[11] = 2164;
     angle_mapping[12] = 1200;
     angle_mapping[14] = 4484;
     angle_mapping[16] = 2373;
+    angle_mapping[21] = 5899;
+    angle_mapping[19] = 2668;
+    //angle_mapping[17] = 10720;
+    //angle_mapping[13] = 11839;
 
     invert_mapping[15] = 0;
     invert_mapping[11] = 0;
     invert_mapping[12] = 0;
     invert_mapping[14] = 0;
     invert_mapping[16] = 0;
+    invert_mapping[21] = 0;
+    invert_mapping[19] = 0;
+    //invert_mapping[17] = 1;
+    //invert_mapping[13] = 1;
 
     erevs_mapping[15] = 14;
     erevs_mapping[11] = 14;
     erevs_mapping[12] = 14;
     erevs_mapping[14] = 14;
     erevs_mapping[16] = 14;
+    erevs_mapping[21] = 21;
+    erevs_mapping[19] = 21;
+    //erevs_mapping[17] = 14;
+    //erevs_mapping[13] = 14;
 
   /* joint_mapping[1] = "left_motor"; */
   /* joint_mapping[2] = "right_motor"; */
@@ -115,15 +131,19 @@ int main(int argc, char **argv) {
   initMaps(joint_mapping, angle_mapping, invert_mapping, erevs_mapping);
 
   char* port = argv[1];
+  ROS_ERROR("c1");
   BLDCControllerClient device(port, BAUD_RATE, serial::Timeout::simpleTimeout(10));
+  ROS_ERROR("c2");
 
   ros::Rate r(CONTROL_LOOP_FREQ);
 
   std::map<uint8_t, std::string>::iterator it;
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
+    ROS_ERROR("c21");
     device.leaveBootloader(it->first, 0);
     device.flushSerial();
   }
+  ROS_ERROR("c3");
   n_sleep(500);
   std::map<uint8_t, ros::Publisher> publishers;
   std::map<uint8_t, ros::Publisher> publishers_curr;
@@ -134,25 +154,34 @@ int main(int argc, char **argv) {
     SetCommand *cmd = new SetCommand(it->first);
     subscribers[it->first] = n.subscribe("/DOF/" + it->second + "_Cmd", 1, &SetCommand::callback, cmd);
   }
+  ROS_ERROR("c4");
   std::map<uint8_t, double> angle_zero;
   std::map<uint8_t, double> past_angle;
   n_sleep(200);
 
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
+    ROS_ERROR("c41, id: %d", it->first);
     angle_zero[it->first] = getEncoderAngleRadians(device, it->first);
+    ROS_ERROR("c42");
     velocity_history_mapping[it->first].resize(filter_length);
     past_angle[it->first] = angle_zero[it->first];
   }
 
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
     uint8_t* angle = (uint8_t*) &it2->second;
+    ROS_ERROR("c50");
     device.writeRegisters(it2->first, 0x101, 1, angle, 2);
+    ROS_ERROR("c51");
 
     uint8_t r = 0;
     device.writeRegisters(it2->first, 0x102, 1, &r, 1);
+    ROS_ERROR("c52");
     device.writeRegisters(it2->first, 0x109, 1, &invert_mapping[it2->first], 1);
+    ROS_ERROR("c53");
     device.writeRegisters(it2->first, 0x10A, 1, &erevs_mapping[it2->first], 1);
+    ROS_ERROR("c54");
   }
+  ROS_ERROR("c6");
 
   last_time = get_time(); //
   float dt = 0;
