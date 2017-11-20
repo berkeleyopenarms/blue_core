@@ -16,9 +16,9 @@ ENCODER_ANGLE_PERIOD = 1 << 14
 MAX_CURRENT = 1.2
 CONTROL_LOOP_FREQ = 500
 
-# mapping = {15: "base_roll_motor"}
-mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", \
-           16: "left_motor2", 21: "right_motor3", 19: "left_motor3"}
+mapping = {3: "base_roll_motor"}
+# mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", \
+#            16: "left_motor2", 21: "right_motor3", 19: "left_motor3"}
 
 ##################################################################################################
 

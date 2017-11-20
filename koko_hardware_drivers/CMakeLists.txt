@@ -207,6 +207,10 @@ add_executable(${PROJECT_NAME}_node src/BLDCDriver_node.cpp)
 target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_executable(${PROJECT_NAME}_test src/BLDCControllerTest.cpp)
+target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME} ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME}_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 add_executable(${PROJECT_NAME}_communication_freq_test src/BLDCDriver_communication_freq_test.cpp)
 target_link_libraries(${PROJECT_NAME}_communication_freq_test ${PROJECT_NAME} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}_communication_freq_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

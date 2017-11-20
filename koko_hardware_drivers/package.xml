@@ -3,7 +3,7 @@
   <name>koko_hardware_drivers</name>
   <version>0.0.0</version>
   <description>The koko_hardware_drivers package</description>
-  
+
   <maintainer email="zhaoallan@berkeley.edu">Allan Zhao</maintainer>
   <maintainer email="brentyi@berkeley.edu">Brent Yi</maintainer>
 

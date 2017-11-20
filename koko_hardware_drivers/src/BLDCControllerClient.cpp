@@ -38,11 +38,12 @@ void BLDCControllerClient::flushSerial() {
 }
 
 void BLDCControllerClient::writeRequest(uint8_t server_id, uint8_t func_code, bytebuf_t& data) {
-  data.push_back(0xFF); // Sync flag
-  data.push_back(0xFF); // Protocol version
-  data.push_back(data.size() - 3); // Add length field, which excludes the sync, version, & length bytes
-  data.push_back(server_id);
-  data.push_back(func_code);
+  data.at(0) = 0xFF; // Sync flag
+  data.at(1) = 0xFF; // Protocol version
+  data.at(2) = data.size() - 4; // Add length field, which excludes the sync, version, & length bytes
+  data.at(3) = 0;
+  data.at(4) = server_id;
+  data.at(5) = func_code;
 
   //TODO: Make this return CRC
   data.push_back(0);
@@ -52,8 +53,8 @@ void BLDCControllerClient::writeRequest(uint8_t server_id, uint8_t func_code, by
 
 bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_code) {
   bytebuf_t empty(0);
-
-  uint8_t sync = 0;
+  uint8_t sync = 1;
+  uint8_t test = 0xFF;
   ser.read(&sync, 1);
   if (sync != 0xFF) {
     ser.flushInput();
@@ -67,11 +68,11 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
     return empty;
   }
 
-  uint8_t lb = 0;
-  ser.read(&lb, 1);
+  uint16_t length = 0;
+  ser.read(reinterpret_cast<uint8_t*>(&length), 2);
 
-  if (lb == 0) {
-    std::cout << "lb was zero\n";
+  if (length == 0) {
+    std::cout << "length was zero\n";
     ser.flushInput();
     return empty;
   }
@@ -113,7 +114,7 @@ bytebuf_t BLDCControllerClient::readResponse(uint8_t server_id, uint8_t func_cod
 
   bytebuf_t message;
 
-  if (lb - 4 == 0 || ser.read(message, lb - 4) < (size_t) (lb - 4)) {
+  if (length - 4 == 0 || ser.read(message, length - 4) < (size_t) (length - 4)) {
     std::cout << "message length was not long enough\n";
     ser.flushInput();
     return empty;
@@ -141,7 +142,7 @@ bytebuf_t BLDCControllerClient::doTransaction(uint8_t server_id, uint8_t func_co
 
 bool BLDCControllerClient::writeRegisters(uint8_t server_id, uint16_t start_addr, uint8_t count, uint8_t* data, size_t size) {
   bytebuf_t buffer;
-  buffer.insert(buffer.end(), 5, 0);
+  buffer.insert(buffer.end(), 6, 0);
   buffer.push_back(start_addr & 0xFF);
   buffer.push_back(start_addr >> 8);
   buffer.push_back(count);
@@ -157,7 +158,7 @@ bool BLDCControllerClient::writeRegisters(uint8_t server_id, uint16_t start_addr
 
 bytebuf_t BLDCControllerClient::readRegisters(uint8_t server_id, uint16_t start_addr, uint8_t count) {
   bytebuf_t buffer;
-  buffer.insert(buffer.end(), 5, 0);
+  buffer.insert(buffer.end(), 6, 0);
   buffer.push_back(start_addr & 0xFF);
   buffer.push_back(start_addr >> 8);
   buffer.push_back(count);
@@ -171,7 +172,7 @@ bytebuf_t BLDCControllerClient::readRegisters(uint8_t server_id, uint16_t start_
 }
 
 float BLDCControllerClient::getEncoderRadians(uint8_t id) {
-  bytebuf_t message = BLDCControllerClient::readRegisters(id, 0x10b, 1);
+  bytebuf_t message = BLDCControllerClient::readRegisters(id, 0x3000, 1);
 
   uint8_t temp[4];
   temp[0] = message.at(0);
@@ -179,13 +180,8 @@ float BLDCControllerClient::getEncoderRadians(uint8_t id) {
   temp[2] = message.at(2);
   temp[3] = message.at(3);
 
-  return *reinterpret_cast<float *>(temp);
-}
-
-uint16_t BLDCControllerClient::getEncoder(uint8_t id) {
-  bytebuf_t message = BLDCControllerClient::readRegisters(id, 0x100, 1);
-  uint16_t angle = message.at(0) | (message.at(1) << 8);
-  return angle;
+  float* x = reinterpret_cast<float *>(temp);
+  return *x;
 }
 
 bool BLDCControllerClient::leaveBootloader(uint8_t server_id, unsigned int jump_addr) {
