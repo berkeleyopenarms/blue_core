@@ -174,11 +174,14 @@ namespace koko_controllers{
  
 
   void CartesianPoseController::visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg) {
-    if (strcmp(msg.marker_name.c_str(), visualizer.c_str()) == 0 && target_mode == "rviz") {
+    ROS_ERROR("in_pose_callback_before strcmp");
+    //if (strcmp(msg.marker_name.c_str(), visualizer.c_str()) == 0 && target_mode == "rviz") {
+    //if (target_mode == "rviz") {
+      ROS_ERROR("in_pose_callback_after_strcmp");
       commandPose = msg.pose;  
-      commandPose.position.z = commandPose.position.z + z_offset_controller;
+      commandPose.position.z = commandPose.position.z;// + z_offset_controller;
       //commandPose = enforceJointLimits(commandPose);
-    }
+    //}
   }
 
   void CartesianPoseController::controllerPoseCallback(const geometry_msgs::PoseStamped msg) 

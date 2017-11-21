@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
 
     }
     dt = get_period();
-    ROS_ERROR("comm time: dt: %f, freq: %f", dt, 1.0 / dt);
+    ROS_ERROR("comm time: dt: %f, freq: %f", dt, 1.0 / (dt + 0.000000001));
     r.sleep();
   }
 

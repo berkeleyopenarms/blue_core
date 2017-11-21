@@ -16,6 +16,8 @@ ENCODER_ANGLE_PERIOD = 1 << 14
 MAX_CURRENT = 1.2
 CONTROL_LOOP_FREQ = 500
 
+port_default = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0"
+
 # mapping = {15: "base_roll_motor"}
 mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", \
            16: "left_motor2", 21: "right_motor3", 19: "left_motor3"}
@@ -25,7 +27,10 @@ mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "ri
 def main():
     rospy.init_node('freq_publisher', anonymous=True)
 
-    port = sys.argv[1]
+    if len(sys.argv) > 1:
+        port = sys.argv[1]
+    else:
+        port = port_default
     print port
     s = serial.Serial(port=port, baudrate=1000000, timeout=0.001)
     print s.BAUDRATES
@@ -54,7 +59,7 @@ def main():
 
         current_time = rospy.get_time()
         dt = current_time - last_time
-        freq = 1 / dt
+        freq = 1.0 / dt
         msg.data = freq
         freq_pub.publish(msg)
         last_time = current_time

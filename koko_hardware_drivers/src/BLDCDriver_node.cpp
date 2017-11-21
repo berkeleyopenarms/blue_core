@@ -13,7 +13,7 @@
 
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 /* const double MAX_CURRENT = 2.8; */
-const unsigned int CONTROL_LOOP_FREQ = 5000;
+const unsigned int CONTROL_LOOP_FREQ = 100000;
 const unsigned int BAUD_RATE = 1000000;
 
 std::map<uint8_t, float> g_command_queue;
@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
       // ROS_ERROR("TRy to set duty");
       if (g_command_queue.find(id) != g_command_queue.end()) {
         // std::cerr << "setting duty to " << g_command_queue[id];
-        device.setDuty(id, g_command_queue[id]);
+        //device.setDuty(id, g_command_queue[id]);
         // ROS_ERROR("Set Duty");
       }
     }

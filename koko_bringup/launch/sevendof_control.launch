@@ -17,7 +17,7 @@
   <param 
     name="use_gui"
     value="$(arg gui)" />
-  <rosparam file="$(find koko_bringup)/config/control_7dof.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/control_7dof_pose.yaml" command="load"/>
   <node
     name="robot_state_publisher"
     pkg="robot_state_publisher"

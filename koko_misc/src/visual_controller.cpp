@@ -512,7 +512,7 @@ int main(int argc, char** argv)
 
   tf::Vector3 position;
 
-  position = tf::Vector3( 0.531, 0.117, 2.055);
+  position = tf::Vector3( 0.56, -0.11, -0.177);
   make6DofMarker( false, visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D, position, true );
 
   server->applyChanges();

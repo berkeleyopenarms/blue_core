@@ -112,9 +112,8 @@ public:
       angle_previous_mod[index] = msg.position[0];
     } else if (is_calibrated == 1){
 
-//      ROS_ERROR("c0");
+        ROS_ERROR("f0");
 //      double mod_angle = msg.position[0];
-//      ROS_ERROR("c1");
 //
 //      double delta_angle = mod_angle - angle_previous_mod[index];
 //      delta_angle = std::fmod(delta_angle + M_PI, 2 * M_PI);
@@ -138,15 +137,18 @@ public:
 
 
       if(std::find(paired_constraints.begin(), paired_constraints.end(), index) != paired_constraints.end()) {
+        ROS_ERROR("f10");
         int a = std::find(paired_constraints.begin(), paired_constraints.end(), index) - paired_constraints.begin();
         //trying to set index a
         if (a % 2 == 0) {
+          ROS_ERROR("f11");
           int b = a + 1;
           //Might have to change signs
           pre_pos = -.5 * motor_pos[paired_constraints[a]] + .5 * motor_pos[paired_constraints[b]];
           pre_vel = -.5 * motor_vel[paired_constraints[a]] + .5 * motor_vel[paired_constraints[b]];
 
         } else {
+          ROS_ERROR("f12");
           int b = a - 1;
           pre_pos = .5 * motor_pos[paired_constraints[b]] + .5 * motor_pos[paired_constraints[a]];
           pre_vel = .5 * motor_vel[paired_constraints[b]] + .5 * motor_vel[paired_constraints[a]];
@@ -155,11 +157,13 @@ public:
       if (index ==2 ) {
         //ROS_ERROR("directions index %f",  directions[2]);
       }
+      ROS_ERROR("f2");
 
       pos[index] = directions[index] * (pre_pos / gear_ratios[index]) + joint_state_initial[index];
       vel[index] = directions[index] * pre_vel / gear_ratios[index];
       eff[index] = torque_directions[index] * msg.effort[0] * gear_ratios[index];
       position_read = 1;
+      ROS_ERROR("f3");
     }
 
   }
@@ -212,7 +216,7 @@ public:
   void PublishJointCommand() {
 
     if (calibrated == calibration_num + 1) {
-      //ROS_ERROR("d0");
+      ROS_ERROR("d0");
       std::vector<double> pre(joint_names.size());
       std::vector<double> cmd_oriented(joint_names.size());
       
@@ -244,11 +248,12 @@ public:
         //ROS_ERROR("d6");
         commandMsg.data =  motor_current;
         //ROS_ERROR("d7");
-        jnt_cmd_publishers[i].publish(commandMsg);
+        //jnt_cmd_publishers[i].publish(commandMsg);
         //ROS_ERROR("d8");
         //ROS_ERROR("current command for %s is %f", joint_names[i].c_str(), commandMsg.data);
         
       }
+      ROS_ERROR("d9");
     }
   }
   

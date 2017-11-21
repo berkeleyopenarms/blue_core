@@ -19,6 +19,7 @@ void *ExecuteUpdate(void *threadarg) {
   {
      (* my_data->robot).read();
      (* my_data->manager).update((* my_data->robot).get_time(), (* my_data->robot).get_period());
+     ROS_ERROR("after_update");
      (* my_data->robot).write();
      ros::spinOnce();
      (* my_data->loop_rate).sleep();
@@ -46,7 +47,7 @@ int main(int argc, char** argv)
   ros::spinOnce();
   
   
-  ros::Rate loop_rate(100);
+  ros::Rate loop_rate(1000);
   ros::Rate loop_rate2(500);
   
   
@@ -64,7 +65,7 @@ int main(int argc, char** argv)
   controllers_state_start.push_back("joint_state_controller");
   std::vector<std::string> controllers_stop;
   ROS_ERROR("B");
-  cm.switchController(controllers_state_start, controllers_stop, 1);
+  //cm.switchController(controllers_state_start, controllers_stop, 1);
   ROS_ERROR("BB-8");
   
   while (robot.getPositionRead() != 1) {
@@ -82,7 +83,7 @@ int main(int argc, char** argv)
   
   
   
-  cm.switchController(controllers_start, controllers_stop, 1);
+  //cm.switchController(controllers_start, controllers_stop, 1);
   ROS_ERROR("F");
   //ROS_INFO("Here2");
   while (ros::ok())

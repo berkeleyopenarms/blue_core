@@ -16,30 +16,40 @@ void initMaps(std::vector<uint8_t>& angle_id_mapping,
     angle_id_mapping.push_back(12);
     angle_id_mapping.push_back(14);
     angle_id_mapping.push_back(16);
+    angle_id_mapping.push_back(21);
+    angle_id_mapping.push_back(19);
 
     motor_mapping[15] = "base_roll_motor";
     motor_mapping[11] = "right_motor1";
     motor_mapping[12] = "left_motor1";
     motor_mapping[14] = "right_motor2";
     motor_mapping[16] = "left_motor2";
+    motor_mapping[21] = "right_motor3";
+    motor_mapping[19] = "left_motor3";
 
     angle_mapping[15] = 13002;
     angle_mapping[11] = 2164;
     angle_mapping[12] = 1200;
     angle_mapping[14] = 4484;
     angle_mapping[16] = 2373;
+    angle_mapping[21] = 5899;
+    angle_mapping[19] = 2668;
 
     invert_mapping[15] = 0;
     invert_mapping[11] = 0;
     invert_mapping[12] = 0;
-    invert_mapping[12] = 0;
-    invert_mapping[12] = 0;
+    invert_mapping[14] = 0;
+    invert_mapping[16] = 0;
+    invert_mapping[21] = 0;
+    invert_mapping[19] = 0;
 
     erevs_mapping[15] = 14;
     erevs_mapping[11] = 14;
     erevs_mapping[12] = 14;
     erevs_mapping[14] = 14;
     erevs_mapping[16] = 14;
+    erevs_mapping[21] = 21;
+    erevs_mapping[19] = 21;
 
   /* joint_mapping[1] = "left_motor"; */
   /* joint_mapping[2] = "right_motor"; */
