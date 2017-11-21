@@ -29,6 +29,15 @@ erevs_per_mrev_mapping = {12: 14, 11: 14, 15: 14}
 #invert_mapping = {15: False}
 invert_mapping = {12: False, 11: False, 15: False}
 
+
+
+
+# mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", 16: "left_motor2", 21: "right_motor3", 19: "left_motor3" } # mapping of id to joints
+# angle_mapping = {15: 13002, 11: 2164, 12: 1200, 14: 4484, 16: 2373, 21: 5899, 19: 2668} # mapping of id to joints
+# erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 14: 14, 16: 14, 21: 14, 19: 14}
+# invert_mapping = {15: 0, 11: 0, 12: 0, 14: 0, 16: 0, 21: 0, 19: 0}
+
+
 global command_queue
 command_queue = {}
 #################################################################################################
@@ -88,6 +97,7 @@ def main():
 		# device.setControlEnabled(False) ################################################################--> must fix at some point
 		print 'quitting'
 		sys.exit()
+		
 	signal.signal(signal.SIGINT, sigintHandler)
 
 	# Set current to zero, enable current control loop
@@ -134,22 +144,22 @@ def main():
                                 jointMsg = JointState()
 				jointMsg.name = [jointName]
 				jointMsg.position = [curr_angle - angle_start[key]]
-				#jointMsg.position = [0.0]
-				jointMsg.velocity = [0.0]#[device.getVelocity(key)]
+				jointMsg.velocity = [0.0] # [device.getVelocity(key)]
 				jointMsg.effort = [0.0] 
 				pubArray[key].publish(jointMsg)
-				#print("name: " + jointName + "  position: " + str(jointMsg.position))
-				#time.sleep(max(0.0, loop_start_time + 1.0 / CONTROL_LOOP_FREQ - time.time()))
+				# print("name: " + jointName + "  position: " + str(jointMsg.position))
+				# time.sleep(max(0.0, loop_start_time + 1.0 / CONTROL_LOOP_FREQ - time.time()))
 
-				#currMsg = Float32()
-				#currMsg.data = float(0)
-				#pubCurrArray[key].publish(currMsg)
+				currMsg = Float32()
+				currMsg.data = float(0)
+				pubCurrArray[key].publish(currMsg)
 				if key in command_queue:
 					device.setDuty(key, command_queue[key])
 					pass
 			except Exception as e:
-				rospy.logerr(str(e))
-				rospy.logerr(str(key	))
+				rospy.logerr(str(e) + " " + str(key))
+				# rospy.logerr(str(key))
+
 		command_queue = {}
 		r.sleep()
 

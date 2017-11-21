@@ -40,14 +40,14 @@
     pkg="koko_gazebo"
     type="pose_target_simulation" />
 
-  <node
+  <!--node
     name="ball_kalman_filter"
     pkg="ball_tracker"
-    type="ball_kalman_filter.py" />
-  <node
+    type="ball_kalman_filter.py" /-->
+  <!--node
     name="ball_tracker"
     pkg="ball_tracker"
-    type="ball_tracker.py" />
+    type="ball_tracker.py" /-->
 
   <node name="pos_plot"
     pkg="rqt_plot"
@@ -58,6 +58,6 @@
     name="transformer"
     pkg="tf"
     type="static_transform_publisher" 
-    args="0.0 0.0 0.0 0.0 0.0 0.0 1 kinect_link kinect2_ir_optical_frame 100"/>   
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1 kinect_link kinect2_rgb_optical_frame 100"/>   
 
 </launch>
