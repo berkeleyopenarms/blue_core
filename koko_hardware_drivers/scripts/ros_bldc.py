@@ -84,18 +84,9 @@ def main():
 
 	# Set up a signal handler so Ctrl-C causes a clean exit
 	def sigintHandler(signal, frame):
-		# device.setParameter('iq_s', 0)   ###############################################################--> must fix at some point
-		# device.setControlEnabled(False) ################################################################--> must fix at some point
 		print 'quitting'
 		sys.exit()
 	signal.signal(signal.SIGINT, sigintHandler)
-
-	# Set current to zero, enable current control loop
-	for key in mapping:
-		# device.setParameter(key, 'id_s', 0)
-		# device.setParameter(key, 'iq_s', 0)
-		# device.setControlEnabled(key, 0)########################### change to 1 when you want to actually control
-		pass
 
 	#angle = 0.0   # Treat the starting position as zero
 	#last_mod_angle = getEncoderAngleRadians(device)
@@ -106,16 +97,16 @@ def main():
 
 	for id, angle in angle_mapping.items():
 		# device.setInitialAngle(id, angle)
-		device.writeRegisters(id, 0x0101, 1, struct.pack('<H', angle))
-		device.writeRegisters(id, 0x0102, 1, struct.pack('<B', 0))
+		device.writeRegisters(id, 0x1000, 1, struct.pack('<H', angle))
+		device.writeRegisters(id, 0x2000, 1, struct.pack('<B', 0))
 
 	for id, invert in invert_mapping.items():
 		# device.setInitialAngle(id, angle)
-		device.writeRegisters(id, 0x0109, 1, struct.pack('<B', int(invert)))
+		device.writeRegisters(id, 0x1002, 1, struct.pack('<B', int(invert)))
 
 	for id, erevs_per_mrev in erevs_per_mrev_mapping.items():
 		# device.setInitialAngle(id, angle)
-		device.writeRegisters(id, 0x010A, 1, struct.pack('<B', int(erevs_per_mrev)))
+		device.writeRegisters(id, 0x1001, 1, struct.pack('<B', int(erevs_per_mrev)))
 
 	for key in mapping:
 		angle_start[key] = getEncoderAngleRadians(device, key)
@@ -145,7 +136,7 @@ def main():
 				#currMsg.data = float(0)
 				#pubCurrArray[key].publish(currMsg)
 				if key in command_queue:
-					device.setDuty(key, command_queue[key])
+					device.setCurrent(key, command_queue[key])
 					pass
 			except Exception as e:
 				rospy.logerr(str(e))
