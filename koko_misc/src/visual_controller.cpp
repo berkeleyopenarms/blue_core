@@ -73,7 +73,7 @@ void processFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPt
 {
   std::ostringstream s;
   s << "Feedback from marker '" << feedback->marker_name << "' "
-      << " / control '" << feedback->control_name << "'";
+     << " / control '" << feedback->control_name << "'";
 
   std::ostringstream mouse_point_ss;
   if( feedback->mouse_point_valid )
@@ -170,6 +170,10 @@ void make6DofMarker( bool fixed, unsigned int interaction_mode, const tf::Vector
 
   int_marker.name = "simple_6dof";
   int_marker.description = "Simple 6-DOF Control";
+  int_marker.pose.orientation.w = 0.0;
+  int_marker.pose.orientation.x = 1.0;
+  int_marker.pose.orientation.y = 1.0;
+  int_marker.pose.orientation.z = 0.0;
 
   // insert a box
   makeBoxControl(int_marker);

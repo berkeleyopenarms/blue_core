@@ -88,6 +88,7 @@ namespace koko_controllers{
         double min_torque;
         double min_angle;
         double max_angle;
+        double id_gain;
 
         if (!n.getParam(jointName + "/max_torque", max_torque)) {
           ROS_ERROR("No %s/max_torque given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
@@ -105,11 +106,16 @@ namespace koko_controllers{
           ROS_ERROR("No %s/max_angle given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
           return false;
         }
+        if (!n.getParam(jointName + "/id", id_gain)) {
+          ROS_ERROR("No %s/id gain given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
+          return false;
+        }
 
         jointPD.max_torque = max_torque;
         jointPD.min_torque = min_torque;
         jointPD.max_angle = max_angle;
         jointPD.min_angle = min_angle;
+        jointPD.id_gain = id_gain;
         jointPD.joint_name = jointName;
         joint_vector.push_back(jointPD);
 
@@ -186,9 +192,9 @@ namespace koko_controllers{
 
   void CartesianPoseController::controllerPoseCallback(const geometry_msgs::PoseStamped msg) 
   {  
-    if (command_label == 25 && target_mode == "vive") {
+    if (command_label == 25){// && target_mode == "vive") {
       commandPose = msg.pose; 
-      commandPose.position.z = commandPose.position.z + z_offset_controller;
+      //commandPose.position.z = commandPose.position.z;// + z_offset_controller;
       //commandPose = enforceJointLimits(commandPose);
     }
   }
@@ -203,7 +209,7 @@ namespace koko_controllers{
     commandMsg.data.push_back(r);
     commandMsg.data.push_back(p);
     commandMsg.data.push_back(y);
-    commandPub.publish(commandMsg);
+    //commandPub.publish(commandMsg);
   }
 
   void CartesianPoseController::publishDeltaMsg(KDL::Twist twist_error) {
@@ -214,7 +220,7 @@ namespace koko_controllers{
     deltaMsg.data.push_back(twist_error.rot.data[0]);
     deltaMsg.data.push_back(twist_error.rot.data[1]);
     deltaMsg.data.push_back(twist_error.rot.data[2]);
-    deltaPub.publish(deltaMsg);
+    //deltaPub.publish(deltaMsg);
   }
 
   void CartesianPoseController::publishInverseDynamicsMsg() {
@@ -222,7 +228,7 @@ namespace koko_controllers{
     for (int i = 0; i < joint_vector.size(); i++) {
       inverseDynamicsMsg.data.push_back(id_torques(i));
     }
-    inverseDynamicsPub.publish(inverseDynamicsMsg);
+    //inverseDynamicsPub.publish(inverseDynamicsMsg);
   }
 
   void CartesianPoseController::update(const ros::Time& time, const ros::Duration& period)
@@ -270,7 +276,7 @@ namespace koko_controllers{
     }
 
     for(int i = 0; i < nj; i++) {
-      commands[i] += id_torques(i);
+      commands[i] += joint_vector[i].id_gain * id_torques(i);
     }
 
     for(int i = 0; i < nj; i++) {

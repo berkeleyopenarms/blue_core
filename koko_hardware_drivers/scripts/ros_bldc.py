@@ -14,7 +14,7 @@ from comms import *
 
 ENCODER_ANGLE_PERIOD = 1 << 14
 MAX_CURRENT = 1.2
-CONTROL_LOOP_FREQ = 500
+CONTROL_LOOP_FREQ = 140
 #mapping = {3: "right_motor2", 4: "left_motor2"} # mapping of id to joints
 # mapping = {1: "left_motor", 2: "right_motor", 3: "right_motor2", 4: "left_motor2"} # mapping of id to joints
 # angle_mapping = {1: 10356, 2: 13430, 3: 12164, 4: 8132} # mapping of id to joints
@@ -22,12 +22,24 @@ CONTROL_LOOP_FREQ = 500
 
 
 #mapping = {15: "base_roll_motor"} # mapping of id to joints
-mapping = {12: "left_motor1", 11: "right_motor1", 15: "base_roll_motor"} # mapping of id to joints
+#mapping = {12: "left_motor1", 11: "right_motor1", 15: "base_roll_motor"} # mapping of id to joints
+#mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", \
+           #16: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
+mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 10: "right_motor2", \
+           17: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
 #angle_mapping = {15: 13002} # mapping of id to joints
-angle_mapping = {12: 1200, 11: 2164, 15: 13002} # mapping of id to joints
-erevs_per_mrev_mapping = {12: 14, 11: 14, 15: 14}
+#angle_mapping = {12: 1200, 11: 2164, 15: 13002} # mapping of id to joints
+#angle_mapping = {15: 13002, 11: 2164, 12: 1200, 14: 4484, \
+           #16: 2373, 21: 5899, 19: 2668} 
+angle_mapping = {15: 13002, 11: 2164, 12: 1200,  \
+           17: 10720, 10: 11067, 21: 5899, 19: 2668} 
+#erevs_per_mrev_mapping = {12: 14, 11: 14, 15: 14}
+#erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 14: 14, 16: 14, 21: 21, 19: 21} 
+erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 10: 14, 17: 14, 21: 21, 19: 21} 
 #invert_mapping = {15: False}
-invert_mapping = {12: False, 11: False, 15: False}
+#invert_mapping = {12: False, 11: False, 15: False}
+#invert_mapping = {15: False, 11: False, 12: False, 14: False, 16: False, 21: False, 19: False} 
+invert_mapping = {15: False, 11: False, 12: False, 10: False, 17: True, 21: False, 19: False} 
 
 global command_queue
 command_queue = {}
@@ -146,6 +158,7 @@ def main():
 				#pubCurrArray[key].publish(currMsg)
 				if key in command_queue:
 					device.setDuty(key, command_queue[key])
+				        #getEncoderAngleRadians(device, key)
 					pass
 			except Exception as e:
 				rospy.logerr(str(e))
