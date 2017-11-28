@@ -34,6 +34,12 @@ target_link_libraries(BLDCDriver_node
   BLDCControllerClient
 )
 
+add_executable(BLDCControllerTest src/BLDCControllerTest.cpp)
+target_link_libraries(BLDCControllerTest
+  ${catkin_LIBRARIES}
+  BLDCControllerClient
+)
+
 add_executable(BLDCDriver_communication_freq_test src/BLDCDriver_communication_freq_test.cpp)
 target_link_libraries(BLDCDriver_communication_freq_test
   ${catkin_LIBRARIES}
