@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 
   char* port = argv[1];
   ROS_ERROR("c1");
-  BLDCControllerClient device(port, BAUD_RATE, serial::Timeout::simpleTimeout(10));
+  BLDCControllerClient device(port);
   ROS_ERROR("c2");
 
   ros::Rate r(CONTROL_LOOP_FREQ);
@@ -124,7 +124,6 @@ int main(int argc, char **argv) {
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
     ROS_ERROR("c21");
     device.leaveBootloader(it->first, 0);
-    device.flushSerial();
   }
   ROS_ERROR("c3");
   n_sleep(500);
@@ -137,17 +136,17 @@ int main(int argc, char **argv) {
 
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
     uint8_t* angle = (uint8_t*) &it2->second;
-    ROS_ERROR("c50");
-    device.writeRegisters(it2->first, 0x101, 1, angle, 2);
-    ROS_ERROR("c51");
-
-    uint8_t r = 0;
-    device.writeRegisters(it2->first, 0x102, 1, &r, 1);
-    ROS_ERROR("c52");
-    device.writeRegisters(it2->first, 0x109, 1, &invert_mapping[it2->first], 1);
-    ROS_ERROR("c53");
-    device.writeRegisters(it2->first, 0x10A, 1, &erevs_mapping[it2->first], 1);
-    ROS_ERROR("c54");
+    // ROS_ERROR("c50");
+    // device.writeRegisters(it2->first, 0x101, 1, angle, 2);
+    // ROS_ERROR("c51");
+    //
+    // uint8_t r = 0;
+    // device.writeRegisters(it2->first, 0x102, 1, &r, 1);
+    // ROS_ERROR("c52");
+    // device.writeRegisters(it2->first, 0x109, 1, &invert_mapping[it2->first], 1);
+    // ROS_ERROR("c53");
+    // device.writeRegisters(it2->first, 0x10A, 1, &erevs_mapping[it2->first], 1);
+    // ROS_ERROR("c54");
   }
   ROS_ERROR("c6");
 

@@ -1,20 +1,20 @@
-#include "ros/ros.h"
-#include "serial/serial.h"
-#include "std_msgs/String.h"
-#include "std_msgs/Float64.h"
-#include "std_msgs/Float32.h"
-#include "sensor_msgs/JointState.h"
-#include "koko_hardware_drivers/BLDCControllerClient.h"
+#include <ros/ros.h>
+#include <serial/serial.h>
+#include <std_msgs/String.h>
+#include <std_msgs/Float64.h>
+#include <std_msgs/Float32.h>
+#include <sensor_msgs/JointState.h>
 #include <vector>
 #include <string>
-#include "math.h"
+#include <math.h>
 #include <numeric>
-#include "time.h"
+#include <time.h>
+
+#include "koko_hardware_drivers/BLDCControllerClient.h"
 
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 /* const double MAX_CURRENT = 2.8; */
 const unsigned int CONTROL_LOOP_FREQ = 5000;
-const unsigned int BAUD_RATE = 1000000;
 
 std::map<uint8_t, float> g_command_queue;
 ros::Time last_time;
@@ -26,7 +26,7 @@ ros::Time get_time() {
 
 float get_period() {
   ros::Time current_time = ros::Time::now();
-  ros::Duration period = current_time - last_time; 
+  ros::Duration period = current_time - last_time;
   last_time = current_time;
   return period.toSec(); 
 }
@@ -114,15 +114,11 @@ void initMaps(std::map<uint8_t, std::string>& joint_mapping,
   /* } */
 }
 
-double getEncoderAngleRadians(BLDCControllerClient& device, uint8_t id) {
-  double x = ((double) device.getEncoderRadians(id));
-  return x;
-}
-
 int main(int argc, char **argv) {
   ros::init(argc, argv, "jointInterface", ros::init_options::AnonymousName);
 
-  ros::NodeHandle n;
+  ros::NodeHandle nh;
+
   std::map<uint8_t, std::string> joint_mapping;
   std::map<uint8_t, uint16_t> angle_mapping;
   std::map<uint8_t, std::vector<double> > velocity_history_mapping;
@@ -130,58 +126,46 @@ int main(int argc, char **argv) {
   std::map<uint8_t, uint8_t> erevs_mapping;
   initMaps(joint_mapping, angle_mapping, invert_mapping, erevs_mapping);
 
-  char* port = argv[1];
-  ROS_ERROR("c1");
-  BLDCControllerClient device(port, BAUD_RATE, serial::Timeout::simpleTimeout(10));
-  ROS_ERROR("c2");
+  std::string port;
+  nh.param<std::string>("port", port, "/dev/ttyUSB0");
+  BLDCControllerClient device(port);
 
   ros::Rate r(CONTROL_LOOP_FREQ);
 
   std::map<uint8_t, std::string>::iterator it;
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
-    ROS_ERROR("c21");
     device.leaveBootloader(it->first, 0);
-    device.flushSerial();
   }
-  ROS_ERROR("c3");
-  n_sleep(500);
+  ros::Duration(0.5).sleep();
+
   std::map<uint8_t, ros::Publisher> publishers;
   std::map<uint8_t, ros::Publisher> publishers_curr;
   std::map<uint8_t, ros::Subscriber> subscribers;
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
-    publishers[it->first] = n.advertise<sensor_msgs::JointState>("/DOF/" + it->second + "_State", 10);
-    publishers_curr[it->first] = n.advertise<std_msgs::Float32>("/DOF/" + it->second + "_Current", 10);
+    publishers[it->first] = nh.advertise<sensor_msgs::JointState>("/DOF/" + it->second + "_State", 10);
+    publishers_curr[it->first] = nh.advertise<std_msgs::Float32>("/DOF/" + it->second + "_Current", 10);
     SetCommand *cmd = new SetCommand(it->first);
-    subscribers[it->first] = n.subscribe("/DOF/" + it->second + "_Cmd", 1, &SetCommand::callback, cmd);
+    subscribers[it->first] = nh.subscribe("/DOF/" + it->second + "_Cmd", 1, &SetCommand::callback, cmd);
   }
   ROS_ERROR("c4");
   std::map<uint8_t, double> angle_zero;
   std::map<uint8_t, double> past_angle;
-  n_sleep(200);
+  ros::Duration(0.2).sleep();
 
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
     ROS_ERROR("c41, id: %d", it->first);
-    angle_zero[it->first] = getEncoderAngleRadians(device, it->first);
+    angle_zero[it->first] = device.getRotorPosition(it->first);
     ROS_ERROR("c42");
     velocity_history_mapping[it->first].resize(filter_length);
     past_angle[it->first] = angle_zero[it->first];
   }
 
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
-    uint8_t* angle = (uint8_t*) &it2->second;
-    ROS_ERROR("c50");
-    device.writeRegisters(it2->first, 0x101, 1, angle, 2);
-    ROS_ERROR("c51");
-
-    uint8_t r = 0;
-    device.writeRegisters(it2->first, 0x102, 1, &r, 1);
-    ROS_ERROR("c52");
-    device.writeRegisters(it2->first, 0x109, 1, &invert_mapping[it2->first], 1);
-    ROS_ERROR("c53");
-    device.writeRegisters(it2->first, 0x10A, 1, &erevs_mapping[it2->first], 1);
-    ROS_ERROR("c54");
+    device.setZeroAngle(it2->first, it2->second);
+    device.setERevsPerMRev(it2->first, erevs_mapping[it2->first]);
+    device.setInvertPhases(it2->first, invert_mapping[it2->first]);
+    device.setCurrentControlMode(it2->first);
   }
-  ROS_ERROR("c6");
 
   last_time = get_time(); //
   float dt = 0;
@@ -194,7 +178,7 @@ int main(int argc, char **argv) {
       std::vector<double> v = velocity_history_mapping[id];
 
       std::string joint_name = it->second;
-      double curr_angle = getEncoderAngleRadians(device, id) - angle_zero[id];
+      double curr_angle = device.getRotorPosition(id) - angle_zero[id];
 
       v[counter] = (curr_angle - past_angle[id])/dt;
       past_angle[id] = curr_angle;
@@ -216,7 +200,7 @@ int main(int argc, char **argv) {
       // ROS_ERROR("TRy to set duty");
       if (g_command_queue.find(id) != g_command_queue.end()) {
         // std::cerr << "setting duty to " << g_command_queue[id];
-        device.setDuty(id, g_command_queue[id]);
+        device.setCommand(id, g_command_queue[id]);
         // ROS_ERROR("Set Duty");
       }
     }
