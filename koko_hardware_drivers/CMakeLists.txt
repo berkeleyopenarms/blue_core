@@ -34,6 +34,12 @@ target_link_libraries(BLDCDriver_node
   BLDCControllerClient
 )
 
+add_executable(BLDCDriver_communication_freq_test src/BLDCDriver_communication_freq_test.cpp)
+target_link_libraries(BLDCDriver_communication_freq_test
+  ${catkin_LIBRARIES}
+  BLDCControllerClient
+)
+
 ## Mark executables and/or libraries for installation
 install(TARGETS BLDCControllerClient BLDCDriver_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

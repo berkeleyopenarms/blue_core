@@ -96,11 +96,6 @@ void initMaps(std::map<uint8_t, std::string>& joint_mapping,
   /* } */
 }
 
-double getEncoderAngleRadians(BLDCControllerClient& device, uint8_t id) {
-  double x = ((double) device.getEncoderRadians(id));
-  return x;
-}
-
 int main(int argc, char **argv) {
   ros::init(argc, argv, "jointInterface", ros::init_options::AnonymousName);
 
@@ -126,16 +121,20 @@ int main(int argc, char **argv) {
     device.leaveBootloader(it->first, 0);
   }
   ROS_ERROR("c3");
-  n_sleep(500);
+  ros::Duration(0.5).sleep();
 
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
     ROS_ERROR("c41, id: %d", it->first);
-    angle_zero[it->first] = getEncoderAngleRadians(device, it->first);
+    angle_zero[it->first] = device.getRotorPosition(it->first);
     ROS_ERROR("c42");
   }
 
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
-    uint8_t* angle = (uint8_t*) &it2->second;
+    // uint8_t* angle = (uint8_t*) &it2->second;
+    device.setZeroAngle(it2->first, it2->second);
+    device.setERevsPerMRev(it2->first, erevs_mapping[it2->first]);
+    device.setInvertPhases(it2->first, invert_mapping[it2->first]);
+    device.setCurrentControlMode(it2->first);
     // ROS_ERROR("c50");
     // device.writeRegisters(it2->first, 0x101, 1, angle, 2);
     // ROS_ERROR("c51");
@@ -160,7 +159,7 @@ int main(int argc, char **argv) {
       uint8_t id = it->first;
 
       std::string joint_name = it->second;
-      double curr_angle = getEncoderAngleRadians(device, id);
+      double curr_angle = device.getRotorPosition(id);
 
     }
     dt = get_period();
