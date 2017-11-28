@@ -31,8 +31,7 @@ float BLDCControllerClient::getRotorPosition(uint8_t server_id) {
   temp[2] = message.at(2);
   temp[3] = message.at(3);
 
-  float *x = reinterpret_cast<float*>(temp);
-  return *x;
+  return *reinterpret_cast<float*>(temp);
 }
 
 bool BLDCControllerClient::setCurrentControlMode(uint8_t server_id) {
@@ -75,8 +74,29 @@ bool BLDCControllerClient::leaveBootloader(uint8_t server_id, uint32_t jump_addr
 }
 
 bool BLDCControllerClient::setCommand(uint8_t server_id, float value) {
-  uint8_t* src = (uint8_t*) &value;
-  return BLDCControllerClient::writeRegisters_(server_id, 0x0106, 1, src, 4);
+  return BLDCControllerClient::writeRegisters_(server_id, 0x0106, 1, reinterpret_cast<uint8_t*>(&value), 4);
+}
+
+float BLDCControllerClient::setCommandAndGetRotorPosition(uint8_t server_id, float value) {
+
+  bytebuf_t message = BLDCControllerClient::readWriteRegisters_(
+    server_id,
+    0x3000,
+    1,
+    0x0106,
+    1,
+    reinterpret_cast<uint8_t*>(&value),
+    4
+  );
+
+  uint8_t temp[4];
+  temp[0] = message.at(0);
+  temp[1] = message.at(1);
+  temp[2] = message.at(2);
+  temp[3] = message.at(3);
+
+  return *reinterpret_cast<float*>(temp);
+
 }
 
 /* Private members */
@@ -208,6 +228,37 @@ bytebuf_t BLDCControllerClient::readRegisters_(uint8_t server_id, uint32_t start
   buffer.push_back(count);
 
   bytebuf_t data = BLDCControllerClient::doTransaction_(server_id, COMM_FC_REG_READ, buffer);
+  if (data.size() == 0) {
+    std::cerr << "Register read failed\n";
+    throw "error";
+  }
+  return data;
+}
+
+bytebuf_t BLDCControllerClient::readWriteRegisters_(
+  uint8_t server_id,
+  uint32_t read_start_addr,
+  uint8_t read_count,
+  uint32_t write_start_addr,
+  uint8_t write_count,
+  uint8_t* write_data,
+  size_t write_size
+) {
+  bytebuf_t buffer;
+  buffer.insert(buffer.end(), 6, 0);
+
+  buffer.push_back(read_start_addr & 0xFF);
+  buffer.push_back(read_start_addr >> 8);
+  buffer.push_back(read_count);
+
+  buffer.push_back(write_start_addr & 0xFF);
+  buffer.push_back(write_start_addr >> 8);
+  buffer.push_back(write_count);
+  for (size_t i = 0; i < write_size; i++) {
+    buffer.push_back(write_data[i]);
+  }
+
+  bytebuf_t data = BLDCControllerClient::doTransaction_(server_id, COMM_FC_REG_READ_WRITE, buffer);
   if (data.size() == 0) {
     std::cerr << "Register read failed\n";
     throw "error";

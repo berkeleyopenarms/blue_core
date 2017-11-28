@@ -52,52 +52,52 @@ void initMaps(std::map<uint8_t, std::string>& joint_mapping,
     std::map<uint8_t, uint16_t>& angle_mapping,
     std::map<uint8_t, uint8_t>& invert_mapping,
     std::map<uint8_t, uint8_t>& erevs_mapping) {
-    joint_mapping[15] = "base_roll_motor";
-    joint_mapping[11] = "right_motor1";
-    joint_mapping[12] = "left_motor1";
-    joint_mapping[14] = "right_motor2";
-    joint_mapping[16] = "left_motor2";
-    joint_mapping[21] = "right_motor3";
-    joint_mapping[19] = "left_motor3";
-    //joint_mapping[17] = "left_motor3";
-    //joint_mapping[13] = "base_roll_motor";
+  joint_mapping[15] = "base_roll_motor";
+  joint_mapping[11] = "right_motor1";
+  joint_mapping[12] = "left_motor1";
+  joint_mapping[14] = "right_motor2";
+  joint_mapping[16] = "left_motor2";
+  joint_mapping[21] = "right_motor3";
+  joint_mapping[19] = "left_motor3";
+  //joint_mapping[17] = "left_motor3";
+  //joint_mapping[13] = "base_roll_motor";
 
-    angle_mapping[15] = 13002;
-    angle_mapping[11] = 2164;
-    angle_mapping[12] = 1200;
-    angle_mapping[14] = 4484;
-    angle_mapping[16] = 2373;
-    angle_mapping[21] = 5899;
-    angle_mapping[19] = 2668;
-    //angle_mapping[17] = 10720;
-    //angle_mapping[13] = 11839;
+  angle_mapping[15] = 13002;
+  angle_mapping[11] = 2164;
+  angle_mapping[12] = 1200;
+  angle_mapping[14] = 4484;
+  angle_mapping[16] = 2373;
+  angle_mapping[21] = 5899;
+  angle_mapping[19] = 2668;
+  //angle_mapping[17] = 10720;
+  //angle_mapping[13] = 11839;
 
-    invert_mapping[15] = 0;
-    invert_mapping[11] = 0;
-    invert_mapping[12] = 0;
-    invert_mapping[14] = 0;
-    invert_mapping[16] = 0;
-    invert_mapping[21] = 0;
-    invert_mapping[19] = 0;
-    //invert_mapping[17] = 1;
-    //invert_mapping[13] = 1;
+  invert_mapping[15] = 0;
+  invert_mapping[11] = 0;
+  invert_mapping[12] = 0;
+  invert_mapping[14] = 0;
+  invert_mapping[16] = 0;
+  invert_mapping[21] = 0;
+  invert_mapping[19] = 0;
+  //invert_mapping[17] = 1;
+  //invert_mapping[13] = 1;
 
-    erevs_mapping[15] = 14;
-    erevs_mapping[11] = 14;
-    erevs_mapping[12] = 14;
-    erevs_mapping[14] = 14;
-    erevs_mapping[16] = 14;
-    erevs_mapping[21] = 21;
-    erevs_mapping[19] = 21;
-    //erevs_mapping[17] = 14;
-    //erevs_mapping[13] = 14;
+  erevs_mapping[15] = 14;
+  erevs_mapping[11] = 14;
+  erevs_mapping[12] = 14;
+  erevs_mapping[14] = 14;
+  erevs_mapping[16] = 14;
+  erevs_mapping[21] = 21;
+  erevs_mapping[19] = 21;
+  //erevs_mapping[17] = 14;
+  //erevs_mapping[13] = 14;
 
   /* joint_mapping[1] = "left_motor"; */
   /* joint_mapping[2] = "right_motor"; */
   /* joint_mapping[3] = "right_motor2"; */
   /* joint_mapping[4] = "left_motor2"; */
-//  joint_mapping[10] = "test_motor";
-//  angle_mapping[10] = 7568;
+  //  joint_mapping[10] = "test_motor";
+  //  angle_mapping[10] = 7568;
   /* std::map<std::string, int> angles; */
   /* ros::param::get("/koko_hardware_drivers/calibrations", angles); */
   /* if (angles.size() < 5) { */
@@ -178,7 +178,15 @@ int main(int argc, char **argv) {
       std::vector<double> v = velocity_history_mapping[id];
 
       std::string joint_name = it->second;
-      double curr_angle = device.getRotorPosition(id) - angle_zero[id];
+      double curr_angle;
+
+      if (g_command_queue.find(id) != g_command_queue.end()) {
+        // std::cerr << "setting duty to " << g_command_queue[id];
+        curr_angle = device.setCommandAndGetRotorPosition(id, g_command_queue[id]) - angle_zero[id];
+        // ROS_ERROR("Set Duty");
+      } else {
+        curr_angle = device.getRotorPosition(id) - angle_zero[id];
+      }
 
       v[counter] = (curr_angle - past_angle[id])/dt;
       past_angle[id] = curr_angle;
@@ -198,11 +206,6 @@ int main(int argc, char **argv) {
       curr_msg.data = (float) 0.0;
       publishers_curr[id].publish(curr_msg);
       // ROS_ERROR("TRy to set duty");
-      if (g_command_queue.find(id) != g_command_queue.end()) {
-        // std::cerr << "setting duty to " << g_command_queue[id];
-        device.setCommand(id, g_command_queue[id]);
-        // ROS_ERROR("Set Duty");
-      }
     }
     counter ++;
     counter = counter % filter_length;
