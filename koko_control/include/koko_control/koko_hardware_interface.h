@@ -194,7 +194,7 @@ public:
     // ROS_ERROR("f1");
     update_motor_currents_from_joint_cmd();
     // ROS_ERROR("f2");
-    motor_driver.write();
+    //motor_driver.write();
     // ROS_ERROR("f3");
   }
 

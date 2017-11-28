@@ -59,12 +59,12 @@ int main(int argc, char** argv)
   
   cm.loadController("joint_state_controller");
   ROS_INFO("Loaded Joint State Controller");
-  ROS_ERROR("AA");
+  ROS_ERROR("A");
   std::vector<std::string> controllers_state_start;
   controllers_state_start.push_back("joint_state_controller");
   std::vector<std::string> controllers_stop;
   ROS_ERROR("B");
-  cm.switchController(controllers_state_start, controllers_stop, 1);
+  //cm.switchController(controllers_state_start, controllers_stop, 1);
   ROS_ERROR("BB-8");
   
   
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
   
   
   
-  cm.switchController(controllers_start, controllers_stop, 1);
+  //cm.switchController(controllers_start, controllers_stop, 1);
   ROS_ERROR("F");
   //ROS_INFO("Here2");
   while (ros::ok())

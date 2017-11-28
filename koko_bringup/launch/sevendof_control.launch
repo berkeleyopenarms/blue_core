@@ -17,7 +17,7 @@
   <param 
     name="use_gui"
     value="$(arg gui)" />
-  <rosparam file="$(find koko_bringup)/config/control_7dof.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/control_7dof_pose.yaml" command="load"/>
   <node
     name="robot_state_publisher"
     pkg="robot_state_publisher"
@@ -61,13 +61,13 @@
     pkg="tf"
     type="static_transform_publisher" 
     args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>    
-   <node
+   <!--node
     name="motor_interface"
     pkg="koko_hardware_drivers"
-    type="koko_hardware_drivers_node"
-    args="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0" />
   <include
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+  <include
+    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
   <!--node
     name="calibration_writter"
     pkg="calibration"

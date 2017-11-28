@@ -19,6 +19,7 @@ void *ExecuteUpdate(void *threadarg) {
   {
      (* my_data->robot).read();
      (* my_data->manager).update((* my_data->robot).get_time(), (* my_data->robot).get_period());
+     ROS_ERROR("after_update");
      (* my_data->robot).write();
      ros::spinOnce();
      (* my_data->loop_rate).sleep();
@@ -46,7 +47,7 @@ int main(int argc, char** argv)
   ros::spinOnce();
   
   
-  ros::Rate loop_rate(100);
+  ros::Rate loop_rate(1000);
   ros::Rate loop_rate2(500);
   
   

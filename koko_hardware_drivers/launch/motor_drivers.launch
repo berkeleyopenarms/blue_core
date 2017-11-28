@@ -6,7 +6,7 @@
     <param name="rotor_position_source" value="encoder" />
   </node-->
  <node
-    name="lift_motor_interface"
+    name="motor_interface"
     pkg="koko_hardware_drivers"
     type="ros_bldc.py"
     args="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0" />

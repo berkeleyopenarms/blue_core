@@ -164,7 +164,7 @@ public:
     Eigen::Matrix<double, 3, Eigen::Dynamic> ee_pose_desired(3,1);
     ee_pose_desired(0, 0) = commandPose.position.x;
     ee_pose_desired(1, 0) = commandPose.position.y;
-    ee_pose_desired(2, 0) = commandPose.position.z - 2.0; // subtracting the difference of the offset
+    ee_pose_desired(2, 0) = commandPose.position.z; // subtracting the difference of the offset
 
     KDL::Rotation desired_rotation = KDL::Rotation::Quaternion(commandPose.orientation.x,
                                                                commandPose.orientation.y,
@@ -260,7 +260,7 @@ public:
     if (!receivedVisualTarget){
       receivedVisualTarget = true;
     }
-    
+    ROS_ERROR("Getting Controller Pose");
     commandPose = msg.pose;
     
   }

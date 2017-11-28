@@ -42,6 +42,7 @@ private:
   {
     std::string joint_name; 
     hardware_interface::JointHandle joint;
+    double id_gain;
     double max_torque;
     double min_torque;
     double max_angle;
