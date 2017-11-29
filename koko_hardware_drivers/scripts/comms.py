@@ -90,9 +90,8 @@ class BLDCControllerClient:
         self._ser = ser
 
     def getEncoder(self, id):
-        print(id)
-        angle = struct.unpack('<f', self.readRegisters(id, 0x10b, 1))[0]
-    	return angle
+        angle = struct.unpack('<f', self.readRegisters(id, 0x3000, 1))[0]
+        return angle
 
     def setCurrent(self, id, value):
         ret = self.writeRegisters(id, 0x2002, 1, struct.pack('<f', value ))
@@ -238,8 +237,8 @@ class BLDCControllerClient:
         return FlashSectorMap(sector_count, sector_starts, sector_sizes)
 
     def doTransaction(self, server_id, func_code, data):
+        self._ser.flush()
         self.writeRequest(server_id, func_code, data)
-        self._ser.flushInput()
         return self.readResponse(server_id, func_code)
 
     def writeRequest(self, server_id, func_code, data=''):
@@ -250,18 +249,14 @@ class BLDCControllerClient:
         self._ser.write(datagram)
 
     def readResponse(self, server_id, func_code, num_tries=10, try_interval=0.01):
-        for i in range(num_tries):
-            sync = self._ser.read()
-            if len(sync) == 1 and sync = 0xFF:
-                break
-            time.sleep(try_interval)
-        else:
+        sync = self._ser.read()
+        if len(sync) != 1 and sync != "\xff":
             # Reached maximum number of tries
             self._ser.flushInput()
             return False, None
 
         version = self._ser.read()
-        if len(version) != 1 or version != 0xFF:
+        if len(version) != 1 or version != "\xff":
             self._ser.flushInput()
             return False, None
 
@@ -269,7 +264,7 @@ class BLDCControllerClient:
         if length == None or len(length) == 0:
             return False, None
 
-        message_len, = struct.unpack('I', length)
+        message_len, = struct.unpack('H', length)
         message = self._ser.read(message_len)
 
         if len(message) < message_len:

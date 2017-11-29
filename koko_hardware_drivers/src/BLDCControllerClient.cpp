@@ -18,7 +18,7 @@ BLDCControllerClient::BLDCControllerClient(std::string port) {
 void BLDCControllerClient::init(std::string port) {
   ser_.setPort(port);
   ser_.setBaudrate(1000000);
-  ser_.setTimeout(serial::Timeout::max(), 10, 0, 10, 0);
+  ser_.setTimeout(serial::Timeout::max(), 20, 0, 20, 0);
   ser_.open();
 }
 
@@ -74,7 +74,7 @@ bool BLDCControllerClient::leaveBootloader(uint8_t server_id, uint32_t jump_addr
 }
 
 bool BLDCControllerClient::setCommand(uint8_t server_id, float value) {
-  return BLDCControllerClient::writeRegisters_(server_id, 0x0106, 1, reinterpret_cast<uint8_t*>(&value), 4);
+  return BLDCControllerClient::writeRegisters_(server_id, 0x2001, 1, reinterpret_cast<uint8_t*>(&value), 4);
 }
 
 float BLDCControllerClient::setCommandAndGetRotorPosition(uint8_t server_id, float value) {
@@ -83,7 +83,7 @@ float BLDCControllerClient::setCommandAndGetRotorPosition(uint8_t server_id, flo
     server_id,
     0x3000,
     1,
-    0x0106,
+    0x2001,
     1,
     reinterpret_cast<uint8_t*>(&value),
     4
@@ -155,7 +155,7 @@ bytebuf_t BLDCControllerClient::readResponse_(uint8_t server_id, uint8_t func_co
   comm_errors_t errors = errorsl + (errorsh << 8);
   if (!complete_read || message_server_id != server_id || message_func_code != func_code) {
     std::cerr << "Incomplete serial read or received unexpected server ID or function code\n";
-    throw "error";
+    throw;
   }
   if (errors) {
     if (errors & COMM_ERRORS_OP_FAILED) {
@@ -179,7 +179,7 @@ bytebuf_t BLDCControllerClient::readResponse_(uint8_t server_id, uint8_t func_co
   bytebuf_t message;
 
   if (length - 4 == 0 || ser_.read(message, length - 4) < (size_t) (length - 4)) {
-    std::cout << "message length was not long enough\n";
+    std::cerr << "message length was not long enough\n";
     ser_.flushInput();
     return empty;
   }
@@ -230,7 +230,7 @@ bytebuf_t BLDCControllerClient::readRegisters_(uint8_t server_id, uint32_t start
   bytebuf_t data = BLDCControllerClient::doTransaction_(server_id, COMM_FC_REG_READ, buffer);
   if (data.size() == 0) {
     std::cerr << "Register read failed\n";
-    throw "error";
+    throw;
   }
   return data;
 }
@@ -261,7 +261,7 @@ bytebuf_t BLDCControllerClient::readWriteRegisters_(
   bytebuf_t data = BLDCControllerClient::doTransaction_(server_id, COMM_FC_REG_READ_WRITE, buffer);
   if (data.size() == 0) {
     std::cerr << "Register read failed\n";
-    throw "error";
+    throw;
   }
   return data;
 }

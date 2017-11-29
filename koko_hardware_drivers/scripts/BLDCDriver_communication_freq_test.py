@@ -35,7 +35,7 @@ def main():
     else:
         port = port_default
     print port
-    s = serial.Serial(port=port, baudrate=1000000, timeout=0.001)
+    s = serial.Serial(port=port, baudrate=1000000, timeout=0.1)
     print s.BAUDRATES
     device = BLDCControllerClient(s)
     time.sleep(0.1)
@@ -53,16 +53,17 @@ def main():
 
     while not rospy.is_shutdown():
 
-        for key in mapping:
-            try:
-                curr_angle = device.getEncoder(key)
+        for i in range(10): # "low pass filter"
+            for key in mapping:
+                try:
+                    curr_angle = device.getEncoder(key)
+                except Exception as e:
+                    rospy.logerr(str(e))
+                    rospy.logerr(str(key))
 
-            except Exception as e:
-                rospy.logerr(str(e))
-                rospy.logerr(str(key    ))
         current_time = rospy.get_time()
         dt = current_time - last_time
-        freq = 1.0 / dt
+        freq = 1.0 / dt * 10
         msg.data = freq
         freq_pub.publish(msg)
         last_time = current_time
