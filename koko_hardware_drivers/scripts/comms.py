@@ -89,12 +89,24 @@ class BLDCControllerClient:
     def __init__(self, ser):
         self._ser = ser
 
-    def getEncoder(self, id):
-        angle = struct.unpack('<f', self.readRegisters(id, 0x3000, 1))[0]
+    def getRotorPosition(self, server_id):
+        angle = struct.unpack('<f', self.readRegisters(server_id, 0x3000, 1))[0]
         return angle
 
-    def setCurrent(self, id, value):
-        ret = self.writeRegisters(id, 0x2002, 1, struct.pack('<f', value ))
+    def setZeroAngle(self, server_id, value):
+        return self.writeRegisters(server_id, 0x1000, 1, struct.pack('<H', value))
+
+    def setInvertPhases(self, server_id, value):
+        return self.writeRegisters(server_id, 0x1002, 1, struct.pack('<B', value))
+
+    def setERevsPerMRev(self, server_id, value):
+        return self.writeRegisters(server_id, 0x1001, 1, struct.pack('<B', value))
+
+    def setCurrentControlMode(self, server_id):
+        return self.writeRegisters(server_id, 0x2000, 1, struct.pack('<B', 0))
+
+    def setCurrent(self, server_id, value):
+        ret = self.writeRegisters(server_id, 0x2002, 1, struct.pack('<f', value ))
         return ret
 
     def leaveBootloader(self, server_id):

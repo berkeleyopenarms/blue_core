@@ -107,7 +107,7 @@ def main():
 	def sigintHandler(signal, frame):
 		print 'quitting'
 		sys.exit()
-		
+
 	signal.signal(signal.SIGINT, sigintHandler)
 
 	#angle = 0.0   # Treat the starting position as zero
@@ -119,16 +119,16 @@ def main():
 
 	for id, angle in angle_mapping.items():
 		# device.setInitialAngle(id, angle)
-		device.writeRegisters(id, 0x1000, 1, struct.pack('<H', angle))
-		device.writeRegisters(id, 0x2000, 1, struct.pack('<B', 0))
+		device.setZeroAngle(id, angle)
+		device.setCurrentControlMode(id)
 
 	for id, invert in invert_mapping.items():
 		# device.setInitialAngle(id, angle)
-		device.writeRegisters(id, 0x1002, 1, struct.pack('<B', int(invert)))
+                device.setInvertPhases(id, int(invert))
 
 	for id, erevs_per_mrev in erevs_per_mrev_mapping.items():
 		# device.setInitialAngle(id, angle)
-		device.writeRegisters(id, 0x1001, 1, struct.pack('<B', int(erevs_per_mrev)))
+		device.setERevsPerMRev(id, int(erevs_per_mrev))
 
 	for key in mapping:
 		angle_start[key] = getEncoderAngleRadians(device, key)
