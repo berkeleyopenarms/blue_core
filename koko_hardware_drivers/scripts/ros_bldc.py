@@ -24,22 +24,22 @@ CONTROL_LOOP_FREQ = 140
 #mapping = {15: "base_roll_motor"} # mapping of id to joints
 #mapping = {12: "left_motor1", 11: "right_motor1", 15: "base_roll_motor"} # mapping of id to joints
 #mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", \
-	   #16: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
+       #16: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
 mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 10: "right_motor2", \
-	   17: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
+       17: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
 #angle_mapping = {15: 13002} # mapping of id to joints
 #angle_mapping = {12: 1200, 11: 2164, 15: 13002} # mapping of id to joints
 #angle_mapping = {15: 13002, 11: 2164, 12: 1200, 14: 4484, \
-	   #16: 2373, 21: 5899, 19: 2668} 
+       #16: 2373, 21: 5899, 19: 2668}
 angle_mapping = {15: 13002, 11: 2164, 12: 1200,  \
-	   17: 10720, 10: 11067, 21: 5899, 19: 2668} 
+       17: 10720, 10: 11067, 21: 5899, 19: 2668}
 #erevs_per_mrev_mapping = {12: 14, 11: 14, 15: 14}
-#erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 14: 14, 16: 14, 21: 21, 19: 21} 
-erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 10: 14, 17: 14, 21: 21, 19: 21} 
+#erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 14: 14, 16: 14, 21: 21, 19: 21}
+erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 10: 14, 17: 14, 21: 21, 19: 21}
 #invert_mapping = {15: False}
 #invert_mapping = {12: False, 11: False, 15: False}
-#invert_mapping = {15: False, 11: False, 12: False, 14: False, 16: False, 21: False, 19: False} 
-invert_mapping = {15: False, 11: False, 12: False, 10: False, 17: True, 21: False, 19: False} 
+#invert_mapping = {15: False, 11: False, 12: False, 14: False, 16: False, 21: False, 19: False}
+invert_mapping = {15: False, 11: False, 12: False, 10: False, 17: True, 21: False, 19: False}
 
 
 
@@ -57,112 +57,112 @@ command_queue = {}
 #################################################################################################
 
 def setpointFunction(t):
-	return math.sin(t * 2 * math.pi * 0.5) * 5.0
+    return math.sin(t * 2 * math.pi * 0.5) * 5.0
 
 def makeSetCommand(key):
-	def setCommand(key, msg):
-		global device
-		global command_queue
-		effort_raw = msg.data
-		effort_filtered = effort_raw
+    def setCommand(key, msg):
+        global device
+        global command_queue
+        effort_raw = msg.data
+        effort_filtered = effort_raw
 
-		if effort_filtered > MAX_CURRENT:
-			effort_filtered = MAX_CURRENT
-		elif effort_filtered < -MAX_CURRENT:
-			effort_filtered = -MAX_CURRENT
-		command_queue[key] = effort_filtered
-		print "I heard " + str(effort_filtered)
-	return lambda msg: setCommand(key, msg)
+        if effort_filtered > MAX_CURRENT:
+            effort_filtered = MAX_CURRENT
+        elif effort_filtered < -MAX_CURRENT:
+            effort_filtered = -MAX_CURRENT
+        command_queue[key] = effort_filtered
+        print "I heard " + str(effort_filtered)
+    return lambda msg: setCommand(key, msg)
 
 ##################################################################################################
 
 def main():
-	rospy.init_node('jointInterface', anonymous=True)
-	#rate = rospy.Rate(CONTROL_LOOP_FREQ)
-	global device
-	global command_queue
-	# Find and connect to the stepper motor controller
-	port = sys.argv[1]
-	s = serial.Serial(port=port, baudrate=1000000, timeout=0.001)
-	print s.BAUDRATES
-	device = BLDCControllerClient(s)
-	for key in mapping:
-		device.leaveBootloader(key)
-		s.flush()
-	time.sleep(0.5)
+    rospy.init_node('jointInterface', anonymous=True)
+    #rate = rospy.Rate(CONTROL_LOOP_FREQ)
+    global device
+    global command_queue
+    # Find and connect to the stepper motor controller
+    port = sys.argv[1]
+    s = serial.Serial(port=port, baudrate=1000000, timeout=0.001)
+    print s.BAUDRATES
+    device = BLDCControllerClient(s)
+    for key in mapping:
+        device.leaveBootloader(key)
+        s.flush()
+    time.sleep(0.5)
 
 
-	pubArray = {}
-	pubCurrArray = {}
-	subArray = {}
-	for key in mapping:
-		pubArray[key] = rospy.Publisher("/DOF/" + mapping[key] + "_State", JointState, queue_size=1)
-		pubCurrArray[key] = rospy.Publisher("/DOF/" + mapping[key] + "_Current", Float32, queue_size=1)
-		subArray[key] = rospy.Subscriber("/DOF/" + mapping[key] + "_Cmd", Float64, makeSetCommand(key), queue_size=1)
+    pubArray = {}
+    pubCurrArray = {}
+    subArray = {}
+    for key in mapping:
+        pubArray[key] = rospy.Publisher("/DOF/" + mapping[key] + "_State", JointState, queue_size=1)
+        pubCurrArray[key] = rospy.Publisher("/DOF/" + mapping[key] + "_Current", Float32, queue_size=1)
+        subArray[key] = rospy.Subscriber("/DOF/" + mapping[key] + "_Cmd", Float64, makeSetCommand(key), queue_size=1)
 
-	# Set up a signal handler so Ctrl-C causes a clean exit
-	def sigintHandler(signal, frame):
-		print 'quitting'
-		sys.exit()
+    # Set up a signal handler so Ctrl-C causes a clean exit
+    def sigintHandler(signal, frame):
+        print 'quitting'
+        sys.exit()
 
-	signal.signal(signal.SIGINT, sigintHandler)
+    signal.signal(signal.SIGINT, sigintHandler)
 
-	#angle = 0.0   # Treat the starting position as zero
-	start_time = time.time()
-	time_previous = start_time
-	angle_start = {}
-	time.sleep(0.2)
+    #angle = 0.0   # Treat the starting position as zero
+    start_time = time.time()
+    time_previous = start_time
+    angle_start = {}
+    time.sleep(0.2)
 
-	for id, angle in angle_mapping.items():
-		# device.setInitialAngle(id, angle)
-		device.setZeroAngle(id, angle)
-		device.setCurrentControlMode(id)
+    for id, angle in angle_mapping.items():
+        # device.setInitialAngle(id, angle)
+        device.setZeroAngle(id, angle)
+        device.setCurrentControlMode(id)
 
-	for id, invert in invert_mapping.items():
-		# device.setInitialAngle(id, angle)
-		device.setInvertPhases(id, int(invert))
+    for id, invert in invert_mapping.items():
+        # device.setInitialAngle(id, angle)
+        device.setInvertPhases(id, int(invert))
 
-	for id, erevs_per_mrev in erevs_per_mrev_mapping.items():
-		# device.setInitialAngle(id, angle)
-		device.setERevsPerMRev(id, int(erevs_per_mrev))
+    for id, erevs_per_mrev in erevs_per_mrev_mapping.items():
+        # device.setInitialAngle(id, angle)
+        device.setERevsPerMRev(id, int(erevs_per_mrev))
 
-	for key in mapping:
-		angle_start[key] = device.getRotorPosition(key)
+    for key in mapping:
+        angle_start[key] = device.getRotorPosition(key)
 
-	r = rospy.Rate(CONTROL_LOOP_FREQ)
-	while not rospy.is_shutdown():
-		for key in mapping:
-			try:
-				# Compute the desired setpoint for the current time
-				jointName = mapping[key]
+    r = rospy.Rate(CONTROL_LOOP_FREQ)
+    while not rospy.is_shutdown():
+        for key in mapping:
+            try:
+                # Compute the desired setpoint for the current time
+                jointName = mapping[key]
 
-				loop_start_time = time.time()
-				delta_time = loop_start_time - time_previous
-				time_previous = loop_start_time
+                loop_start_time = time.time()
+                delta_time = loop_start_time - time_previous
+                time_previous = loop_start_time
 
-				if key in command_queue:
-					curr_angle = device.setCommandAndGetRotorPosition(key, command_queue[key])
-				else:
-					curr_angle = device.getRotorPosisition(key)
+                if key in command_queue:
+                    curr_angle = device.setCommandAndGetRotorPosition(key, command_queue[key])
+                else:
+                    curr_angle = device.getRotorPosisition(key)
 
-				jointMsg = JointState()
-				jointMsg.name = [jointName]
-				jointMsg.position = [curr_angle - angle_start[key]]
-				jointMsg.velocity = [0.0] # [device.getVelocity(key)]
-				jointMsg.effort = [0.0] 
-				pubArray[key].publish(jointMsg)
-				# print("name: " + jointName + "  position: " + str(jointMsg.position))
-				# time.sleep(max(0.0, loop_start_time + 1.0 / CONTROL_LOOP_FREQ - time.time()))
+                jointMsg = JointState()
+                jointMsg.name = [jointName]
+                jointMsg.position = [curr_angle - angle_start[key]]
+                jointMsg.velocity = [0.0] # [device.getVelocity(key)]
+                jointMsg.effort = [0.0] 
+                pubArray[key].publish(jointMsg)
+                # print("name: " + jointName + "  position: " + str(jointMsg.position))
+                # time.sleep(max(0.0, loop_start_time + 1.0 / CONTROL_LOOP_FREQ - time.time()))
 
-				currMsg = Float32()
-				currMsg.data = float(0)
-				pubCurrArray[key].publish(currMsg)
-			except Exception as e:
-				rospy.logerr(str(e) + " " + str(key))
-				# rospy.logerr(str(key))
+                currMsg = Float32()
+                currMsg.data = float(0)
+                pubCurrArray[key].publish(currMsg)
+            except Exception as e:
+                rospy.logerr(str(e) + " " + str(key))
+                # rospy.logerr(str(key))
 
-		command_queue = {}
-		r.sleep()
+        command_queue = {}
+        r.sleep()
 
 if __name__ == '__main__':
-	main()
+    main()
