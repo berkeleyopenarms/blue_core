@@ -15,8 +15,9 @@ COMM_ERRORS_INVALID_ARGS = 8
 COMM_ERRORS_BUF_LEN_MISMATCH = 16
 
 COMM_FC_NOP = 0x00
-COMM_FC_READ_REGS = 0x01
-COMM_FC_WRITE_REGS = 0x02
+COMM_FC_REG_READ = 0x01
+COMM_FC_REG_WRITE = 0x02
+COMM_FC_REG_READ_WRITE = 0x03
 COMM_FC_SYSTEM_RESET = 0x80
 COMM_FC_JUMP_TO_ADDR = 0x81
 COMM_FC_FLASH_SECTOR_COUNT = 0x82
@@ -105,9 +106,14 @@ class BLDCControllerClient:
     def setCurrentControlMode(self, server_id):
         return self.writeRegisters(server_id, 0x2000, 1, struct.pack('<B', 0))
 
-    def setCurrent(self, server_id, value):
+    def setCommand(self, server_id, value):
         ret = self.writeRegisters(server_id, 0x2002, 1, struct.pack('<f', value ))
         return ret
+
+    def setCommandAndGetRotorPosition():
+        ret = self.readWriteRegisters(server_id, 0x3000, 1, 0x2002, 1, struct.pack('<f', value ))
+        angle = struct.unpack('<f', ret)
+        return angle
 
     def leaveBootloader(self, server_id):
         self.jumpToAddress(server_id, COMM_FIRMWARE_OFFSET)
@@ -116,13 +122,18 @@ class BLDCControllerClient:
         self.resetSystem(server_id)
 
     def readRegisters(self, server_id, start_addr, count):
-        success, data = self.doTransaction(server_id, COMM_FC_READ_REGS, struct.pack('<HB', start_addr, count))
+        success, data = self.doTransaction(server_id, COMM_FC_REG_READ, struct.pack('<HB', start_addr, count))
         if not success:
             raise IOError("Register read failed")
         return data
 
     def writeRegisters(self, server_id, start_addr, count, data):
-        success, _ = self.doTransaction(server_id, COMM_FC_WRITE_REGS, struct.pack('<HB', start_addr, count) + data)
+        success, _ = self.doTransaction(server_id, COMM_FC_REG_WRITE, struct.pack('<HB', start_addr, count) + data)
+        return success
+
+    def readWriteRegisters(self, server_id, read_start_addr, read_count, write_start_addr, write_count, write_data):
+        message = struct.pack('<HBHB', read_start_addr, read_count, write_start_addr, write_count) + data
+        success, _ = self.doTransaction(server_id, COMM_FC_REG_READ_WRITE, message)
         return success
 
     def resetSystem(self, server_id):

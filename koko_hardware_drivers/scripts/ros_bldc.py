@@ -24,15 +24,15 @@ CONTROL_LOOP_FREQ = 140
 #mapping = {15: "base_roll_motor"} # mapping of id to joints
 #mapping = {12: "left_motor1", 11: "right_motor1", 15: "base_roll_motor"} # mapping of id to joints
 #mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", \
-           #16: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
+	   #16: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
 mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 10: "right_motor2", \
-           17: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
+	   17: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
 #angle_mapping = {15: 13002} # mapping of id to joints
 #angle_mapping = {12: 1200, 11: 2164, 15: 13002} # mapping of id to joints
 #angle_mapping = {15: 13002, 11: 2164, 12: 1200, 14: 4484, \
-           #16: 2373, 21: 5899, 19: 2668} 
+	   #16: 2373, 21: 5899, 19: 2668} 
 angle_mapping = {15: 13002, 11: 2164, 12: 1200,  \
-           17: 10720, 10: 11067, 21: 5899, 19: 2668} 
+	   17: 10720, 10: 11067, 21: 5899, 19: 2668} 
 #erevs_per_mrev_mapping = {12: 14, 11: 14, 15: 14}
 #erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 14: 14, 16: 14, 21: 21, 19: 21} 
 erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 10: 14, 17: 14, 21: 21, 19: 21} 
@@ -58,9 +58,6 @@ command_queue = {}
 
 def setpointFunction(t):
 	return math.sin(t * 2 * math.pi * 0.5) * 5.0
-
-def getEncoderAngleRadians(device, key):
-	return float(device.getEncoder(key)) 
 
 def makeSetCommand(key):
 	def setCommand(key, msg):
@@ -111,7 +108,6 @@ def main():
 	signal.signal(signal.SIGINT, sigintHandler)
 
 	#angle = 0.0   # Treat the starting position as zero
-	#last_mod_angle = getEncoderAngleRadians(device)
 	start_time = time.time()
 	time_previous = start_time
 	angle_start = {}
@@ -124,16 +120,16 @@ def main():
 
 	for id, invert in invert_mapping.items():
 		# device.setInitialAngle(id, angle)
-                device.setInvertPhases(id, int(invert))
+		device.setInvertPhases(id, int(invert))
 
 	for id, erevs_per_mrev in erevs_per_mrev_mapping.items():
 		# device.setInitialAngle(id, angle)
 		device.setERevsPerMRev(id, int(erevs_per_mrev))
 
 	for key in mapping:
-		angle_start[key] = getEncoderAngleRadians(device, key)
+		angle_start[key] = device.getRotorPosition(key)
 
-        r = rospy.Rate(CONTROL_LOOP_FREQ)
+	r = rospy.Rate(CONTROL_LOOP_FREQ)
 	while not rospy.is_shutdown():
 		for key in mapping:
 			try:
@@ -143,8 +139,13 @@ def main():
 				loop_start_time = time.time()
 				delta_time = loop_start_time - time_previous
 				time_previous = loop_start_time
-				curr_angle = getEncoderAngleRadians(device, key)
-                                jointMsg = JointState()
+
+				if key in command_queue:
+					curr_angle = device.setCommandAndGetRotorPosition(key, command_queue[key])
+				else:
+					curr_angle = device.getRotorPosisition(key)
+
+				jointMsg = JointState()
 				jointMsg.name = [jointName]
 				jointMsg.position = [curr_angle - angle_start[key]]
 				jointMsg.velocity = [0.0] # [device.getVelocity(key)]
@@ -156,9 +157,6 @@ def main():
 				currMsg = Float32()
 				currMsg.data = float(0)
 				pubCurrArray[key].publish(currMsg)
-				if key in command_queue:
-					device.setCurrent(key, command_queue[key])
-					pass
 			except Exception as e:
 				rospy.logerr(str(e) + " " + str(key))
 				# rospy.logerr(str(key))
