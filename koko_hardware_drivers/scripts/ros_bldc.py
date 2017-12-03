@@ -10,36 +10,46 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64
 from std_msgs.msg import Float32
 from comms import *
+import numpy as np
 
 
 ENCODER_ANGLE_PERIOD = 1 << 14
 MAX_CURRENT = 1.2
-CONTROL_LOOP_FREQ = 140
+CONTROL_LOOP_FREQ = 70
+#EXP_VELOCITY_CONSTANT = 0.5
+NUM_FILTER_COMPONENTS = 5
 #mapping = {3: "right_motor2", 4: "left_motor2"} # mapping of id to joints
 # mapping = {1: "left_motor", 2: "right_motor", 3: "right_motor2", 4: "left_motor2"} # mapping of id to joints
 # angle_mapping = {1: 10356, 2: 13430, 3: 12164, 4: 8132} # mapping of id to joints
 #angle_mapping = {3: 12164, 4: 8132} # mapping of id to joints
 
 
-#mapping = {15: "base_roll_motor"} # mapping of id to joints
+#mapping = {22: "base_roll_motor"} # mapping of id to joints
 #mapping = {12: "left_motor1", 11: "right_motor1", 15: "base_roll_motor"} # mapping of id to joints
 #mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", \
            #16: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
-mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 10: "right_motor2", \
+#mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 10: "right_motor2", \
+           #17: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
+mapping = {15: "base_roll_motor", 23: "right_motor1", 22: "left_motor1", 10: "right_motor2", \
            17: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
-#angle_mapping = {15: 13002} # mapping of id to joints
+#angle_mapping = {22: 13002} # mapping of id to joints
 #angle_mapping = {12: 1200, 11: 2164, 15: 13002} # mapping of id to joints
 #angle_mapping = {15: 13002, 11: 2164, 12: 1200, 14: 4484, \
            #16: 2373, 21: 5899, 19: 2668} 
-angle_mapping = {15: 13002, 11: 2164, 12: 1200,  \
+#angle_mapping = {15: 13002, 11: 2164, 12: 1200,  \
+           #17: 10720, 10: 11067, 21: 5899, 19: 2668} 
+angle_mapping = {15: 13002, 23: 6262, 22: 6985,  \
            17: 10720, 10: 11067, 21: 5899, 19: 2668} 
+#erevs_per_mrev_mapping = {22: 14} 
 #erevs_per_mrev_mapping = {12: 14, 11: 14, 15: 14}
 #erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 14: 14, 16: 14, 21: 21, 19: 21} 
-erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 10: 14, 17: 14, 21: 21, 19: 21} 
-#invert_mapping = {15: False}
+#erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 10: 14, 17: 14, 21: 21, 19: 21} 
+erevs_per_mrev_mapping = {15: 14, 23: 14, 22: 14, 10: 14, 17: 14, 21: 21, 19: 21} 
+#invert_mapping = {22: False}
 #invert_mapping = {12: False, 11: False, 15: False}
 #invert_mapping = {15: False, 11: False, 12: False, 14: False, 16: False, 21: False, 19: False} 
-invert_mapping = {15: False, 11: False, 12: False, 10: False, 17: True, 21: False, 19: False} 
+#invert_mapping = {15: False, 11: False, 12: False, 10: False, 17: True, 21: False, 19: False} 
+invert_mapping = {15: False, 23: True, 22: True, 10: False, 17: True, 21: False, 19: False} 
 
 
 
@@ -124,6 +134,8 @@ def main():
 	start_time = time.time()
 	time_previous = start_time
 	angle_start = {}
+	prev_angle = {}
+	velocity_avg = {}
 	time.sleep(0.2)
 
 	for id, angle in angle_mapping.items():
@@ -141,8 +153,11 @@ def main():
 
 	for key in mapping:
 		angle_start[key] = getEncoderAngleRadians(device, key)
+                prev_angle[key] = angle_start[key]
+                velocity_avg[key] = np.zeros((NUM_FILTER_COMPONENTS,))
 
         r = rospy.Rate(CONTROL_LOOP_FREQ)
+        cur_filter_comp = 0
 	while not rospy.is_shutdown():
 		for key in mapping:
 			try:
@@ -155,8 +170,15 @@ def main():
 				curr_angle = getEncoderAngleRadians(device, key)
                                 jointMsg = JointState()
 				jointMsg.name = [jointName]
+                                curr_velocity_estimate = (curr_angle - prev_angle[key]) / (delta_time + 0.000000001)
+                                velocity_avg[key][cur_filter_comp] = curr_velocity_estimate
+                                curr_avged_velocity_estimate = np.mean(velocity_avg[key])
+                                #velocity_avg[key] = curr_avged_velocity_estimate
+                                prev_angle[key] = curr_angle
+                                cur_filter_comp = (cur_filter_comp + 1) % NUM_FILTER_COMPONENTS
+
 				jointMsg.position = [curr_angle - angle_start[key]]
-				jointMsg.velocity = [0.0] # [device.getVelocity(key)]
+				jointMsg.velocity = [curr_avged_velocity_estimate] # [device.getVelocity(key)]
 				jointMsg.effort = [0.0] 
 				pubArray[key].publish(jointMsg)
 				# print("name: " + jointName + "  position: " + str(jointMsg.position))

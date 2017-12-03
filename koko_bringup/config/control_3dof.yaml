@@ -1,0 +1,49 @@
+DOF:
+  joint_names: ['base_roll_joint', 'shoulder_joint', 'shoulder_roll_joint']
+  motor_names: ['base_roll_motor', 'right_motor1', 'left_motor1']
+  gear_ratio: [7.1875, 7.1875, 7.1875]
+  current_slope: [0.626, 0.626, 0.626]
+  current_offset: [0.0, 0.0, 0.0]
+  calibration_initial_angles: [0, 0, 0]
+  directions:        [1.0, -1.0, -1.0]
+  torque_directions: [1.0, -1.0, -1.0]
+  calibration_encoder: [4.4834423477927574, 4.4834423477927574, 3.5856800916826863]
+  calibration_joint_vive: [-0.2689415593931021, -0.2689415593931021, 0.085327798760949689]
+  #vive or rviz
+  target_mode: "rviz"
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 200  
+  endlink_tracker: 'lift_tracker_link'
+  # Position Controllers ---------------------------------------
+  simple_controller:
+    endlink: 'shoulder_roll_link'
+    paired_constraints: [1, 2]
+    filter_length: 20
+    type: my_controller/InverseDynamicsController
+    root_name: DOF
+    base_roll_joint:
+      p: 40
+      d: 0.0
+      id: 1.0
+      max_torque: 30
+      min_torque: -30
+      max_angle: 1.6
+      min_angle: -1.4  
+    shoulder_joint:
+      p: 20
+      d: 0.0
+      id: 1.0
+      max_torque: 30
+      min_torque: -30
+      max_angle: 1.6
+      min_angle: -1.4  
+    shoulder_roll_joint:
+      p: 20
+      d: 0.0
+      id: 1.0
+      max_torque: 20
+      min_torque: -20
+      max_angle: 1.5
+      min_angle: -1.5  

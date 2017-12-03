@@ -1,4 +1,4 @@
 *.pyc
+*.swp
 .ycm_extra_conf.py
 compile_commands.json
-config/
