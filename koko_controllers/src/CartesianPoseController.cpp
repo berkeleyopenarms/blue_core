@@ -14,6 +14,8 @@
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <numeric>
 
+#include <koko_misc/pseudoinverse.h>
+
 
 namespace koko_controllers{
   bool CartesianPoseController::init(hardware_interface::EffortJointInterface *robot, ros::NodeHandle &n)
@@ -35,6 +37,19 @@ namespace koko_controllers{
     std::string endlink;
     if (!n.getParam("endlink", endlink)) {
       ROS_ERROR("No endlink given node namespace %s", n.getNamespace().c_str());
+    }
+
+    posture_control = false;
+    if (!n.getParam("posture_control", posture_control)) {
+      ROS_ERROR("No posture_control given node namespace %s", n.getNamespace().c_str());
+    }
+
+    if (!n.getParam("posture_target", posture_target)) {
+      ROS_ERROR("No posture_target given node namespace %s", n.getNamespace().c_str());
+    }
+    
+    if (!n.getParam("posture_gain", posture_gain)) {
+      ROS_ERROR("No posture_gain given node namespace %s", n.getNamespace().c_str());
     }
 
     if (!n.getParam("paired_constraints", paired_constraints)) {
@@ -89,6 +104,7 @@ namespace koko_controllers{
         double min_angle;
         double max_angle;
         double id_gain;
+        double d_gain;
 
         if (!n.getParam(jointName + "/max_torque", max_torque)) {
           ROS_ERROR("No %s/max_torque given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
@@ -110,12 +126,17 @@ namespace koko_controllers{
           ROS_ERROR("No %s/id gain given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
           return false;
         }
+        if (!n.getParam(jointName + "/d", id_gain)) {
+          ROS_ERROR("No %s/id gain given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
+          return false;
+        }
 
         jointPD.max_torque = max_torque;
         jointPD.min_torque = min_torque;
         jointPD.max_angle = max_angle;
         jointPD.min_angle = min_angle;
         jointPD.id_gain = id_gain;
+        jointPD.d_gain = d_gain;
         jointPD.joint_name = jointName;
         joint_vector.push_back(jointPD);
 
@@ -182,17 +203,18 @@ namespace koko_controllers{
   void CartesianPoseController::visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg) {
     ROS_ERROR("in_pose_callback_before strcmp");
     //if (strcmp(msg.marker_name.c_str(), visualizer.c_str()) == 0 && target_mode == "rviz") {
-    //if (target_mode == "rviz") {
-      ROS_ERROR("in_pose_callback_after_strcmp");
+    if (!target_mode.compare("rviz")) {
+      //ROS_ERROR("in_pose_callback_after_strcmp");
       commandPose = msg.pose;  
       commandPose.position.z = commandPose.position.z;// + z_offset_controller;
       //commandPose = enforceJointLimits(commandPose);
-    //}
+    }
   }
 
   void CartesianPoseController::controllerPoseCallback(const geometry_msgs::PoseStamped msg) 
   {  
-    if (command_label == 25){// && target_mode == "vive") {
+    //if (command_label == 25 && !target_mode.compare("vive")) {
+    if (command_label == 25) {
       commandPose = msg.pose; 
       //commandPose.position.z = commandPose.position.z;// + z_offset_controller;
       //commandPose = enforceJointLimits(commandPose);
@@ -245,8 +267,10 @@ namespace koko_controllers{
     KDL::Frame pose_desired = KDL::Frame(desired_rotation, desired_position);
 
     KDL::JntArray jnt_pos_ = KDL::JntArray(nj); 
+    KDL::JntArray jnt_vel_ = KDL::JntArray(nj);
     for (int i = 0; i <nj; i++) {
       jnt_pos_(i) = joint_vector[i].joint.getPosition();
+      jnt_vel_(i) = joint_vector[i].joint.getVelocity();
     }
     KDL::ChainFkSolverPos_recursive jnt_to_pose_solver(chain);
     KDL::Frame pose_current;
@@ -264,6 +288,9 @@ namespace koko_controllers{
     for (unsigned int i=0; i<6; i++)
       wrench_desi(i) = computeCommand(twist_error(i), period, i);
 
+
+    
+
     KDL::Jacobian jacobian(nj);
     KDL::ChainJntToJacSolver jacSolver(chain);
     jacSolver.JntToJac(jnt_pos_, jacobian, -1);
@@ -275,9 +302,46 @@ namespace koko_controllers{
 
     }
 
+    // d gain joint portion
+    for(int i = 0; i < nj; i++) {
+      commands[i] += -joint_vector[i].d_gain * jnt_vel_(i);
+    }
+
+    // id portion
     for(int i = 0; i < nj; i++) {
       commands[i] += joint_vector[i].id_gain * id_torques(i);
     }
+    
+    // null space posture control
+    if (posture_control) {
+      Eigen::Matrix<double, Eigen::Dynamic, 1>  posture_error(nj,1);
+      for (int i = 0; i < nj; i++) {
+        posture_error(i, 0) = posture_target[i] - jnt_pos_(i);
+      }
+      Eigen::Matrix<double, 6, Eigen::Dynamic>  jacobian_eig(6, nj);
+
+      for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < nj; j++) {
+          jacobian_eig(i, j) = jacobian(i, j);
+        }
+      }
+
+      Eigen::Matrix<double, Eigen::Dynamic, 6>  jacobian_pinv = pseudoinverse(jacobian_eig, 0.00000001);
+
+      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>  I_nj(nj, nj);
+      I_nj.setIdentity();
+      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>  nullspace_proj = I_nj - jacobian_pinv * jacobian_eig;
+
+      Eigen::Matrix<double, Eigen::Dynamic, 1> posture_error_proj = nullspace_proj * (posture_gain * posture_error);
+
+
+      for(int i = 0; i < nj; i++) {
+        commands[i] += posture_error_proj(i, 0);
+      }
+
+
+    }
+
 
     for(int i = 0; i < nj; i++) {
       if(std::find(paired_constraints.begin(), paired_constraints.end(), i) == paired_constraints.end()) {

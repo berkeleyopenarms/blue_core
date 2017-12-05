@@ -124,7 +124,7 @@ class BLDCControllerClient:
     def readRegisters(self, server_id, start_addr, count):
         success, data = self.doTransaction(server_id, COMM_FC_REG_READ, struct.pack('<HB', start_addr, count))
         if not success:
-            raise IOError("Register read failed")
+            raise IOError("Register read failed %d" % server_id)
         return data
 
     def writeRegisters(self, server_id, start_addr, count, data):

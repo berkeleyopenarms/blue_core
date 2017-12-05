@@ -42,6 +42,7 @@ private:
   {
     std::string joint_name; 
     hardware_interface::JointHandle joint;
+    double d_gain;
     double id_gain;
     double max_torque;
     double min_torque;
@@ -66,6 +67,11 @@ private:
   std::vector<double> p_error_last; 
   std::vector<double> d_error;
   std::vector<std::vector<double> > err_dot_histories;
+  
+  bool posture_control;
+  std::vector<double> posture_target;
+  double posture_gain;
+
   double z_offset_controller;
   int command_label;
   int filter_length;
