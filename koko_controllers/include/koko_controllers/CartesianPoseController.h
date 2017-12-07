@@ -31,6 +31,7 @@ public:
   void jointCallback(const sensor_msgs::JointState msg);
   void visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg); 
   void controllerPoseCallback(const geometry_msgs::PoseStamped msg);
+  void ballCallback(const geometry_msgs::PoseStamped msg);
   void commandCallback(const std_msgs::Int32 msg);
   void publishCommandMsg(KDL::Vector desired_position, KDL::Rotation desired_rotation);
   void publishDeltaMsg(KDL::Twist twist_error);
@@ -60,6 +61,7 @@ private:
   std::string visualizer;
   geometry_msgs::Pose commandPose;
   ros::Subscriber subController;
+  ros::Subscriber subBall;
   ros::Subscriber subVisual; 
   ros::Subscriber subCommand;  
   std::vector<double> p_gains;
