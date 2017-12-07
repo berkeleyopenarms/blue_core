@@ -31,6 +31,7 @@ public:
   void jointCallback(const sensor_msgs::JointState msg);
   void visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg); 
   void controllerPoseCallback(const geometry_msgs::PoseStamped msg);
+  void ballCallback(const geometry_msgs::PoseStamped msg);
   void commandCallback(const std_msgs::Int32 msg);
   void publishCommandMsg(KDL::Vector desired_position, KDL::Rotation desired_rotation);
   void publishDeltaMsg(KDL::Twist twist_error);
@@ -42,6 +43,7 @@ private:
   {
     std::string joint_name; 
     hardware_interface::JointHandle joint;
+    double d_gain;
     double id_gain;
     double max_torque;
     double min_torque;
@@ -59,6 +61,7 @@ private:
   std::string visualizer;
   geometry_msgs::Pose commandPose;
   ros::Subscriber subController;
+  ros::Subscriber subBall;
   ros::Subscriber subVisual; 
   ros::Subscriber subCommand;  
   std::vector<double> p_gains;
@@ -66,6 +69,11 @@ private:
   std::vector<double> p_error_last; 
   std::vector<double> d_error;
   std::vector<std::vector<double> > err_dot_histories;
+  
+  bool posture_control;
+  std::vector<double> posture_target;
+  double posture_gain;
+
   double z_offset_controller;
   int command_label;
   int filter_length;

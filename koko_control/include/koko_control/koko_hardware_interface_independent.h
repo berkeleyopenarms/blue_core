@@ -36,16 +36,32 @@ public:
     if (!nh.getParam("current_offset", current_offset)) {
       ROS_ERROR("No current_offset given (namespace: %s)", nh.getNamespace().c_str());
     }
-
     if (!nh.getParam("simple_controller/paired_constraints", paired_constraints)) {
       ROS_ERROR("No simple_controller/paired_constraints given (namespace: %s", nh.getNamespace().c_str());
     }
-
     if (paired_constraints.size() % 2 != 0) {
       ROS_ERROR("Paired_constraints length must be even");
     }
-
+    if (!nh.getParam("hardstop_torque_limit", hardstop_torque_limit)) {
+      ROS_ERROR("No hardstop_torque_limit given (namespace: %s)", nh.getNamespace().c_str());
+    }
+    
     num_joints = joint_names.size();
+
+
+    // adding joint limits
+    min_angles.resize(num_joints, 0.0);
+    max_angles.resize(num_joints, 0.0);
+    for (int j; j < num_joints; j ++){
+      if ( !nh.getParam("simple_controller/" + motor_names[j] + "/min_angle", min_angles[j]) ) {
+        ROS_ERROR("No min angle given (namespace: %s)", nh.getNamespace().c_str());
+      }
+      if ( !nh.getParam("simple_controller/" + motor_names[j] + "/max_angle", max_angles[j]) ) {
+        ROS_ERROR("No max angle given (namespace: %s)", nh.getNamespace().c_str());
+      }
+    }
+    ////
+
     motor_pos.resize(num_joints, 0.0);
     motor_vel.resize(num_joints, 0.0);
     cmd.resize(num_joints, 0.0);
@@ -226,6 +242,15 @@ public:
       for (int k = 0; k < num_joints; k++) {
         pre[k] = cmd[k];
         cmd_oriented[k] = torque_directions[k] * cmd[k];
+        
+        // makeing sure robot is not trying to push past joint limits
+
+        double current_angle = pos[k];
+        if ( (current_angle < min_angles[k] && cmd_oriented[k] < 0) || (current_angle > max_angles[k] && cmd_oriented[k] > 0) ){
+            if ( abs(cmd_oriented[k]) > hardstop_torque_limit) {
+              cmd_oriented[k] = hardstop_torque_limit;
+            }
+        }
         //ROS_INFO("cmd %d = %f", k, cmd[k]);
       }
       //ROS_ERROR("d1");
@@ -281,6 +306,9 @@ private:
   std::vector<double> pos;
   std::vector<double> vel;
   std::vector<double> eff;
+  std::vector<double> min_angles;
+  std::vector<double> max_angles;
+
 
   std::vector<double> current_slope;
   std::vector<double> current_offset;
@@ -294,6 +322,7 @@ private:
   std::vector<double> joint_state_initial;
   std::vector<double> directions;
   std::vector<double> torque_directions;
+  double hardstop_torque_limit;
   double i_to_T_slope;
   double i_to_T_intercept;
   int calibration_num;

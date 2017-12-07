@@ -63,7 +63,7 @@
     args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>    
    <!--node
     name="motor_interface"
-    pkg="koko_hardware_drivers"
+    pkg="koko_hardware_drivers"/-->
   <include
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
   <include

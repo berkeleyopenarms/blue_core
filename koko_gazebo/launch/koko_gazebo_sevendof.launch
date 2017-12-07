@@ -11,7 +11,7 @@
   <!-- Load the URDF into the ROS Parameter Server -->
   <param
     name="robot_description"
-    textfile="$(find koko_gazebo)/robots/koko_description_sevendof_kin.urdf" />
+    textfile="$(find koko_gazebo)/robots/koko_description_sevendof_kin2.urdf" />
     
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
     args="-urdf -model DOF -param robot_description"/>
