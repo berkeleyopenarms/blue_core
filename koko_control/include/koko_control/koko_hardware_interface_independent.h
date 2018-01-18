@@ -129,6 +129,7 @@ public:
 
     if (is_calibrated != 1) {
       angle_after_calibration[index] = msg.position[0];
+      is_calibrated = 1;
     } else if (is_calibrated == 1){
 
         ROS_ERROR("f0");
@@ -245,12 +246,14 @@ public:
         
         // makeing sure robot is not trying to push past joint limits
 
-        double current_angle = pos[k];
-        if ( (current_angle < min_angles[k] && cmd_oriented[k] < 0) || (current_angle > max_angles[k] && cmd_oriented[k] > 0) ){
-            if ( abs(cmd_oriented[k]) > hardstop_torque_limit) {
-              cmd_oriented[k] = hardstop_torque_limit;
-            }
-        }
+        // double current_angle = pos[k];
+        // if ( (current_angle < min_angles[k] && cmd_oriented[k] < 0) || (current_angle > max_angles[k] && cmd_oriented[k] > 0) ){
+        //     if ( abs(cmd_oriented[k]) > hardstop_torque_limit) {
+        //       cmd_oriented[k] = hardstop_torque_limit;
+        //     }
+        // }
+
+        
         //ROS_INFO("cmd %d = %f", k, cmd[k]);
       }
       //ROS_ERROR("d1");

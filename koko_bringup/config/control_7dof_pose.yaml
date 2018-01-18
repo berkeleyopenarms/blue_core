@@ -7,11 +7,14 @@ DOF:
   calibration_initial_angles: [-0.0, 0.0, 0.0, -0.0, 0.0, 0.0, -3.0]
   directions:        [1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0]
   torque_directions: [1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0]
+  #directions:        [1.0, -1.0, 1.0, -0.0, 0.0, -0.0, 0.0]
+  #torque_directions: [1.0, 1.0, -1.0, -0.0, 0.0, -0.0, 0.0]
   calibration_encoder: [4.4834423477927574, 4.4834423477927574, 3.5856800916826863, 4.4834423477927574, 3.5856800916826863, 4.4834423477927574, 3.5856800916826863] # deprecated
   calibration_joint_vive: [-0.2689415593931021, -0.2689415593931021, 0.085327798760949689, -0.2689415593931021, 0.085327798760949689, -0.2689415593931021, 0.085327798760949689] #deprecated
   #vive or rviz
   target_mode: "vive"
   # Publish all joint states -----------------------------------
+  hardstop_torque_limit: 0.1
   joint_state_controller:
     type: joint_state_controller/JointStateController
     publish_rate: 500  

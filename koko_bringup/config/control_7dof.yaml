@@ -15,6 +15,7 @@ DOF:
   joint_state_controller:
     type: joint_state_controller/JointStateController
     publish_rate: 500  
+  hardstop_torque_limit: 0.1
   forearm_tracker: 'forearm_tracker_link'
   ee_tracker: 'ee_tracker_link'
   # Position Controllers ---------------------------------------
@@ -25,7 +26,7 @@ DOF:
     type: koko_controllers/InverseDynamicsController
     root_name: DOF
     base_roll_joint:
-      p: 40
+      p: 100
       d: 0.0
       id: 1.
       max_torque: 30
@@ -33,15 +34,15 @@ DOF:
       max_angle: 1.6
       min_angle: -1.4  
     shoulder_lift_joint:
-      p: 40
+      p: 100
       d: 0.0
       id: 1
       max_torque: 30
       min_torque: -30
-      max_angle: 3.5
+      max_angle: 3.14
       min_angle: -1.4  
     shoulder_roll_joint:
-      p: 20
+      p: 100
       d: 0.0
       id: 1.0
       max_torque: 30
@@ -49,32 +50,32 @@ DOF:
       max_angle: 1.5
       min_angle: -1.5  
     elbow_lift_joint:
-      p: 25
-      d: 0.02
+      p: 100
+      d: 0.0
       id: 1
       max_torque: 30
       min_torque: -30
       max_angle: 3.5
       min_angle: -1.4  
     elbow_roll_joint:
-      p: 15
-      d: 0.02
+      p: 100
+      d: 0.0
       id: 1.0
       max_torque: 30
       min_torque: -30
       max_angle: 1.5
       min_angle: -1.5
     wrist_lift_joint:
-      p: 5
-      d: 0.02
+      p: 100
+      d: 0.0
       id: 1
       max_torque: 30
       min_torque: -30
       max_angle: 3.5
       min_angle: -1.4  
     wrist_joint:
-      p: 5
-      d: 0.02
+      p: 100
+      d: 0.0
       id: 1.0
       max_torque: 30
       min_torque: -30

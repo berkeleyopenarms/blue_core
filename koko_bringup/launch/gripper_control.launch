@@ -1,0 +1,43 @@
+<launch>
+  <node
+    name="console"
+    pkg="rqt_console"
+    type="rqt_console" />
+  <arg
+    name="model" />
+  <arg
+    name="gui"
+    default="True" />
+  <param
+    name="robot_description"
+    textfile="$(find koko_description_sevendof_kin)/robots/koko_description_sevendof_kin.urdf" />
+  <param
+    name="/DOF/robot_dyn_description"
+    textfile="$(find koko_description_sevendof_dyn)/robots/koko_description_sevendof_dyn.urdf" />
+  <param 
+    name="use_gui"
+    value="$(arg gui)" />
+  <rosparam file="$(find koko_bringup)/config/control_gripper.yaml" command="load"/>
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find koko_description_sevendof_kin)/urdf.rviz" />
+  <node
+    name="koko_controller_manager"
+    pkg="koko_control"
+    type="koko_controller_manager_independent"
+    ns="DOF" /> 
+  <node
+    name="joint_state_relay"
+    pkg="topic_tools"
+    type="relay"
+    args="/DOF/joint_states /joint_states" />
+  <node
+    name="transformer"
+    pkg="tf"
+    type="static_transform_publisher" 
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>    
+  <include
+    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
+</launch>

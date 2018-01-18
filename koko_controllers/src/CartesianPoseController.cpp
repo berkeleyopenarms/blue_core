@@ -150,7 +150,6 @@ namespace koko_controllers{
     }
     subVisual = node.subscribe("/basic_controls/feedback", 1000, &CartesianPoseController::visualCallback, this);
     subController = node.subscribe("/right_controller_pose", 1000, &CartesianPoseController::controllerPoseCallback, this);
-    subBall = node.subscribe("/final_ball_pose", 1000, &CartesianPoseController::ballCallback, this);
     subCommand = node.subscribe("/command_label", 1000, &CartesianPoseController::commandCallback, this);
 
     sub_joint = node.subscribe("/" + root_name  + "/joint_states", 1000, &CartesianPoseController::jointCallback, this);
@@ -216,16 +215,6 @@ namespace koko_controllers{
   {  
     //if (command_label == 25 && !target_mode.compare("vive")) {
     if (command_label == 25) {
-      commandPose = msg.pose; 
-      //commandPose.position.z = commandPose.position.z;// + z_offset_controller;
-      //commandPose = enforceJointLimits(commandPose);
-    }
-  }
-
-  void CartesianPoseController::ballCallback(const geometry_msgs::PoseStamped msg) 
-  {  
-    //if (command_label == 25 && !target_mode.compare("vive")) {
-    if (command_label == 8) {
       commandPose = msg.pose; 
       //commandPose.position.z = commandPose.position.z;// + z_offset_controller;
       //commandPose = enforceJointLimits(commandPose);
