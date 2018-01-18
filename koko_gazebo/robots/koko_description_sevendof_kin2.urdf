@@ -1,0 +1,825 @@
+<robot
+  name="koko_description_sevendof_kin">
+  <link name="world"/>
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.012870283424599 -0.146460771615819 0.199851243077833"
+        rpy="0 0 0" />
+      <mass
+        value="5.30617493719281" />
+      <inertia
+        ixx="0.167859643379243"
+        ixy="-0.0181596573247314"
+        ixz="0.00370892628271697"
+        iyy="0.155525388827852"
+        iyz="-0.0306003369765196"
+        izz="0.0830686215437385" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="shoulder_link">
+    <inertial>
+      <origin
+        xyz="-0.00518874659014712 7.90714814608018E-06 0.0778921147892145"
+        rpy="0 0 0" />
+      <mass
+        value="2.01456804587825" />
+      <inertia
+        ixx="0.0104358255696714"
+        ixy="1.85927513005904E-06"
+        ixz="0.000187864909023401"
+        iyy="0.00992302221285427"
+        iyz="-3.95022985902063E-06"
+        izz="0.00452603936468363" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/shoulder_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/shoulder_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="base_roll_joint"
+    type="continuous">
+    <origin
+      xyz="0.0901789447182363 -0.0908049999999997 0.212155832960628"
+      rpy="6.83851519316138E-15 0.785398163397447 4.83556046633164E-15" />
+    <parent
+      link="base_link" />
+    <child
+      link="shoulder_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="shoulder_lift_link">
+    <inertial>
+      <origin
+        xyz="8.56700436199787E-05 0.00010654053757414 -2.9972230730646E-06"
+        rpy="0 0 0" />
+      <mass
+        value="0.491671117165989" />
+      <inertia
+        ixx="0.00108090636725938"
+        ixy="-6.67404349023893E-06"
+        ixz="-6.13266050289641E-07"
+        iyy="0.00110224655576866"
+        iyz="-9.06027102110219E-07"
+        izz="0.000715449666977584" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/shoulder_lift_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/shoulder_lift_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder_lift_joint"
+    type="continuous">
+    <origin
+      xyz="0.0114299285786579 4.04065193964076E-05 0.210820000000001"
+      rpy="1.5707963267949 -0.785395039094458 0.0035351359132397" />
+    <parent
+      link="shoulder_link" />
+    <child
+      link="shoulder_lift_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="upper_arm_link">
+    <inertial>
+      <origin
+        xyz="0.00609369132194054 -3.24757141115795E-05 0.0608213327590084"
+        rpy="0 0 0" />
+      <mass
+        value="1.74743726474448" />
+      <inertia
+        ixx="0.00721735480213021"
+        ixy="-1.74231660649774E-06"
+        ixz="3.18076302441607E-06"
+        iyy="0.0066862072655567"
+        iyz="4.81729928094709E-06"
+        izz="0.00408333582741531" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/upper_arm_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/upper_arm_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder_roll_joint"
+    type="continuous">
+    <origin
+      xyz="0.0245928619569141 -0.0662368676461337 0"
+      rpy="1.5707963267949 -0.00266644576657517 0.355511126450564" />
+    <parent
+      link="shoulder_lift_link" />
+    <child
+      link="upper_arm_link" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+  <link
+    name="upper_arm_lift_link">
+    <inertial>
+      <origin
+        xyz="8.84356752833548E-05 0.000101387574016315 -3.00231190070166E-06"
+        rpy="0 0 0" />
+      <mass
+        value="0.4910945909981" />
+      <inertia
+        ixx="0.0010794675496049"
+        ixy="-2.637206335515E-06"
+        ixz="-1.8617763035461E-06"
+        iyy="0.00110223920923269"
+        iyz="-8.57651055146512E-07"
+        izz="0.000713963218283621" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/upper_arm_lift_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/upper_arm_lift_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow_lift_joint"
+    type="continuous">
+    <origin
+      xyz="-0.0114299541998245 3.04774259364815E-05 0.181015677385081"
+      rpy="-1.5707963267949 -0.355504877844586 -0.0026664457665753" />
+    <parent
+      link="upper_arm_link" />
+    <child
+      link="upper_arm_lift_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="forearm_link">
+    <inertial>
+      <origin
+        xyz="0.00609794825852328 -3.45327458729505E-05 0.0632167600955606"
+        rpy="0 0 0" />
+      <mass
+        value="1.74772059521985" />
+      <inertia
+        ixx="0.00717580641928532"
+        ixy="-1.61087741471946E-06"
+        ixz="-3.38766044835458E-06"
+        iyy="0.00664405421478125"
+        iyz="5.38563806629474E-06"
+        izz="0.00408394973892555" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/forearm_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/forearm_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow_roll_joint"
+    type="continuous">
+    <origin
+      xyz="0.00778446382641085 -0.0702248716034493 0"
+      rpy="1.5707963267949 -0.00251502707069075 0.11039980475715" />
+    <parent
+      link="upper_arm_lift_link" />
+    <child
+      link="forearm_link" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+  <link
+    name="forearm_tracker_link">
+    <inertial>
+      <origin
+        xyz="-7.74493666921838E-07 3.04089012037878E-05 0.0143118679906802"
+        rpy="0 0 0" />
+      <mass
+        value="0.085205801529096" />
+      <inertia
+        ixx="5.02600714967744E-05"
+        ixy="3.55487556876048E-09"
+        ixz="7.91609112890932E-10"
+        iyy="5.05430641945225E-05"
+        iyz="-1.54448545755472E-07"
+        izz="8.48822146540676E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/forearm_tracker_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/forearm_tracker_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="forearm_tracker_joint"
+    type="fixed">
+    <origin
+      xyz="0.0683718588661483 -0.000172162669981935 0.0965426886750276"
+      rpy="1.26028779817361 -4.44479261962489E-05 1.56829556254391" />
+    <parent
+      link="forearm_link" />
+    <child
+      link="forearm_tracker_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="wrist_lift_link">
+    <inertial>
+      <origin
+        xyz="0.000127836210901899 3.90137200076829E-05 -2.99282089472053E-06"
+        rpy="0 0 0" />
+      <mass
+        value="0.491088159923728" />
+      <inertia
+        ixx="0.00108469359167175"
+        ixy="9.48558786334864E-06"
+        ixz="-1.94945080136335E-06"
+        iyy="0.00109703339225256"
+        iyz="1.85051906992597E-07"
+        izz="0.000713962889826841" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/wrist_lift_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/wrist_lift_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_lift_joint"
+    type="continuous">
+    <origin
+      xyz="-0.0114299638505801 2.87467290523424E-05 0.181015691663285"
+      rpy="-1.5707963267949 -0.110406053363127 -0.00251502707069052" />
+    <parent
+      link="forearm_link" />
+    <child
+      link="wrist_lift_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="wrist_link">
+    <inertial>
+      <origin
+        xyz="-0.000126164739804535 0.0433325364416689 0.0224239702203065"
+        rpy="0 0 0" />
+      <mass
+        value="0.196389998403157" />
+      <inertia
+        ixx="0.000228576786741867"
+        ixy="-5.49849326423581E-07"
+        ixz="-5.71606492613851E-07"
+        iyy="0.000212235889871566"
+        iyz="-8.39385916915871E-05"
+        izz="0.000234824604396145" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/wrist_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.498039215686275 0.498039215686275 0.498039215686275 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/wrist_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_joint"
+    type="continuous">
+    <origin
+      xyz="-0.0115762892877892 -0.0214116625791075 0"
+      rpy="1.62543589699027E-15 -1.18308141061618E-15 2.64595360386185" />
+    <parent
+      link="wrist_lift_link" />
+    <child
+      link="wrist_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+
+
+
+  <link
+    name="ee_tracker_link">
+    <inertial>
+      <origin
+        xyz="-1.43305547234407E-06 3.07686086425812E-05 0.0143119732879843"
+        rpy="0 0 0" />
+      <mass
+        value="0.0852083038792347" />
+      <inertia
+        ixx="5.02597890613365E-05"
+        ixy="3.05566589570515E-09"
+        ixz="1.41676664956198E-09"
+        iyy="5.05458638065493E-05"
+        iyz="-1.54535044158343E-07"
+        izz="8.4884681388761E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/ee_tracker_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/ee_tracker_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ee_tracker_joint"
+    type="fixed">
+    <origin
+      xyz="0 0.0796100008691862 0.058269700931892"
+      rpy="1.09287578986539E-15 4.52676091056148E-15 3.52354834016303E-05" />
+    <parent
+      link="wrist_link" />
+    <child
+      link="ee_tracker_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+
+
+  <link
+    name="end_effector">
+    <inertial>
+      <origin
+        xyz="0.0 0.11094848 -0.03186797969"
+        rpy="1.57079632679 0 0" />
+      <mass
+        value="0.0852083038792347" />
+      <inertia
+        ixx="5.02597890613365E-05"
+        ixy="3.05566589570515E-09"
+        ixz="1.41676664956198E-09"
+        iyy="5.05458638065493E-05"
+        iyz="-1.54535044158343E-07"
+        izz="8.4884681388761E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/ee_tracker_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/ee_tracker_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="end_effector_joint"
+    type="fixed">
+      <origin
+        xyz="0.0 0.11094848 -0.03186797969"
+        rpy="-1.57079632679 0 0" />
+    <parent
+      link="wrist_link" />
+    <child
+      link="end_effector" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+
+
+
+
+  <link
+    name="upper_arm_tracker_link">
+    <inertial>
+      <origin
+        xyz="-1.01627995979792E-06 0.0398004448694437 0.0669412784859027"
+        rpy="0 0 0" />
+      <mass
+        value="0.0852060439090128" />
+      <inertia
+        ixx="5.02596760831562E-05"
+        ixy="3.31573814724338E-09"
+        ixz="9.87009324292282E-10"
+        iyy="5.05436913850634E-05"
+        iyz="-1.54429265459234E-07"
+        izz="8.48824605132763E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/upper_arm_tracker_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/upper_arm_tracker_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="upper_arm_tracker_joint"
+    type="fixed">
+    <origin
+      xyz="0.0304107988383049 -7.9845769743736E-05 0.0425940035066137"
+      rpy="1.26028781893822 -2.27414330359861E-05 1.56813717848771" />
+    <parent
+      link="upper_arm_link" />
+    <child
+      link="upper_arm_tracker_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="base_tracker_link">
+    <inertial>
+      <origin
+        xyz="0.141892034748374 0.112201467355768 0.0281232501077621"
+        rpy="0 0 0" />
+      <mass
+        value="0.0852057940282606" />
+      <inertia
+        ixx="8.48820896114014E-05"
+        ixy="-7.57319547534365E-08"
+        ixz="1.54405334129355E-07"
+        iyy="5.02596644756146E-05"
+        iyz="3.08778002190969E-09"
+        izz="5.05436686793134E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/base_tracker_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/base_tracker_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="base_tracker_joint"
+    type="fixed">
+    <origin
+      xyz="0.104741193173153 0.0217020515197849 0.138021531898148"
+      rpy="-0.00215895279379528 -0.78539656263699 -3.1385396042896" />
+    <parent
+      link="base_link" />
+    <child
+      link="base_tracker_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="kinect_link">
+    <inertial>
+      <origin
+        xyz="-0.095254717219956 0.00459138830279149 -0.034674162519563"
+        rpy="0 0 0" />
+      <mass
+        value="0.807440668573839" />
+      <inertia
+        ixx="0.000577832535560536"
+        ixy="3.71862237459264E-07"
+        ixz="-1.50835387102005E-05"
+        iyy="0.00399387846670323"
+        iyz="-2.78207155255422E-05"
+        izz="0.00385632976247957" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/kinect_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.101960784313725 0.101960784313725 0.101960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/kinect_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="kinect_joint"
+    type="fixed">
+    <origin
+      xyz="0.0296663032719453 0.0534280083246514 0.655319999999998"
+      rpy="-1.5707963267949 -1.5707963267949 -1.5707963267949" />
+    <parent
+      link="base_link" />
+    <child
+      link="kinect_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+
+  <joint name ="world_joint" type= "fixed">
+    <origin xyz="0 0 2" rpy="0 0 0" />
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint>
+
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="base_roll_joint"><hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="shoulder_lift_joint"><hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="shoulder_roll_joint"><hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor3">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  
+  <transmission name="tran4">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="elbow_lift_joint"><hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor4">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran5">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="elbow_roll_joint"><hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor5">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran6">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wrist_lift_joint"><hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor6">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran7">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wrist_joint"><hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor7">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/DOF</robotNamespace>
+    </plugin>
+  </gazebo>
+  
+</robot>

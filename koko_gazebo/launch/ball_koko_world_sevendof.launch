@@ -17,7 +17,7 @@
 
   <param
     name="robot_dyn_description"
-    textfile="$(find koko_gazebo)/robots/koko_description_sevendof_kin.urdf" />
+    textfile="$(find koko_gazebo)/robots/koko_description_sevendof_kin2.urdf" />
 
   <param
     name="use_gui"
@@ -58,6 +58,12 @@
     name="transformer"
     pkg="tf"
     type="static_transform_publisher" 
-    args="0.0 0.0 0.0 0.0 0.0 0.0 1 kinect_link kinect2_rgb_optical_frame 100"/>   
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1 kinect_link kinect2_ir_optical_frame 100"/>   
+
+<!--   <node
+    name="transformer_ef"
+    pkg="tf"
+    type="static_transform_publisher" 
+    args=" 0.0 0.11094848 -0.03186797969 -0.7071 0.0 0.0 0.7071 wrist_link end_effector 100"/>   --> 
 
 </launch>

@@ -204,7 +204,7 @@ namespace koko_controllers{
     ROS_ERROR("in_pose_callback_before strcmp");
     //if (strcmp(msg.marker_name.c_str(), visualizer.c_str()) == 0 && target_mode == "rviz") {
     if (!target_mode.compare("rviz")) {
-      //ROS_ERROR("in_pose_callback_after_strcmp");
+      ROS_ERROR("in_pose_callback_after_strcmp");
       commandPose = msg.pose;  
       commandPose.position.z = commandPose.position.z;// + z_offset_controller;
       //commandPose = enforceJointLimits(commandPose);
@@ -242,7 +242,7 @@ namespace koko_controllers{
     deltaMsg.data.push_back(twist_error.rot.data[0]);
     deltaMsg.data.push_back(twist_error.rot.data[1]);
     deltaMsg.data.push_back(twist_error.rot.data[2]);
-    //deltaPub.publish(deltaMsg);
+    deltaPub.publish(deltaMsg);
   }
 
   void CartesianPoseController::publishInverseDynamicsMsg() {
@@ -301,7 +301,8 @@ namespace koko_controllers{
       }
 
     }
-
+    ROS_ERROR( "Jac col 5 %f, %f, %f, %f, %f, %f", jacobian(0,5), jacobian(1,5), jacobian(2,5), jacobian(3,5), jacobian(4,5), jacobian(5,5));
+    ROS_ERROR( "Jac col 6 %f, %f, %f, %f, %f, %f", jacobian(0,6), jacobian(1,6), jacobian(2,6), jacobian(3,6), jacobian(4,6), jacobian(5,6));
     // d gain joint portion
     for(int i = 0; i < nj; i++) {
       commands[i] += -joint_vector[i].d_gain * jnt_vel_(i);

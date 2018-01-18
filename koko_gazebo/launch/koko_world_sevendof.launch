@@ -14,7 +14,7 @@
 
   <param
     name="robot_dyn_description"
-    textfile="$(find koko_gazebo)/robots/koko_description_sevendof_kin.urdf" />
+    textfile="$(find koko_gazebo)/robots/koko_description_sevendof_kin2.urdf" />
 
   <param
     name="use_gui"

@@ -6,12 +6,15 @@ DOF:
   current_offset: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
   calibration_initial_angles: [-0.0, 0.0, 0.0, -0.0, 0.0, 0.0, -3.0]
   directions:        [1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0]
-  torque_directions: [1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0]
+  torque_directions: [1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0]
+  #directions:        [1.0, -1.0, 1.0, -0.0, 0.0, -0.0, 0.0]
+  #torque_directions: [1.0, 1.0, -1.0, -0.0, 0.0, -0.0, 0.0]
   calibration_encoder: [4.4834423477927574, 4.4834423477927574, 3.5856800916826863, 4.4834423477927574, 3.5856800916826863, 4.4834423477927574, 3.5856800916826863] # deprecated
   calibration_joint_vive: [-0.2689415593931021, -0.2689415593931021, 0.085327798760949689, -0.2689415593931021, 0.085327798760949689, -0.2689415593931021, 0.085327798760949689] #deprecated
   #vive or rviz
   target_mode: "vive"
   # Publish all joint states -----------------------------------
+  hardstop_torque_limit: 0.1
   joint_state_controller:
     type: joint_state_controller/JointStateController
     publish_rate: 500  
@@ -27,7 +30,8 @@ DOF:
     d_gains: [0, 0, 0, 0.0, 0.0, 0.0]
     posture_control: true
     posture_gain: 10.0
-    posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29]
+    #posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29] # for real control
+    posture_target: [0.0, 0.62, 3.14, -0.67, 0.1, -0.67, 0.0] # for ball project
     z_offset_controller: 0.0
     root_name: DOF
     base_roll_joint:

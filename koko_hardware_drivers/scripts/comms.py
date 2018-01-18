@@ -107,11 +107,11 @@ class BLDCControllerClient:
         return self.writeRegisters(server_id, 0x2000, 1, struct.pack('<B', 0))
 
     def setCommand(self, server_id, value):
-        ret = self.writeRegisters(server_id, 0x2002, 1, struct.pack('<f', value ))
+        ret = self.writeRegisters(server_id, 0x2002, 1, struct.pack('<f', value))
         return ret
 
     def setCommandAndGetRotorPosition():
-        ret = self.readWriteRegisters(server_id, 0x3000, 1, 0x2002, 1, struct.pack('<f', value ))
+        ret = self.readWriteRegisters(server_id, 0x3000, 1, 0x2002, 1, struct.pack('<f', value))
         angle = struct.unpack('<f', ret)
         return angle
 
