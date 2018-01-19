@@ -258,6 +258,10 @@ class BLDCControllerClient:
             sector_sizes.append(self.getFlashSectorSize(server_id, sector_num))
 
         return FlashSectorMap(sector_count, sector_starts, sector_sizes)
+    
+    def readCalibration(self, board_id):
+        l = self.readFlash(board_id, COMM_NVPARAMS_OFFSET+1, 1)
+        return device.readFlash(board_id, COMM_NVPARAMS_OFFSET+2, ord(l))
 
     def doTransaction(self, server_id, func_code, data):
         self._ser.flush()

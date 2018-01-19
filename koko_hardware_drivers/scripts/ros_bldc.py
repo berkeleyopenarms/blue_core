@@ -7,6 +7,7 @@ import collections
 import signal
 import sys
 import rospy
+import json
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64
 from std_msgs.msg import Float32
@@ -95,6 +96,10 @@ def makeSetCommand(key):
 
 #################################################################################################
 
+def readCalibration(device, board_id):
+    l = device.readFlash(board_id, COMM_NVPARAMS_OFFSET+1, 1)
+    return device.readFlash(board_id, COMM_NVPARAMS_OFFSET+2, ord(l))
+
 def main():
     rospy.init_node('jointInterface', anonymous=True)
     #rate = rospy.Rate(CONTROL_LOOP_FREQ)
@@ -129,6 +134,15 @@ def main():
     time.sleep(0.2)
 
     # Write calibration values
+    for id in mapping:
+        calibrations = json.loads(device.readCalibration(id))
+        device.setZeroAngle(id, calibrations['angle'])
+        device.setCurrentControlMode(id)
+        device.setInvertPhases(id, calibrations['inv'])
+        device.setERevsPerMRev(id, calibrations['epm'])
+
+    '''
+    # Old calibration method:
     for id, angle in angle_mapping.items():
         device.setZeroAngle(id, angle)
         device.setCurrentControlMode(id)
@@ -138,6 +152,7 @@ def main():
 
     for id, erevs_per_mrev in erevs_per_mrev_mapping.items():
         device.setERevsPerMRev(id, int(erevs_per_mrev))
+    '''
 
     start_time = time.time()
     time_previous = start_time
@@ -164,7 +179,7 @@ def main():
 
                 curr_velocity = 0
                 recorded_positions[key].append((curr_time, curr_position))
-                if len(recorded_positions[key]) >= velocity_window_size):
+                if len(recorded_positions[key]) >= velocity_window_size:
                     prev_time, prev_position = recorded_positions[key].popleft()
                     curr_velocity = (curr_position - prev_position) / (curr_time - prev_time)
 
