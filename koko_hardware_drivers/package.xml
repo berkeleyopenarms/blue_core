@@ -3,7 +3,7 @@
   <name>koko_hardware_drivers</name>
   <version>0.0.0</version>
   <description>The koko_hardware_drivers package</description>
-  
+
   <maintainer email="zhaoallan@berkeley.edu">Allan Zhao</maintainer>
   <maintainer email="brentyi@berkeley.edu">Brent Yi</maintainer>
 
@@ -16,17 +16,15 @@
   <author email="zoemccarthy12@gmail.com">Zoe McCarthy</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>geometry_msgs</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
   <build_depend>sensor_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
   <build_depend>serial</build_depend>
-
-  <run_depend>geometry_msgs</run_depend>
+  <build_depend>std_msgs</build_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
   <run_depend>sensor_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>vesc_driver</run_depend>
   <run_depend>serial</run_depend>
+  <run_depend>std_msgs</run_depend>
 
 </package>

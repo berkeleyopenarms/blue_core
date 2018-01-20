@@ -73,11 +73,6 @@ void initMaps(std::vector<uint8_t>& angle_id_mapping,
   /* } */
 }
 
-double getEncoderAngleRadians(BLDCControllerClient& device, uint8_t id) {
-  double x = ((double) device.getEncoderRadians(id));
-  return x;
-}
-
 void BLDCDriver::init(std::vector<double>* in_pos, std::vector<double>* in_vel, std::vector<double>* in_eff, const std::vector<double>* in_cmd) {
   // Init comms/data structures
   pos = in_pos;
@@ -88,30 +83,29 @@ void BLDCDriver::init(std::vector<double>* in_pos, std::vector<double>* in_vel, 
   initMaps(angle_id_mapping, motor_mapping, angle_mapping, invert_mapping, erevs_mapping);
 
   std::string port = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0"; // TODO: read from launch/config
-  device.init(port, BAUD_RATE, serial::Timeout::simpleTimeout(10)); // TODO: likely candidate for the frequency issues
+  device.init(port); // TODO: likely candidate for the frequency issues
 
   std::map<uint8_t, std::string>::iterator it;
   for (it = motor_mapping.begin(); it != motor_mapping.end(); it++) {
     device.leaveBootloader(it->first, 0);
-    device.flushSerial();
   }
   n_sleep(500);
 
 
   // Init angle
   for (it = motor_mapping.begin(); it != motor_mapping.end(); it++) {
-    angle_zero[it->first] = getEncoderAngleRadians(device, it->first);
+    angle_zero[it->first] = device.getRotorPosition(it->first);
   }
 
-  
+
   // Init driver firmware data structures
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
     uint8_t* angle = (uint8_t*) &it2->second;
-    device.writeRegisters(it2->first, 0x101, 1, angle, 2);
-    uint8_t r = 0;
-    device.writeRegisters(it2->first, 0x102, 1, &r, 1);
-    device.writeRegisters(it2->first, 0x109, 1, &invert_mapping[it2->first], 1);
-    device.writeRegisters(it2->first, 0x10A, 1, &erevs_mapping[it2->first], 1);
+    // device.writeRegisters(it2->first, 0x101, 1, angle, 2);
+    // uint8_t r = 0;
+    // device.writeRegisters(it2->first, 0x102, 1, &r, 1);
+    // device.writeRegisters(it2->first, 0x109, 1, &invert_mapping[it2->first], 1);
+    // device.writeRegisters(it2->first, 0x10A, 1, &erevs_mapping[it2->first], 1);
   }
 }
 
@@ -141,8 +135,8 @@ void BLDCDriver::write(){
       uint8_t id = angle_id_mapping[i];
 
       const double cmd_i = (*cmd)[i];
-      
-      device.setDuty(id, (float)cmd_i);
+
+      device.setCommand(id, (float)cmd_i);
   }
 }
 

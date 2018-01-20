@@ -1,7 +1,5 @@
 <launch>
-   <node
-    name="motor_communication_freq_test"
-    pkg="koko_hardware_drivers"
-    type="koko_hardware_drivers_communication_freq_test"
-    args="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0" />
+   <node name="motor_communication_freq_test" pkg="koko_hardware_drivers" type="BLDCDriver_communication_freq_test">
+      <param name="port" value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0" />
+   </node>
 </launch>

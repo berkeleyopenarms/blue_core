@@ -15,8 +15,9 @@ COMM_ERRORS_INVALID_ARGS = 8
 COMM_ERRORS_BUF_LEN_MISMATCH = 16
 
 COMM_FC_NOP = 0x00
-COMM_FC_READ_REGS = 0x01
-COMM_FC_WRITE_REGS = 0x02
+COMM_FC_REG_READ = 0x01
+COMM_FC_REG_WRITE = 0x02
+COMM_FC_REG_READ_WRITE = 0x03
 COMM_FC_SYSTEM_RESET = 0x80
 COMM_FC_JUMP_TO_ADDR = 0x81
 COMM_FC_FLASH_SECTOR_COUNT = 0x82
@@ -89,21 +90,30 @@ class BLDCControllerClient:
     def __init__(self, ser):
         self._ser = ser
 
-    def setCurrent(self, id, value):
-    	ret = self.writeRegisters(id, 0x0102, 1, struct.pack('<f', value))
-    	return ret 
+    def getRotorPosition(self, server_id):
+        angle = struct.unpack('<f', self.readRegisters(server_id, 0x3000, 1))[0]
+        return angle
 
-    def getEncoder(self, id):
-        print(id)
-        angle = struct.unpack('<f', self.readRegisters(id, 0x10b, 1))[0]
-    	return angle
+    def setZeroAngle(self, server_id, value):
+        return self.writeRegisters(server_id, 0x1000, 1, struct.pack('<H', value))
 
-    def setDuty(self, id, value):
-        ret = self.writeRegisters(id, 0x0106, 1, struct.pack('<f', value ))
+    def setInvertPhases(self, server_id, value):
+        return self.writeRegisters(server_id, 0x1002, 1, struct.pack('<B', value))
+
+    def setERevsPerMRev(self, server_id, value):
+        return self.writeRegisters(server_id, 0x1001, 1, struct.pack('<B', value))
+
+    def setCurrentControlMode(self, server_id):
+        return self.writeRegisters(server_id, 0x2000, 1, struct.pack('<B', 0))
+
+    def setCommand(self, server_id, value):
+        ret = self.writeRegisters(server_id, 0x2002, 1, struct.pack('<f', value))
         return ret
 
-    def setControlEnabled(self, id, logical):
-        self.writeRegisters(id, 0x0102, 1, struct.pack('<B', logical))
+    def setCommandAndGetRotorPosition():
+        ret = self.readWriteRegisters(server_id, 0x3000, 1, 0x2002, 1, struct.pack('<f', value))
+        angle = struct.unpack('<f', ret)
+        return angle
 
     def leaveBootloader(self, server_id):
         self.jumpToAddress(server_id, COMM_FIRMWARE_OFFSET)
@@ -112,13 +122,18 @@ class BLDCControllerClient:
         self.resetSystem(server_id)
 
     def readRegisters(self, server_id, start_addr, count):
-        success, data = self.doTransaction(server_id, COMM_FC_READ_REGS, struct.pack('<HB', start_addr, count))
+        success, data = self.doTransaction(server_id, COMM_FC_REG_READ, struct.pack('<HB', start_addr, count))
         if not success:
             raise IOError("Register read failed %d" % server_id)
         return data
 
     def writeRegisters(self, server_id, start_addr, count, data):
-        success, _ = self.doTransaction(server_id, COMM_FC_WRITE_REGS, struct.pack('<HB', start_addr, count) + data)
+        success, _ = self.doTransaction(server_id, COMM_FC_REG_WRITE, struct.pack('<HB', start_addr, count) + data)
+        return success
+
+    def readWriteRegisters(self, server_id, read_start_addr, read_count, write_start_addr, write_count, write_data):
+        message = struct.pack('<HBHB', read_start_addr, read_count, write_start_addr, write_count) + data
+        success, _ = self.doTransaction(server_id, COMM_FC_REG_READ_WRITE, message)
         return success
 
     def resetSystem(self, server_id):
@@ -243,36 +258,40 @@ class BLDCControllerClient:
             sector_sizes.append(self.getFlashSectorSize(server_id, sector_num))
 
         return FlashSectorMap(sector_count, sector_starts, sector_sizes)
+    
+    def readCalibration(self, board_id):
+        l = self.readFlash(board_id, COMM_NVPARAMS_OFFSET+1, 1)
+        return device.readFlash(board_id, COMM_NVPARAMS_OFFSET+2, ord(l))
 
     def doTransaction(self, server_id, func_code, data):
+        self._ser.flush()
         self.writeRequest(server_id, func_code, data)
-        self._ser.flushInput()
         return self.readResponse(server_id, func_code)
 
     def writeRequest(self, server_id, func_code, data=''):
         message = struct.pack('BB', server_id, func_code) + data
-        prefixed_message = struct.pack('B', len(message)) + message
+        prefixed_message = struct.pack('BBH', 0xFF, 0xFF, len(message)) + message
         datagram = prefixed_message + struct.pack('<H', self._computeCRC(prefixed_message))
 
         self._ser.write(datagram)
 
     def readResponse(self, server_id, func_code, num_tries=10, try_interval=0.01):
-        for i in range(num_tries):
-            lb = self._ser.read()
-
-            if len(lb) == 1:
-                break
-
-            time.sleep(try_interval)
-        else:
+        sync = self._ser.read()
+        if len(sync) != 1 and sync != "\xff":
             # Reached maximum number of tries
             self._ser.flushInput()
             return False, None
 
-        if lb == None or len(lb) == 0:
+        version = self._ser.read()
+        if len(version) != 1 or version != "\xff":
+            self._ser.flushInput()
             return False, None
 
-        message_len, = struct.unpack('B', lb)
+        length = self._ser.read(2)
+        if length == None or len(length) == 0:
+            return False, None
+
+        message_len, = struct.unpack('H', length)
         message = self._ser.read(message_len)
 
         if len(message) < message_len:
@@ -292,7 +311,7 @@ class BLDCControllerClient:
 
         message_crc, = struct.unpack('<H', crc_bytes)
 
-        if message_crc != self._computeCRC(lb + message):
+        if message_crc != self._computeCRC(length + message):
             raise ProtocolError('received unexpected CRC')
 
         success = (errors & COMM_ERRORS_OP_FAILED) == 0
