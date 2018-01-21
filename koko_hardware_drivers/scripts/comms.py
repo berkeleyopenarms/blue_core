@@ -110,9 +110,9 @@ class BLDCControllerClient:
         ret = self.writeRegisters(server_id, 0x2002, 1, struct.pack('<f', value))
         return ret
 
-    def setCommandAndGetRotorPosition():
+    def setCommandAndGetRotorPosition(self, server_id, value):
         ret = self.readWriteRegisters(server_id, 0x3000, 1, 0x2002, 1, struct.pack('<f', value))
-        angle = struct.unpack('<f', ret)
+        angle = struct.unpack('<f', ret)[0]
         return angle
 
     def leaveBootloader(self, server_id):
@@ -132,9 +132,9 @@ class BLDCControllerClient:
         return success
 
     def readWriteRegisters(self, server_id, read_start_addr, read_count, write_start_addr, write_count, write_data):
-        message = struct.pack('<HBHB', read_start_addr, read_count, write_start_addr, write_count) + data
-        success, _ = self.doTransaction(server_id, COMM_FC_REG_READ_WRITE, message)
-        return success
+        message = struct.pack('<HBHB', read_start_addr, read_count, write_start_addr, write_count) + write_data
+        success, data = self.doTransaction(server_id, COMM_FC_REG_READ_WRITE, message)
+        return data
 
     def resetSystem(self, server_id):
         self.writeRequest(server_id, COMM_FC_SYSTEM_RESET)
@@ -264,7 +264,7 @@ class BLDCControllerClient:
         return device.readFlash(board_id, COMM_NVPARAMS_OFFSET+2, ord(l))
 
     def doTransaction(self, server_id, func_code, data):
-        self._ser.flush()
+        self._ser.flushInput()
         self.writeRequest(server_id, func_code, data)
         return self.readResponse(server_id, func_code)
 
@@ -306,8 +306,13 @@ class BLDCControllerClient:
 
         message_server_id, message_func_code, errors = struct.unpack('<BBH', message[:4])
 
-        if message_server_id != server_id or message_func_code != func_code:
-            raise ProtocolError('received unexpected server ID or function code')
+        if message_server_id != server_id:
+            raise ProtocolError('received unexpected server ID: saw ' \
+                                + str(message_server_id) + ', expected ' + str(server_id))
+
+        if message_func_code != func_code:
+            raise ProtocolError('received unexpected func ID: saw ' \
+                                + str(message_func_code) + ', expected ' + str(func_code))
 
         message_crc, = struct.unpack('<H', crc_bytes)
 
