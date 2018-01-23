@@ -1,5 +1,5 @@
 DOF:
-  joint_names: ['base_roll_joint', 'shoulder_lift_joint', 'shoulder_roll_joint', 'elbow_lift_joint', 'elbow_roll_joint', 'wrist_lift_joint', 'wrist_joint']
+  joint_names: ['base_roll_joint', 'shoulder_lift_joint', 'shoulder_roll_joint', 'elbow_lift_joint', 'elbow_roll_joint', 'wrist_lift_joint', 'wrist_roll_joint']
   motor_names: ['base_roll_motor', 'right_motor1', 'left_motor1', 'right_motor2', 'left_motor2', 'right_motor3', 'left_motor3']
   gear_ratio: [7.1875, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 7.1875, 8.24448529412] # 8.24448529412 results from 7.1875 * (39 / 34) from the output gear
   current_slope: [0.626, 0.626, 0.626, 0.626, 0.626, 0.626, 0.626]
@@ -22,7 +22,7 @@ DOF:
   ee_tracker: 'ee_tracker_link'
   # Position Controllers ---------------------------------------
   simple_controller:
-    endlink: 'wrist_link'
+    endlink: 'wrist_roll_link'
     paired_constraints: [1, 2, 3, 4, 5, 6]
     filter_length: 20
     type: koko_controllers/CartesianPoseController

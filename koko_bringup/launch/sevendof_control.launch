@@ -37,12 +37,14 @@
   <node
     name="tracker_calibrate_joints"
     pkg="koko_vive"
-    type="calibrate_joint_state" />
+    type="calibrate_joint_state"
+    output="screen"/> 
   <node
     name="koko_controller_manager"
     pkg="koko_control"
     type="koko_controller_manager_independent"
-    ns="DOF" /> 
+    ns="DOF" 
+    output="screen"/> 
   <node
     name="joint_state_relay"
     pkg="topic_tools"
@@ -66,8 +68,8 @@
     pkg="koko_hardware_drivers"/-->
   <include
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
-  <include
-    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
+  <!--include
+    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" /-->
   <!--node
     name="calibration_writter"
     pkg="calibration"

@@ -19,7 +19,7 @@ void *ExecuteUpdate(void *threadarg) {
   {
      (* my_data->robot).read();
      (* my_data->manager).update((* my_data->robot).get_time(), (* my_data->robot).get_period());
-     ROS_ERROR("after_update");
+     ROS_INFO_ONCE("after_update");
      (* my_data->robot).write();
      ros::spinOnce();
      (* my_data->loop_rate).sleep();
@@ -60,31 +60,31 @@ int main(int argc, char** argv)
   
   cm.loadController("joint_state_controller");
   ROS_INFO("Loaded Joint State Controller");
-  ROS_ERROR("AA");
+  ROS_INFO("AA");
   std::vector<std::string> controllers_state_start;
   controllers_state_start.push_back("joint_state_controller");
   std::vector<std::string> controllers_stop;
-  ROS_ERROR("B");
+  ROS_INFO("B");
   cm.switchController(controllers_state_start, controllers_stop, 1);
-  ROS_ERROR("BB-8");
+  ROS_INFO("BB-8");
   
   while (robot.getPositionRead() != 1) {
-    ROS_INFO("Waiting for first joint state message read");
+    ROS_INFO_ONCE("Waiting for first joint state message read");
   }
-  ROS_ERROR("C");
+  ROS_INFO("C");
   
   cm.loadController("simple_controller");
   ROS_INFO("Loaded Controller");
-  ROS_ERROR("D");
+  ROS_INFO("D");
   
   std::vector<std::string> controllers_start;
   controllers_start.push_back("simple_controller");
-  ROS_ERROR("E");
+  ROS_INFO("E");
   
   
   
   cm.switchController(controllers_start, controllers_stop, 1);
-  ROS_ERROR("F");
+  ROS_INFO("F");
   //ROS_INFO("Here2");
   while (ros::ok())
   {

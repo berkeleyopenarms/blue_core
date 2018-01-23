@@ -4,17 +4,17 @@
     name="base_link">
     <inertial>
       <origin
-        xyz="0.012870283424599 -0.146460771615818 0.201507269698043"
+        xyz="-0.00237523344929972 -0.1517165080015 0.133562829709273"
         rpy="0 0 0" />
       <mass
-        value="5.30617493719281" />
+        value="0.210349130781402" />
       <inertia
-        ixx="0.174648623457956"
-        ixy="-0.0181596573247313"
-        ixz="0.00377485804672849"
-        iyy="0.162314368906565"
-        iyz="-0.0318169278276485"
-        izz="0.0830686215437385" />
+        ixx="0.00131121369963536"
+        ixy="-3.09616125638608E-09"
+        ixz="0.000877219835937122"
+        iyy="0.00192535968380682"
+        iyz="-4.97710584568403E-09"
+        izz="0.00130019808237566" />
     </inertial>
     <visual>
       <origin
@@ -44,17 +44,17 @@
     name="shoulder_link">
     <inertial>
       <origin
-        xyz="-0.0051832519269859 -1.10570459971315E-06 0.0778839085515859"
+        xyz="-0.00742540950524501 -2.52983663371342E-05 0.0799021977321933"
         rpy="0 0 0" />
       <mass
-        value="2.01422165272683" />
+        value="4.06060300135281" />
       <inertia
-        ixx="0.0104340077355253"
-        ixy="1.28206988237664E-06"
-        ixz="0.000187295521557691"
-        iyy="0.00992174205669081"
-        iyz="-3.07483957897016E-06"
-        izz="0.00452466905504524" />
+        ixx="0.00615696534468231"
+        ixy="-5.24446396802067E-07"
+        ixz="-3.96039332717607E-06"
+        iyy="0.00629905043020347"
+        iyz="-3.51714297900969E-07"
+        izz="0.00592100303296699" />
     </inertial>
     <visual>
       <origin
@@ -67,7 +67,7 @@
       <material
         name="">
         <color
-          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+          rgba="0.843137254901961 0.815686274509804 0.752941176470588 1" />
       </material>
     </visual>
     <collision>
@@ -82,32 +82,37 @@
   </link>
   <joint
     name="base_roll_joint"
-    type="continuous">
+    type="revolute">
     <origin
-      xyz="0.090179 -0.090805 0.21216"
-      rpy="6.8385E-15 0.7854 4.8356E-15" />
+      xyz="0.011376 -0.15172 0.15127"
+      rpy="6.8694E-15 0.7854 4.8574E-15" />
     <parent
       link="base_link" />
     <child
       link="shoulder_link" />
     <axis
       xyz="0 0 1" />
+    <limit
+      lower="-1.54"
+      upper="1.54"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="shoulder_lift_link">
     <inertial>
       <origin
-        xyz="8.56635811739281E-05 0.000106586138373777 -2.98460660119737E-06"
+        xyz="-0.000676420326486932 0.00184227618310823 -4.83935395090285E-08"
         rpy="0 0 0" />
       <mass
-        value="0.491670750547076" />
+        value="0.43726174275049" />
       <inertia
-        ixx="0.00108091489195499"
-        ixy="-6.67471059732482E-06"
-        ixz="-6.13251629270335E-07"
-        iyy="0.00110225855459191"
-        iyz="-9.05602515792439E-07"
-        izz="0.000715450958001597" />
+        ixx="0.0010294530389637"
+        ixy="-2.02400832489509E-05"
+        ixz="-6.05084164956974E-07"
+        iyy="0.00107940368937244"
+        iyz="-8.03811502305761E-07"
+        izz="0.000657528738855015" />
     </inertial>
     <visual>
       <origin
@@ -120,7 +125,7 @@
       <material
         name="">
         <color
-          rgba="1 1 1 1" />
+          rgba="1 0.501960784313725 0.501960784313725 1" />
       </material>
     </visual>
     <collision>
@@ -135,9 +140,9 @@
   </link>
   <joint
     name="shoulder_lift_joint"
-    type="continuous">
+    type="revolute">
     <origin
-      xyz="0.01143 4.0407E-05 0.21082"
+      xyz="0.01143 4.0407E-05 0.20168"
       rpy="1.5708 -0.7854 0.0035351" />
     <parent
       link="shoulder_link" />
@@ -145,22 +150,27 @@
       link="shoulder_lift_link" />
     <axis
       xyz="0 0 1" />
+    <limit
+      lower="-1.54"
+      upper="1.54"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="upper_arm_link">
     <inertial>
       <origin
-        xyz="0.00609755693079939 -3.88093976420034E-05 0.0608281229321002"
+        xyz="0.00883679554596856 -2.11277498238793E-05 0.0545707151946895"
         rpy="0 0 0" />
       <mass
-        value="1.7476491152195" />
+        value="4.20793381703838" />
       <inertia
-        ixx="0.00721843182930814"
-        ixy="-1.39149269412178E-06"
-        ixz="2.78269700907493E-06"
-        iyy="0.00668693844103352"
-        iyz="5.45799304460306E-06"
-        izz="0.00408417542530308" />
+        ixx="0.00687957299890065"
+        ixy="1.68633136481853E-06"
+        ixz="-0.000316043095829341"
+        iyy="0.00746096471617816"
+        iyz="2.452867247077E-06"
+        izz="0.00648399588129982" />
     </inertial>
     <visual>
       <origin
@@ -173,7 +183,7 @@
       <material
         name="">
         <color
-          rgba="1 1 1 1" />
+          rgba="0.843137254901961 0.815686274509804 0.752941176470588 1" />
       </material>
     </visual>
     <collision>
@@ -188,7 +198,7 @@
   </link>
   <joint
     name="shoulder_roll_joint"
-    type="continuous">
+    type="revolute">
     <origin
       xyz="0.024593 -0.066237 0"
       rpy="1.5708 -0.0026664 0.35551" />
@@ -198,22 +208,27 @@
       link="upper_arm_link" />
     <axis
       xyz="0 0 -1" />
+    <limit
+      lower="-1.54"
+      upper="1.54"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="upper_arm_lift_link">
     <inertial>
       <origin
-        xyz="8.84356730235791E-05 0.000101387574038353 -3.00231459993139E-06"
+        xyz="-2.23127744058971E-08 -0.00196475262570617 4.92540209175441E-05"
         rpy="0 0 0" />
       <mass
-        value="0.49109459100815" />
+        value="0.437261171586673" />
       <inertia
-        ixx="0.00107947675103789"
-        ixy="-2.63713535414869E-06"
-        ixz="-1.86177709726168E-06"
-        iyy="0.00110224777822463"
-        iyz="-8.57651136241823E-07"
-        izz="0.000713962570116537" />
+        ixx="0.000657523329263176"
+        ixy="5.54132204601824E-07"
+        ixz="-1.90210873488973E-06"
+        iyy="0.00108632892754966"
+        iyz="5.19348903733127E-07"
+        izz="0.00102241938881713" />
     </inertial>
     <visual>
       <origin
@@ -226,7 +241,7 @@
       <material
         name="">
         <color
-          rgba="1 1 1 1" />
+          rgba="1 0.501960784313725 0.501960784313725 1" />
       </material>
     </visual>
     <collision>
@@ -241,32 +256,37 @@
   </link>
   <joint
     name="elbow_lift_joint"
-    type="continuous">
+    type="revolute">
     <origin
-      xyz="-0.01143 3.0477E-05 0.18102"
-      rpy="-1.5708 -0.3555 -0.0026664" />
+      xyz="-0.01143 3.0476E-05 0.18102"
+      rpy="1.3257 5.4262E-15 1.5681" />
     <parent
       link="upper_arm_link" />
     <child
       link="upper_arm_lift_link" />
     <axis
-      xyz="0 0 1" />
+      xyz="1 0 0" />
+    <limit
+      lower="-1.54"
+      upper="1.54"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="forearm_link">
     <inertial>
       <origin
-        xyz="0.00609794820759607 -3.45327431294229E-05 0.0632167601388055"
+        xyz="0.054716145055094 -0.00731386885688606 -2.50579122951233E-06"
         rpy="0 0 0" />
       <mass
-        value="1.74772059406253" />
+        value="4.12272376366605" />
       <inertia
-        ixx="0.00717580641499899"
-        ixy="-1.61087769378131E-06"
-        ixz="-3.38766786020847E-06"
-        iyy="0.00664405421051897"
-        iyz="5.38563822337051E-06"
-        izz="0.00408394973893498" />
+        ixx="0.00596487037947693"
+        ixy="3.3465370854769E-05"
+        ixz="-1.6520431874159E-06"
+        iyy="0.00664496809496918"
+        iyz="1.07356949531632E-07"
+        izz="0.0067924679519881" />
     </inertial>
     <visual>
       <origin
@@ -279,7 +299,7 @@
       <material
         name="">
         <color
-          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+          rgba="0.843137254901961 0.815686274509804 0.752941176470588 1" />
       </material>
     </visual>
     <collision>
@@ -294,32 +314,153 @@
   </link>
   <joint
     name="elbow_roll_joint"
-    type="continuous">
+    type="revolute">
     <origin
-      xyz="0.0077845 -0.070225 0"
-      rpy="1.5708 -0.002515 0.1104" />
+      xyz="0 0.073871 0"
+      rpy="-1.5708 1.6307E-15 1.5708" />
     <parent
       link="upper_arm_lift_link" />
     <child
       link="forearm_link" />
     <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.54"
+      upper="1.54"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="wrist_lift_link">
+    <inertial>
+      <origin
+        xyz="0.000974827037374892 0.00171170705249171 -1.58073977241102E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.437254818113419" />
+      <inertia
+        ixx="0.00103675800099548"
+        ixy="2.62036694525063E-05"
+        ixz="-1.86750583426283E-06"
+        iyy="0.00107204394916679"
+        iyz="2.46663119189851E-07"
+        izz="0.000657515353995076" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/wrist_lift_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/wrist_lift_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_lift_joint"
+    type="revolute">
+    <origin
+      xyz="0.1778 0.01143 0"
+      rpy="3.1416 -1.5135E-15 -1.4604" />
+    <parent
+      link="forearm_link" />
+    <child
+      link="wrist_lift_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.54"
+      upper="1.54"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="wrist_roll_link">
+    <inertial>
+      <origin
+        xyz="-1.83989391688844E-06 -0.00351222779119642 0.0747710456248225"
+        rpy="0 0 0" />
+      <mass
+        value="1.49779120356007" />
+      <inertia
+        ixx="0.00172002556020135"
+        ixy="1.94219358204812E-07"
+        ixz="7.8734397438316E-07"
+        iyy="0.00150079733965325"
+        iyz="9.7553297998922E-05"
+        izz="0.00168408131286982" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/wrist_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_kin/meshes/wrist_roll_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_roll_joint"
+    type="revolute">
+    <origin
+      xyz="-0.019428 -0.035935 0"
+      rpy="-1.5708 -6.5009E-15 2.646" />
+    <parent
+      link="wrist_lift_link" />
+    <child
+      link="wrist_roll_link" />
+    <axis
       xyz="0 0 -1" />
+    <limit
+      lower="-1.54"
+      upper="1.54"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="forearm_tracker_link">
     <inertial>
       <origin
-        xyz="-7.7444425561346E-07 3.04089104029362E-05 0.014311867902741"
+        xyz="-7.74192843389088E-07 3.04089992254827E-05 0.014311868103625"
         rpy="0 0 0" />
       <mass
-        value="0.0852058013520833" />
+        value="0.0852058022688794" />
       <inertia
-        ixx="5.02600713329448E-05"
-        ixy="3.55475355543217E-09"
-        ixz="7.91680266801643E-10"
-        iyy="5.05430644100967E-05"
-        iyz="-1.54448510968005E-07"
-        izz="8.48822151046848E-05" />
+        ixx="5.02600717286776E-05"
+        ixy="3.55456081034354E-09"
+        ixz="7.91264380027647E-10"
+        iyy="5.05430652693332E-05"
+        iyz="-1.54448659241162E-07"
+        izz="8.48822157077333E-05" />
     </inertial>
     <visual>
       <origin
@@ -349,8 +490,8 @@
     name="forearm_tracker_joint"
     type="fixed">
     <origin
-      xyz="0.068372 -0.00017216 0.096543"
-      rpy="1.2603 -4.4448E-05 1.5683" />
+      xyz="0.093326996938786 -0.0683720755168485 0"
+      rpy="1.57079632696237 1.57074964653677 0.310508528471775" />
     <parent
       link="forearm_link" />
     <child
@@ -359,232 +500,20 @@
       xyz="0 0 0" />
   </joint>
   <link
-    name="wrist_lift_link">
-    <inertial>
-      <origin
-        xyz="0.000127836164895201 3.90137187457479E-05 -2.99280940935232E-06"
-        rpy="0 0 0" />
-      <mass
-        value="0.491088159416964" />
-      <inertia
-        ixx="0.00108469359213903"
-        ixy="9.48558790038613E-06"
-        ixz="-1.9494510626206E-06"
-        iyy="0.00109703339169181"
-        iyz="1.8505189797619E-07"
-        izz="0.000713962888794944" />
-    </inertial>
-    <visual>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://koko_description_sevendof_kin/meshes/wrist_lift_link.STL" />
-      </geometry>
-      <material
-        name="">
-        <color
-          rgba="1 1 1 1" />
-      </material>
-    </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://koko_description_sevendof_kin/meshes/wrist_lift_link.STL" />
-      </geometry>
-    </collision>
-  </link>
-  <joint
-    name="wrist_lift_joint"
-    type="continuous">
-    <origin
-      xyz="-0.0114299638605432 2.8746733649887E-05 0.181015691664515"
-      rpy="-1.5707963267949 -0.110406053363127 -0.00251502707069052" />
-    <parent
-      link="forearm_link" />
-    <child
-      link="wrist_lift_link" />
-    <axis
-      xyz="0 0 1" />
-  </joint>
-  <link
-    name="wrist_link">
-    <inertial>
-      <origin
-        xyz="-0.000126163570522142 0.0433325381210396 0.0224239719688318"
-        rpy="0 0 0" />
-      <mass
-        value="0.196389984697673" />
-      <inertia
-        ixx="0.000228576769838943"
-        ixy="-5.49844066992486E-07"
-        ixz="-5.71600741911434E-07"
-        iyy="0.000212235873580426"
-        iyz="-8.39385834294632E-05"
-        izz="0.000234824588419469" />
-    </inertial>
-    <visual>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://koko_description_sevendof_kin/meshes/wrist_link.STL" />
-      </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.498039215686275 0.498039215686275 0.498039215686275 1" />
-      </material>
-    </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://koko_description_sevendof_kin/meshes/wrist_link.STL" />
-      </geometry>
-    </collision>
-  </link>
-  <joint
-    name="wrist_joint"
-    type="continuous">
-    <origin
-      xyz="-0.0115762892877892 -0.0214116625791075 0"
-      rpy="1.62543589699027E-15 -1.18308141061618E-15 2.64595360386185" />
-    <parent
-      link="wrist_lift_link" />
-    <child
-      link="wrist_link" />
-    <axis
-      xyz="0 -1 0" />
-  </joint>
-  <link
-    name="ee_tracker_link">
-    <inertial>
-      <origin
-        xyz="-1.43305547234407E-06 3.07686086425812E-05 0.0143119732879843"
-        rpy="0 0 0" />
-      <mass
-        value="0.0852083038792347" />
-      <inertia
-        ixx="5.02597890613365E-05"
-        ixy="3.05566589570854E-09"
-        ixz="1.41676664956147E-09"
-        iyy="5.05458638065493E-05"
-        iyz="-1.54535044158342E-07"
-        izz="8.4884681388761E-05" />
-    </inertial>
-    <visual>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://koko_description_sevendof_kin/meshes/ee_tracker_link.STL" />
-      </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
-      </material>
-    </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://koko_description_sevendof_kin/meshes/ee_tracker_link.STL" />
-      </geometry>
-    </collision>
-  </link>
-  <joint
-    name="ee_tracker_joint"
-    type="fixed">
-    <origin
-      xyz="0 0.0796100008691862 0.058269700931892"
-      rpy="1.09287578986539E-15 4.52676091056148E-15 3.52354834016303E-05" />
-    <parent
-      link="wrist_link" />
-    <child
-      link="ee_tracker_link" />
-    <axis
-      xyz="0 0 0" />
-  </joint>
-  <link
-    name="catcher_link">
-    <inertial>
-      <origin
-        xyz="5.81255052978236E-08 0.000436410728653802 0.00976103013063148"
-        rpy="0 0 0" />
-      <mass
-        value="0.210387685533954" />
-      <inertia
-        ixx="0.000371032450273061"
-        ixy="-8.08814210660857E-10"
-        ixz="-4.14231480035706E-10"
-        iyy="0.000431860327228922"
-        iyz="-4.9925897640707E-06"
-        izz="0.000730878214149319" />
-    </inertial>
-    <visual>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://koko_description_sevendof_kin/meshes/catcher_link.STL" />
-      </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
-      </material>
-    </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://koko_description_sevendof_kin/meshes/catcher_link.STL" />
-      </geometry>
-    </collision>
-  </link>
-  <joint
-    name="catcher_joint"
-    type="fixed">
-    <origin
-      xyz="0 0.11096 -0.0318679796126602"
-      rpy="1.5707963267949 -1.5707963267949 -3.14159265358979" />
-    <parent
-      link="wrist_link" />
-    <child
-      link="catcher_link" />
-    <axis
-      xyz="0 0 0" />
-  </joint>
-  <link
     name="upper_arm_tracker_link">
     <inertial>
       <origin
-        xyz="-6.40073109958728E-07 3.14463846542712E-05 0.0154315412706681"
+        xyz="-1.01609301339511E-06 0.0398004449236623 0.0669412785021228"
         rpy="0 0 0" />
       <mass
-        value="0.0852060436498746" />
+        value="0.0852060442329189" />
       <inertia
-        ixx="5.02596610035676E-05"
-        ixy="2.59830198492803E-09"
-        ixz="1.37724964437226E-09"
-        iyy="5.05437060521012E-05"
-        iyz="-1.54426226404352E-07"
-        izz="8.48824603298151E-05" />
+        ixx="5.02596761132747E-05"
+        ixy="3.31551896111993E-09"
+        ixz="9.86865890528454E-10"
+        iyy="5.05436920555182E-05"
+        iyz="-1.5442930295115E-07"
+        izz="8.48824612895774E-05" />
     </inertial>
     <visual>
       <origin
@@ -614,8 +543,8 @@
     name="upper_arm_tracker_joint"
     type="fixed">
     <origin
-      xyz="0.0673059857243459 -0.000179630611320147 0.0961996133169819"
-      rpy="1.26028690822204 0.00238258736259419 1.56736533514145" />
+      xyz="0.0304107993735892 -7.98469833864779E-05 0.0425939383117631"
+      rpy="1.26028779840761 -2.27414328887753E-05 1.56813717846785" />
     <parent
       link="upper_arm_link" />
     <child
@@ -627,17 +556,17 @@
     name="base_tracker_link">
     <inertial>
       <origin
-        xyz="-4.78839169260059E-07 3.04625040352391E-05 0.0154315278303753"
+        xyz="-1.0100229746457E-06 1.84420897696436E-05 0.0154315392996306"
         rpy="0 0 0" />
       <mass
-        value="0.0852057940282606" />
+        value="0.0852058039730557" />
       <inertia
-        ixx="5.02594988518076E-05"
-        ixy="3.42114167052734E-09"
-        ixz="9.87408726525647E-10"
-        iyy="5.05436689038578E-05"
-        iyz="-1.54423368123639E-07"
-        izz="8.48822550106641E-05" />
+        ixx="5.02595166773505E-05"
+        ixy="3.41902509435331E-09"
+        ixz="9.88592972730249E-10"
+        iyy="5.05436854219069E-05"
+        iyz="-1.54406892613585E-07"
+        izz="8.48822662574294E-05" />
     </inertial>
     <visual>
       <origin
@@ -667,65 +596,12 @@
     name="base_tracker_joint"
     type="fixed">
     <origin
-      xyz="0.035399 -0.090805 0.24718"
-      rpy="-0.7854 6.123E-17 1.5708" />
+      xyz="-0.0498692449226366 -0.151716256860219 0.179829435830465"
+      rpy="-0.785398286004807 -5.15847808661681E-07 1.5707968426427" />
     <parent
       link="base_link" />
     <child
       link="base_tracker_link" />
-    <axis
-      xyz="0 0 0" />
-  </joint>
-  <link
-    name="kinect_link">
-    <inertial>
-      <origin
-        xyz="-0.0957642293220483 0.0240703125029598 -0.0159206435563999"
-        rpy="0 0 0" />
-      <mass
-        value="0.141022435513688" />
-      <inertia
-        ixx="0.000104849169192228"
-        ixy="-4.05149090254294E-06"
-        ixz="2.53072301656499E-06"
-        iyy="0.000592694473182305"
-        iyz="2.36317515617587E-05"
-        izz="0.000588007356245907" />
-    </inertial>
-    <visual>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://koko_description_sevendof_kin/meshes/kinect_link.STL" />
-      </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.101960784313725 0.101960784313725 0.101960784313725 1" />
-      </material>
-    </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://koko_description_sevendof_kin/meshes/kinect_link.STL" />
-      </geometry>
-    </collision>
-  </link>
-  <joint
-    name="kinect_joint"
-    type="fixed">
-    <origin
-      xyz="0.0296663032719453 0.0534280083246517 0.680719999999998"
-      rpy="-1.5707963267949 -1.5707963267949 -1.5707963267949" />
-    <parent
-      link="base_link" />
-    <child
-      link="kinect_link" />
     <axis
       xyz="0 0 0" />
   </joint>
