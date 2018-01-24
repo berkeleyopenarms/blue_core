@@ -96,10 +96,6 @@ def makeSetCommand(key):
 
 #################################################################################################
 
-def readCalibration(device, board_id):
-    l = device.readFlash(board_id, COMM_NVPARAMS_OFFSET+1, 1)
-    return device.readFlash(board_id, COMM_NVPARAMS_OFFSET+2, ord(l))
-
 def main():
     rospy.init_node('jointInterface', anonymous=True)
     #rate = rospy.Rate(CONTROL_LOOP_FREQ)
@@ -135,7 +131,7 @@ def main():
 
     # # Write calibration values
     # for id in mapping:
-    #     calibrations = json.loads(device.readCalibration(id))
+    #     calibrations = device.readCalibration(id)
     #     device.setZeroAngle(id, calibrations['angle'])
     #     device.setCurrentControlMode(id)
     #     device.setInvertPhases(id, calibrations['inv'])

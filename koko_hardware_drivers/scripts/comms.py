@@ -185,6 +185,10 @@ class BLDCControllerClient:
         _, data = self.doTransaction(server_id, COMM_FC_FLASH_READ, struct.pack('<II', src_addr, length))
         return data
 
+    def readCalibration(self, server_id):
+        l = struct.unpack('<H', device.readFlash(server_id, COMM_NVPARAMS_OFFSET+1, 2))
+        return json.loads(device.readFlash(server_id, COMM_NVPARAMS_OFFSET+3, l))
+
     def verifyFlash(self, server_id, dest_addr, data):
         for i in range(0, len(data), COMM_SINGLE_VERIFY_LENGTH):
             success = self._verifyFlashLimitedLength(server_id, dest_addr + i, data[i:i+COMM_SINGLE_VERIFY_LENGTH])
