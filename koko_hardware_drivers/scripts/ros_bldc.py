@@ -34,7 +34,7 @@ NUM_FILTER_COMPONENTS = 5
 #mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 10: "right_motor2", \
            #17: "left_motor2", 21: "right_motor3", 19: "left_motor3", 2: "gripper_motor"} # mapping of id to joints
 mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
-           10: "right_motor2", 17: "left_motor2", 21: "right_motor3", 19: "left_motor3", 2: "gripper_motor"}
+           10: "right_motor2", 17: "left_motor2", 21: "right_motor3", 19: "left_motor3" }#, 2: "gripper_motor"}
 #angle_mapping = {22: 13002} # mapping of id to joints
 #angle_mapping = {12: 1200, 11: 2164, 15: 13002} # mapping of id to joints
 #angle_mapping = {15: 13002, 11: 2164, 12: 1200, 14: 4484, \
@@ -43,19 +43,19 @@ mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
            #17: 10720, 10: 11067, 21: 5899, 19: 2668}
 #angle_mapping = {15: 13002, 11: 2164, 12: 1200,  \
                  #17: 10720, 10: 11067, 21: 5899, 19: 2668, 2: 11349}
-angle_mapping = {15: 13002, 14: 4484, 16: 2373, 10: 11067, 17: 10720, 21: 5899, 19: 2668, 2: 11349}
+angle_mapping = {15: 13002, 14: 4484, 16: 2373, 10: 11067, 17: 10720, 21: 5899, 19: 2668 }#, 2: 11349}
 #erevs_per_mrev_mapping = {22: 14}
 #erevs_per_mrev_mapping = {12: 14, 11: 14, 15: 14}
 #erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 14: 14, 16: 14, 21: 21, 19: 21}
 #erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 10: 14, 17: 14, 21: 21, 19: 21}
 #erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 10: 14, 17: 14, 21: 21, 19: 21, 2: 21}
-erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 21: 21, 19: 21, 2: 21}
+erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 21: 21, 19: 21 }#, 2: 21}
 #invert_mapping = {22: False}
 #invert_mapping = {12: False, 11: False, 15: False}
 #invert_mapping = {15: False, 11: False, 12: False, 14: False, 16: False, 21: False, 19: False}
 #invert_mapping = {15: False, 11: False, 12: False, 10: False, 17: True, 21: False, 19: False}
 #invert_mapping = {15: False, 11: False, 12: False, 10: False, 17: True, 21: False, 19: False, 2: False}
-invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 21: False, 19: False, 2: False}
+invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 21: False, 19: False }#, 2: False}
 
 
 # invert_mapping = {2: False}

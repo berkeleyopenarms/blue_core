@@ -44,7 +44,7 @@
     pkg="koko_control"
     type="koko_controller_manager_independent"
     ns="DOF" 
-    output="screen"/> 
+    /> 
   <node
     name="joint_state_relay"
     pkg="topic_tools"
@@ -68,8 +68,8 @@
     pkg="koko_hardware_drivers"/-->
   <include
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
-  <!--include
-    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" /-->
+  <include
+    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
   <!--node
     name="calibration_writter"
     pkg="calibration"

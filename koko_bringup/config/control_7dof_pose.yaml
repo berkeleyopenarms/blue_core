@@ -5,6 +5,7 @@ DOF:
   current_slope: [0.626, 0.626, 0.626, 0.626, 0.626, 0.626, 0.626]
   current_offset: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
   calibration_initial_angles: [-0.0, 0.0, 0.0, -0.0, 0.0, 0.0, -3.0]
+  hardstop_start_angles: [1.0, 2.0, 1.0, 1.0, 2.0, 1.0, 1.1] # angles that you the robot is in for hardstop calibration
   directions:        [1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0]
   torque_directions: [1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0]
   #directions:        [1.0, -1.0, 1.0, -0.0, 0.0, -0.0, 0.0]
@@ -88,7 +89,7 @@ DOF:
       min_torque: -30
       max_angle: 1.0
       min_angle: -1.5  
-    wrist_joint:
+    wrist_roll_joint:
       p: 5
       #d: 0.1
       d: 0.0

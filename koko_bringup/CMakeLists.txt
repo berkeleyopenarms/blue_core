@@ -12,6 +12,12 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
+  interactive_markers
+  kdl_parser
+  orocos_kdl
+  tf
+  tf2
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -198,3 +204,5 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+add_executable(hardstop_calibrate src/hardstop_calibrate.cpp)
+target_link_libraries(hardstop_calibrate ${catkin_LIBRARIES})

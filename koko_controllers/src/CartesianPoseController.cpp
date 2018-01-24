@@ -301,8 +301,8 @@ namespace koko_controllers{
       }
 
     }
-    ROS_ERROR( "Jac col 5 %f, %f, %f, %f, %f, %f", jacobian(0,5), jacobian(1,5), jacobian(2,5), jacobian(3,5), jacobian(4,5), jacobian(5,5));
-    ROS_ERROR( "Jac col 6 %f, %f, %f, %f, %f, %f", jacobian(0,6), jacobian(1,6), jacobian(2,6), jacobian(3,6), jacobian(4,6), jacobian(5,6));
+    ROS_INFO( "Jac col 5 %f, %f, %f, %f, %f, %f", jacobian(0,5), jacobian(1,5), jacobian(2,5), jacobian(3,5), jacobian(4,5), jacobian(5,5));
+    ROS_INFO( "Jac col 6 %f, %f, %f, %f, %f, %f", jacobian(0,6), jacobian(1,6), jacobian(2,6), jacobian(3,6), jacobian(4,6), jacobian(5,6));
     // d gain joint portion
     for(int i = 0; i < nj; i++) {
       commands[i] += -joint_vector[i].d_gain * jnt_vel_(i);
