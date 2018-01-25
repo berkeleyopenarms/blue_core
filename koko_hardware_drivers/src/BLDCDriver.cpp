@@ -79,7 +79,7 @@ void BLDCDriver::init(std::vector<double>* in_pos, std::vector<double>* in_vel, 
   vel = in_vel;
   eff = in_eff;
   cmd = in_cmd;
-  
+
   initMaps(angle_id_mapping, motor_mapping, angle_mapping, invert_mapping, erevs_mapping);
 
   std::string port = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0"; // TODO: read from launch/config
@@ -89,8 +89,6 @@ void BLDCDriver::init(std::vector<double>* in_pos, std::vector<double>* in_vel, 
   for (it = motor_mapping.begin(); it != motor_mapping.end(); it++) {
     device.leaveBootloader(it->first, 0);
   }
-  n_sleep(500);
-
 
   // Init angle
   for (it = motor_mapping.begin(); it != motor_mapping.end(); it++) {
@@ -121,7 +119,7 @@ void BLDCDriver::read(){
   for (int i = 0; i < angle_id_mapping.size(); i++) {
       uint8_t id = angle_id_mapping[i];
 
-      double curr_angle = getEncoderAngleRadians(device, id) - angle_zero[id];
+      double curr_angle = device.getRotorPosition(id) - angle_zero[id];
 
       (*pos)[i] = curr_angle;
       (*vel)[i] = 0.0; // TODO: onboard velocity estimate (need kalman?)
