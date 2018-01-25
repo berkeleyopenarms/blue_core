@@ -1,6 +1,7 @@
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
+#include <urdf/model.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Float64.h>
 #include <ros/node_handle.h>
@@ -28,8 +29,11 @@ public:
     if (!nh.getParam("directions", directions)) {
       ROS_INFO("No gear_ratio given (namespace: %s)", nh.getNamespace().c_str());
     }
+    if (!nh.getParam("differential_directions", differential_directions)) {
+      ROS_INFO("No differential_direction given (namespace: %s)", nh.getNamespace().c_str());
+    }
     if (!nh.getParam("torque_directions", torque_directions)) {
-      ROS_INFO("No gear_ratio given (namespace: %s)", nh.getNamespace().c_str());
+      ROS_INFO("No torque_directions given (namespace: %s)", nh.getNamespace().c_str());
     }
     if (!nh.getParam("current_slope", current_slope)) {
       ROS_INFO("No current_slope given (namespace: %s)", nh.getNamespace().c_str());
@@ -108,7 +112,7 @@ public:
       joint_state_initial[i] = 0.0;
     }
 
-    calibration_num = 100;
+    calibration_num = 10;
 
     jnt_state_tracker_subscriber = nh.subscribe("joint_state_tracker", 1000, &KokoHW::CalibrateJointState, this);
 
@@ -274,8 +278,8 @@ public:
         int index_b = paired_constraints[j + 1];
         //ROS_INFO("index_a %d", index_a);
         //ROS_INFO("index_b %d", index_b);
-        pre[index_a] = -0.5 * cmd_oriented[index_a] +  0.5 * cmd_oriented[index_b];
-        pre[index_b] =  0.5 * cmd_oriented[index_a] +  0.5 * cmd_oriented[index_b];
+        pre[index_a] = differential_directions[index_a] * -0.5 * cmd_oriented[index_a] +  differential_directions[index_a] * 0.5 * cmd_oriented[index_b];
+        pre[index_b] = differential_directions[index_a] * 0.5 * cmd_oriented[index_a] +  differential_directions[index_a] * 0.5 * cmd_oriented[index_b];
       }    
       //ROS_INFO("d2");
 
@@ -336,6 +340,7 @@ private:
   std::vector<double> joint_state_initial;
   std::vector<double> directions;
   std::vector<double> torque_directions;
+  std::vector<double> differential_directions;
   double hardstop_torque_limit;
   double i_to_T_slope;
   double i_to_T_intercept;

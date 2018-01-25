@@ -124,15 +124,13 @@ namespace koko_controllers{
       return false;
     }
 
-    sub_command = n.subscribe("command", 1, &InverseDynamicsController::setCommand, this);
-    sub_joint = node.subscribe("/" + root_name  + "/joint_states", 1000, &InverseDynamicsController::jointCallback, this);
-
-    // ROS_INFO("nj %d", chain.getNrOfJoints());
-
     id_torques = KDL::JntArray(chain.getNrOfJoints());
     commandPub = node.advertise<std_msgs::Float64MultiArray>("/commandPub", 1);
     deltaPub = node.advertise<std_msgs::Float64MultiArray>("/deltaPub", 1);
     inverseDynamicsPub = node.advertise<std_msgs::Float64MultiArray>("/inverseDynamicsPub", 1);
+
+    sub_command = n.subscribe("command", 1, &InverseDynamicsController::setCommand, this);
+    sub_joint = node.subscribe("/" + root_name  + "/joint_states", 1000, &InverseDynamicsController::jointCallback, this);
 
     return true;
   }
@@ -168,14 +166,11 @@ namespace koko_controllers{
 
   void InverseDynamicsController::update(const ros::Time& time, const ros::Duration& period)
   {
-    ROS_ERROR("a_update");
     std_msgs::Float64MultiArray commandMsg;
     for (int i = 0; i < joint_vector.size(); i++) {
       commandMsg.data.push_back(joint_vector[i]->cmd);
     }
-    ROS_ERROR("A_update");
     commandPub.publish(commandMsg);
-    ROS_ERROR("B_update");
 
     std_msgs::Float64MultiArray deltaMsg;
 
@@ -183,7 +178,6 @@ namespace koko_controllers{
     for (int i = 0; i < joint_vector.size(); i++) {
       double current_position = joint_vector[i]->joint.getPosition();
       double current_velocity = joint_vector[i]->joint.getVelocity();
-      // ROS_ERROR("%f", current_velocity);
       double error = angles::shortest_angular_distance(current_position, joint_vector[i]->cmd); // TODO: don't use wraparound here
       deltaMsg.data.push_back(error);
       //ROS_INFO("Joint pos %f, joint cmd %f", current_position, joint_vector[i].cmd);
@@ -196,9 +190,7 @@ namespace koko_controllers{
       }
       commands[i] = commanded_effort;
     }
-    ROS_ERROR("C_update");
     deltaPub.publish(deltaMsg);
-    ROS_ERROR("C1_update");
 
 
     //ROS_INFO("joint name order: %s, %s, %s, %s", joint_vector[0].joint_name.c_str(), joint_vector[1].joint_name.c_str(), joint_vector[2].joint_name.c_str(), joint_vector[3].joint_name.c_str());
@@ -208,16 +200,14 @@ namespace koko_controllers{
 
 
     for (int i = 0; i < paired_constraints.size(); i = i + 2) {
-      ROS_ERROR("c11");
       int lift_index = paired_constraints[i];
       int roll_index = paired_constraints[i+1];
       double lift = commands[lift_index];
       double roll = commands[roll_index];
-      ROS_ERROR("lift: %f, roll: %f", commands[lift_index],  commands[roll_index]);
+      ROS_INFO("lift: %f, roll: %f", commands[lift_index],  commands[roll_index]);
 
       double max_effort = joint_vector[lift_index]->max_torque + joint_vector[roll_index]->max_torque;
       double scalar = 1;
-      ROS_ERROR("c12");
       if (lift >= 0 && roll >= 0 && (lift + roll) > max_effort) {
         scalar = max_effort / (lift + roll);
       } else if (lift < 0 && roll >= 0 && (roll - lift) > max_effort) {
@@ -227,16 +217,13 @@ namespace koko_controllers{
       } else if (lift >= 0 && roll < 0 && (lift - roll) > max_effort) {
         scalar = max_effort / (lift - roll);
       }
-      ROS_ERROR("c13");
       commands[lift_index] *= scalar;
       commands[roll_index] *= scalar;
     }
-    ROS_ERROR("D_update");
     for (int i = 0; i < joint_vector.size(); i++) {
       // ROS_INFO("command %d: %f", i, commands[i]);
       joint_vector[i]->joint.setCommand(commands[i]);
     }
-    ROS_ERROR("E_update");
   }
 
 

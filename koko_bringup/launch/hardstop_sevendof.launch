@@ -17,11 +17,15 @@
   <param 
     name="use_gui"
     value="$(arg gui)" />
-  <rosparam file="$(find koko_bringup)/config/control_7dof.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/control_7dof_pose.yaml" command="load"/>
   <node
     name="robot_state_publisher"
     pkg="robot_state_publisher"
     type="state_publisher" />
+  <!--node
+    name="joint_state_publisher"
+    pkg="joint_state_publisher"
+    type="joint_state_publisher" /-->
   <remap 
     from="/joint_state_tracker" 
     to="/DOF/joint_state_tracker" />
@@ -30,10 +34,6 @@
     pkg="rviz"
     type="rviz"
     args="-d $(find koko_description_sevendof_kin)/urdf.rviz" />
-  <!-- <node
-    name="tracker_calibrate_joints"
-    pkg="koko_vive"
-    type="calibrate_joint_state" /> -->
   <node
     name="hardstop_calibrator"
     pkg="koko_bringup"
@@ -43,12 +43,21 @@
     name="koko_controller_manager"
     pkg="koko_control"
     type="koko_controller_manager_independent"
-    ns="DOF" /> 
+    ns="DOF" 
+    output="screen"/> 
   <node
     name="joint_state_relay"
     pkg="topic_tools"
     type="relay"
     args="/DOF/joint_states /joint_states" />
+  <node
+    name="pose_target"
+    pkg="koko_kinematics"
+    type="pose_target" />
+  <!--node
+    name="visualpos_controller"
+    pkg="koko_misc"
+    type="visual_controller" /-->
   <node
     name="transformer"
     pkg="tf"
@@ -58,4 +67,8 @@
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
   <include
     file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
+  <!--node
+    name="calibration_writter"
+    pkg="calibration"
+    type="Writer" /-->
 </launch>
