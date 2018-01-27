@@ -128,44 +128,24 @@ public:
     int index = -1;
 
     for (int i = 0; i < motor_names.size(); i++) {
-      // ROS_INFO("joint name comparing: %s, to %s, with result %d", joint_names[i].c_str(), msg.name[0].c_str(), msg.name[0].compare(joint_names[i]));
       if (msg.name[0].compare(motor_names[i]) == 0){
         index = i;
-        // ROS_INFO("Index Value after setting: %d", index);
       }
     }
 
     if (index == -1){
-      ROS_INFO("Some Joint koko_hwi error, msg name %s, with %d joints", msg.name[0].c_str(), num_joints);
+      ROS_ERROR("Some Joint koko_hwi error, msg name %s, with %d joints", msg.name[0].c_str(), num_joints);
     }
 
     if (is_calibrated != 1) {
       angle_after_calibration[index] = msg.position[0];
-      //is_calibrated = 1;
     } else if (is_calibrated == 1){
-
-//        ROS_INFO("f0");
-//      double mod_angle = msg.position[0];
-//
-//      double delta_angle = mod_angle - angle_previous_mod[index];
-//      delta_angle = std::fmod(delta_angle + M_PI, 2 * M_PI);
-//      ROS_INFO("c2");
-//      if (delta_angle< 0) delta_angle +=  2 * M_PI;
-//      delta_angle = delta_angle -  M_PI;
-//
-//      ROS_INFO("c3");
-//
-//      angle_accumulated[index] += delta_angle; 
-//      ROS_INFO("%d", index);
-
-
 
       motor_pos[index] = msg.position[0] - angle_after_calibration[index];
       motor_vel[index] = msg.velocity[0];
 
       double pre_pos = msg.position[0] - angle_after_calibration[index];
       double pre_vel = msg.velocity[0];
-
 
       if(std::find(paired_constraints.begin(), paired_constraints.end(), index) != paired_constraints.end()) {
         ROS_INFO("f10");
@@ -185,16 +165,11 @@ public:
           pre_vel = .5 * motor_vel[paired_constraints[b]] + .5 * motor_vel[paired_constraints[a]];
         }
       } 
-      if (index ==2 ) {
-        //ROS_INFO("directions index %f",  directions[2]);
-      }
-      ROS_INFO("f2");
 
       pos[index] = directions[index] * (pre_pos / gear_ratios[index]) + joint_state_initial[index];
       vel[index] = directions[index] * pre_vel / gear_ratios[index];
       eff[index] = torque_directions[index] * msg.effort[0] * gear_ratios[index];
       position_read = 1;
-      ROS_INFO("f3");
     }
 
   }
@@ -219,7 +194,6 @@ public:
         ROS_INFO("calibrated initial joint state %f", joint_state_initial[i]);
       }
       calibrated++;
-      //ROS_INFO("calibrated index %d", calibrated);
     }
   }
 
