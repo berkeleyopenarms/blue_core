@@ -261,8 +261,6 @@ namespace koko_controllers{
 
   void InverseDynamicsController::jointCallback(const sensor_msgs::JointState msg)
   {
-    ROS_ERROR("abc");
-
     unsigned int nj = chain.getNrOfJoints();
     KDL::JntArray jointPositions(nj);
     KDL::JntArray jointVelocities(nj);
@@ -305,8 +303,6 @@ namespace koko_controllers{
       ROS_INFO("joint name: %s type: %d", seg.getJoint().getName().c_str(), seg.getJoint().getType());
     } **/
     //ROS_INFO("id torques =  %f", id_torques(0));
-
-    ROS_ERROR("bca");
   }
 
 }

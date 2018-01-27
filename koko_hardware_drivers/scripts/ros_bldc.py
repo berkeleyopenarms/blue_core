@@ -31,7 +31,7 @@ CONTROL_LOOP_FREQ = 1000
            #17: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
 #mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 10: "right_motor2", \
            #17: "left_motor2", 21: "right_motor3", 19: "left_motor3", 2: "gripper_motor"} # mapping of id to joints
-mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
+name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
            10: "right_motor2", 17: "left_motor2", 21: "right_motor3", 19: "left_motor3" }#, 2: "gripper_motor"}
 #angle_mapping = {22: 13002} # mapping of id to joints
 #angle_mapping = {12: 1200, 11: 2164, 15: 13002} # mapping of id to joints
@@ -57,17 +57,6 @@ invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 21: Fals
 
 flip_mapping = {21: True}
 
-
-# invert_mapping = {2: False}
-# erevs_per_mrev_mapping = {2: 21}
-# angle_mapping = {2: 11349}
-# mapping = {2: "gripper_motor"} # mapping of id to joints
-
-
-# mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", 16: "left_motor2", 21: "right_motor3", 19: "left_motor3" } # mapping of id to joints
-# angle_mapping = {15: 13002, 11: 2164, 12: 1200, 14: 4484, 16: 2373, 21: 5899, 19: 2668} # mapping of id to joints
-# erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 14: 14, 16: 14, 21: 14, 19: 14}
-# invert_mapping = {15: 0, 11: 0, 12: 0, 14: 0, 16: 0, 21: 0, 19: 0}
 
 
 global command_queue
@@ -109,22 +98,16 @@ def main():
     port = sys.argv[1]
     s = serial.Serial(port=port, baudrate=1000000, timeout=0.1)
     device = BLDCControllerClient(s)
-    for key in mapping:
+    for key in name_mapping:
         device.leaveBootloader(key)
         s.flush()
     time.sleep(0.5)
 
-
-    pubArray = {}
-    pubCurrArray = {}
-    subArray = {}
-    for key in mapping:
-        pubArray[key] = rospy.Publisher("/DOF/" + mapping[key] + "_State", JointState, queue_size=1)
-        pubCurrArray[key] = rospy.Publisher("/DOF/" + mapping[key] + "_Current", Float32, queue_size=1)
-        subArray[key] = rospy.Subscriber("/DOF/" + mapping[key] + "_Cmd", Float64, makeSetCommand(key), queue_size=1)
+    state_publisher = rospy.Publisher("motor_states", JointState, queue_size=1)
+    for key in name_mapping:
+        rospy.Subscriber(name_mapping[key] + "_cmd", Float64, makeSetCommand(key), queue_size=1)
 
     # Set up a signal handler so Ctrl-C causes a clean exit
-
     def sigintHandler(signal, frame):
         print 'quitting'
         sys.exit()
@@ -158,17 +141,18 @@ def main():
     velocity_window_size =10 
     recorded_positions = {} # map of rolling window of (time, position)
 
-    for id in mapping:
+    for id in name_mapping:
         angle_start[id] = device.getRotorPosition(id)
         recorded_positions[id] = collections.deque()
 
     r = rospy.Rate(CONTROL_LOOP_FREQ)
     while not rospy.is_shutdown():
-        for key in mapping:
-            # try:
-            # Compute the desired setpoint for the current time
-            jointName = mapping[key]
-
+        jointMsg = JointState()
+        jointMsg.name = []
+        jointMsg.position = []
+        jointMsg.velocity = []
+        jointMsg.effort = []
+        for key in name_mapping:
             curr_time = time.time()
             if key in command_queue:
                 curr_position = device.setCommandAndGetRotorPosition(key, command_queue[key]) - angle_start[key]
@@ -181,20 +165,12 @@ def main():
                 prev_time, prev_position = recorded_positions[key].popleft()
                 curr_velocity = (curr_position - prev_position) / (curr_time - prev_time)
 
-            jointMsg = JointState()
-            jointMsg.name = [jointName]
-            jointMsg.position = [curr_position]
-            jointMsg.velocity = [curr_velocity]
-            jointMsg.effort = [0.0]
-            pubArray[key].publish(jointMsg)
+            jointMsg.name.append(name_mapping[key])
+            jointMsg.position.append(curr_position)
+            jointMsg.velocity.append(curr_velocity)
+            jointMsg.effort.append(0.0)
 
-            currMsg = Float32()
-            currMsg.data = float(0)
-            pubCurrArray[key].publish(currMsg)
-
-            # except Exception as e:
-            #     rospy.logerr(str(e) + " " + str(key))
-
+        state_publisher.publish(jointMsg)
         command_queue = {}
         r.sleep()
 
