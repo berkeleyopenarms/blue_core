@@ -14,14 +14,13 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   interactive_markers
   kdl_parser
-  orocos_kdl
   tf
   tf2
   visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(orocos_kdl)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures

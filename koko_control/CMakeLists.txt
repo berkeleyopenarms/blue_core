@@ -2,15 +2,11 @@ cmake_minimum_required(VERSION 2.8.3)
 project(koko_control)
 
 find_package(catkin REQUIRED COMPONENTS
-  # angle
-  # controller
+  koko_hardware_drivers
+  controller_interface
   controller_manager
   geometry_msgs
-  geometry_msgs
-  koko_hardware_drivers
-  # interface
   kdl_parser
-  orocos_kdl
   roscpp
   sensor_msgs
   std_msgs
@@ -22,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES koko_control
-#  CATKIN_DEPENDS angle controller controller_manager geometry_msgs geometry_msgs interface kdl_parser orocos_kdl roscpp sensor_msgs std_msgs tf urdf visualization_msgs
+  CATKIN_DEPENDS controller_interface controller_manager geometry_msgs geometry_msgs koko_hardware_drivers kdl_parser orocos_kdl roscpp sensor_msgs std_msgs tf urdf visualization_msgs
 #  DEPENDS system_lib
 )
 
