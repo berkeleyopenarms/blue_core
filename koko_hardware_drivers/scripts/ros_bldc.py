@@ -17,8 +17,6 @@ from comms import *
 ENCODER_ANGLE_PERIOD = 1 << 14
 MAX_CURRENT = 1.2
 CONTROL_LOOP_FREQ = 1000
-#EXP_VELOCITY_CONSTANT = 0.5
-NUM_FILTER_COMPONENTS = 5
 #mapping = {3: "right_motor2", 4: "left_motor2"} # mapping of id to joints
 # mapping = {1: "left_motor", 2: "right_motor", 3: "right_motor2", 4: "left_motor2"} # mapping of id to joints
 # angle_mapping = {1: 10356, 2: 13430, 3: 12164, 4: 8132} # mapping of id to joints
@@ -57,6 +55,8 @@ erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 21: 21, 19: 21
 #invert_mapping = {15: False, 11: False, 12: False, 10: False, 17: True, 21: False, 19: False, 2: False}
 invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 21: False, 19: False }#, 2: False}
 
+flip_mapping = {21: True}
+
 
 # invert_mapping = {2: False}
 # erevs_per_mrev_mapping = {2: 21}
@@ -85,6 +85,9 @@ def makeSetCommand(key):
         global command_queue
         effort_raw = msg.data
         effort_filtered = effort_raw
+
+        if key in flip_mapping and flip_mapping[key]:
+            effort_filtered = -effort_filtered
 
         if effort_filtered > MAX_CURRENT:
             effort_filtered = MAX_CURRENT
@@ -152,7 +155,7 @@ def main():
     start_time = time.time()
     time_previous = start_time
     angle_start = {}
-    velocity_window_size = 5
+    velocity_window_size =10 
     recorded_positions = {} # map of rolling window of (time, position)
 
     for id in mapping:
