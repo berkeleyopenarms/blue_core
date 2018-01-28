@@ -1,1 +1,1 @@
-controller_joint_names: ['base_roll_joint', 'shoulder_lift_joint', 'shoulder_roll_joint', 'elbow_lift_link', 'elbow_roll_link', 'wrist_lift_joint', 'wrist_roll_joint', ]
+controller_joint_names: ['base_roll_joint', 'shoulder_lift_joint', 'shoulder_roll_joint', 'elbow_lift_joint', 'elbow_roll_joint', 'wrist_lift_joint', 'wrist_roll_joint', ]
