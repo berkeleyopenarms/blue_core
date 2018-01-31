@@ -1,3 +1,5 @@
+
+#include <ros/ros.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
@@ -8,6 +10,10 @@
 #include <vector>
 #include <string>
 #include <math.h>
+
+#include <joint_limits_interface/joint_limits.h>
+#include <joint_limits_interface/joint_limits_urdf.h>
+#include <joint_limits_interface/joint_limits_rosparam.h>
 
 class KokoHW: public hardware_interface::RobotHW
 {
@@ -50,6 +56,23 @@ public:
 
     ROS_ERROR("%d", y++);
     num_joints = joint_names.size();
+
+    boost::shared_ptr<urdf::ModelInterface> koko_urdf;
+    joint_limits_interface::JointLimits limits;
+    //joint_limits_interface::SoftJointLimits soft_limits;
+
+    //limits.has_velocity_limits = false;
+    //limits.max_velocity = 2.0;
+    ROS_ERROR("getting joint limits")
+    for (int j; j< num_joints; j ++){
+      boost::shared_ptr<const urdf::Joint> urdf_joint = urdf->getJoint(joint_names[j]);
+      const bool urdf_limits_ok = getJointLimits(urdf_joint, limits);
+      min_angles[j] = urdf_joint.min_position;
+      max_angles[j] = urdf_joint.max_position;
+      //const bool urdf_soft_limits_ok = getSoftJointLimits(urdf_joint, soft_limits);
+      ROS_ERROR("min: %f, max: %f", min_angles[j], max_angles[j])
+    }
+    //https://github.com/ros-controls/ros_control/wiki/joint_limits_interface
 
     // adding joint limits
     // ROS_ERROR("%d", y++);
@@ -151,14 +174,12 @@ public:
           int a = std::find(paired_constraints.begin(), paired_constraints.end(), index) - paired_constraints.begin();
           //trying to set index a
           if (a % 2 == 0) {
-            ROS_INFO("f11");
             int b = a + 1;
             //Might have to change signs
             pre_pos = -.5 * motor_pos[paired_constraints[a]] + .5 * motor_pos[paired_constraints[b]];
             pre_vel = -.5 * motor_vel[paired_constraints[a]] + .5 * motor_vel[paired_constraints[b]];
 
           } else {
-            ROS_INFO("f12");
             int b = a - 1;
             pre_pos = .5 * motor_pos[paired_constraints[b]] + .5 * motor_pos[paired_constraints[a]];
             pre_vel = .5 * motor_vel[paired_constraints[b]] + .5 * motor_vel[paired_constraints[a]];
@@ -221,7 +242,6 @@ public:
   void PublishJointCommand() {
 
     if (is_calibrated) {
-      ROS_INFO("d0");
       std::vector<double> pre(num_joints);
       std::vector<double> cmd_oriented(num_joints);
 
@@ -269,7 +289,6 @@ public:
         //ROS_INFO("current command for %s is %f", joint_names[i].c_str(), commandMsg.data);
 
       }
-      ROS_INFO("d9");
     }
   }
 

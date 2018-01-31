@@ -12,12 +12,13 @@
     name="robot_description"
     textfile="$(find koko_description_sevendof_kin)/robots/koko_description_sevendof_kin.urdf" />
   <param
-    name="/DOF/robot_dyn_description"
+    name="/koko_hardware/robot_dyn_description"
     textfile="$(find koko_description_sevendof_dyn)/robots/koko_description_sevendof_dyn.urdf" />
   <param 
     name="use_gui"
     value="$(arg gui)" />
-  <rosparam file="$(find koko_bringup)/config/control_7dof_pose.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/robot_parameters.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/control_parameters.yaml" command="load"/>
   <node
     name="robot_state_publisher"
     pkg="robot_state_publisher"
@@ -43,7 +44,7 @@
     name="koko_controller_manager"
     pkg="koko_control"
     type="koko_controller_manager_independent"
-    ns="DOF" 
+    ns="koko_controllers" 
     output="screen"/> 
   <node
     name="joint_state_relay"

@@ -17,47 +17,20 @@ from comms import *
 ENCODER_ANGLE_PERIOD = 1 << 14
 MAX_CURRENT = 1.2
 CONTROL_LOOP_FREQ = 1000
-#mapping = {3: "right_motor2", 4: "left_motor2"} # mapping of id to joints
-# mapping = {1: "left_motor", 2: "right_motor", 3: "right_motor2", 4: "left_motor2"} # mapping of id to joints
-# angle_mapping = {1: 10356, 2: 13430, 3: 12164, 4: 8132} # mapping of id to joints
-#angle_mapping = {3: 12164, 4: 8132} # mapping of id to joints
 
-
-#mapping = {22: "base_roll_motor"} # mapping of id to joints
-#mapping = {12: "left_motor1", 11: "right_motor1", 15: "base_roll_motor"} # mapping of id to joints
-#mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", \
-           #16: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
-#mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 10: "right_motor2", \
-           #17: "left_motor2", 21: "right_motor3", 19: "left_motor3"} # mapping of id to joints
-#mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 10: "right_motor2", \
-           #17: "left_motor2", 21: "right_motor3", 19: "left_motor3", 2: "gripper_motor"} # mapping of id to joints
 name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
            10: "right_motor2", 17: "left_motor2", 21: "right_motor3", 19: "left_motor3" }#, 2: "gripper_motor"}
-#angle_mapping = {22: 13002} # mapping of id to joints
-#angle_mapping = {12: 1200, 11: 2164, 15: 13002} # mapping of id to joints
-#angle_mapping = {15: 13002, 11: 2164, 12: 1200, 14: 4484, \
-           #16: 2373, 21: 5899, 19: 2668}
-#angle_mapping = {15: 13002, 11: 2164, 12: 1200,  \
-           #17: 10720, 10: 11067, 21: 5899, 19: 2668}
-#angle_mapping = {15: 13002, 11: 2164, 12: 1200,  \
-                 #17: 10720, 10: 11067, 21: 5899, 19: 2668, 2: 11349}
 angle_mapping = {15: 13002, 14: 4484, 16: 2373, 10: 11067, 17: 10720, 21: 5899, 19: 2668 }#, 2: 11349}
-#erevs_per_mrev_mapping = {22: 14}
-#erevs_per_mrev_mapping = {12: 14, 11: 14, 15: 14}
-#erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 14: 14, 16: 14, 21: 21, 19: 21}
-#erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 10: 14, 17: 14, 21: 21, 19: 21}
-#erevs_per_mrev_mapping = {15: 14, 11: 14, 12: 14, 10: 14, 17: 14, 21: 21, 19: 21, 2: 21}
 erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 21: 21, 19: 21 }#, 2: 21}
-#invert_mapping = {22: False}
-#invert_mapping = {12: False, 11: False, 15: False}
-#invert_mapping = {15: False, 11: False, 12: False, 14: False, 16: False, 21: False, 19: False}
-#invert_mapping = {15: False, 11: False, 12: False, 10: False, 17: True, 21: False, 19: False}
-#invert_mapping = {15: False, 11: False, 12: False, 10: False, 17: True, 21: False, 19: False, 2: False}
 invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 21: False, 19: False }#, 2: False}
 
 flip_mapping = {21: True}
 
 
+# name_mapping = {15: "gripper_motor"}
+# angle_mapping = {15: 13002}
+# erevs_per_mrev_mapping = {15: 14}
+# invert_mapping = {15: False}
 
 global command_queue
 command_queue = {}
@@ -83,7 +56,6 @@ def makeSetCommand(key):
         elif effort_filtered < -MAX_CURRENT:
             effort_filtered = -MAX_CURRENT
         command_queue[key] = effort_filtered
-        print "I heard " + str(effort_filtered)
     return lambda msg: setCommand(key, msg)
 
 #################################################################################################
@@ -153,22 +125,25 @@ def main():
         jointMsg.velocity = []
         jointMsg.effort = []
         for key in name_mapping:
-            curr_time = time.time()
-            if key in command_queue:
-                curr_position = device.setCommandAndGetRotorPosition(key, command_queue[key]) - angle_start[key]
-            else:
-                curr_position = device.getRotorPosition(key) - angle_start[key]
+            try:
+                curr_time = time.time()
+                if key in command_queue:
+                    curr_position = device.setCommandAndGetRotorPosition(key, command_queue[key]) - angle_start[key]
+                else:
+                    curr_position = device.getRotorPosition(key) - angle_start[key]
 
-            curr_velocity = 0
-            recorded_positions[key].append((curr_time, curr_position))
-            if len(recorded_positions[key]) >= velocity_window_size:
-                prev_time, prev_position = recorded_positions[key].popleft()
-                curr_velocity = (curr_position - prev_position) / (curr_time - prev_time)
+                curr_velocity = 0
+                recorded_positions[key].append((curr_time, curr_position))
+                if len(recorded_positions[key]) >= velocity_window_size:
+                    prev_time, prev_position = recorded_positions[key].popleft()
+                    curr_velocity = (curr_position - prev_position) / (curr_time - prev_time)
 
-            jointMsg.name.append(name_mapping[key])
-            jointMsg.position.append(curr_position)
-            jointMsg.velocity.append(curr_velocity)
-            jointMsg.effort.append(0.0)
+                jointMsg.name.append(name_mapping[key])
+                jointMsg.position.append(curr_position)
+                jointMsg.velocity.append(curr_velocity)
+                jointMsg.effort.append(0.0)
+            except Exception as e:
+                rospy.logerr("Motor " + key +  " driver error: " + str(e))
 
         state_publisher.publish(jointMsg)
         command_queue = {}

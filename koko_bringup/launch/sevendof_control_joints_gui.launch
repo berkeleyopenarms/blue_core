@@ -1,4 +1,7 @@
 <launch>
+  <rosparam file="$(find koko_bringup)/config/robot_parameters.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/control_parameters.yaml" command="load"/>
+
   <node
     name="console"
     pkg="rqt_console"
@@ -17,7 +20,6 @@
   <param
     name="use_gui"
     value="$(arg gui)" />
-  <rosparam file="$(find koko_bringup)/config/control_7dof.yaml" command="load"/>
   <node
     name="robot_state_publisher"
     pkg="robot_state_publisher"
@@ -36,10 +38,12 @@
     pkg="koko_bringup"
     type="hardstop_calibrate"
     output="screen"/>
+
   <node
     name="koko_controller_manager"
     pkg="koko_control"
-    type="koko_controller_manager_independent" />
+    type="koko_controller_manager" />
+
   <node
     name="transformer"
     pkg="tf"
