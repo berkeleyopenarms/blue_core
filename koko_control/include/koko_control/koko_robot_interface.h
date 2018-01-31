@@ -261,6 +261,7 @@ public:
         position_read = 1;
       }
     }
+    act_to_joint_state.propagate();
   }
 
   void CalibrateJointState(const sensor_msgs::JointState::ConstPtr& msg) {
@@ -413,6 +414,10 @@ private:
   ActuatorToJointStateInterface act_to_jnt_state; // For motor to joint state
   JointToActuatorEffortInterface jnt_to_act_pos; // For joint position to actuator
 
+  //For arbitrary length
+  SimpleTransmission simple_transmissions[];
+  DifferentialTransmission differential_transmissions[];
+
   // Transmissions
   SimpleTransmission base_trans;
   DifferentialTransmission shoulder_diff;
@@ -422,7 +427,7 @@ private:
   //Actuator and joint space variables
   ActuatorData a_state_data[4];
   ActuatorData a_cmd_data[4];
-  
+
   JointData j_state_data[4];
   JointData j_cmd_data[4];
 
