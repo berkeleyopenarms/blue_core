@@ -143,7 +143,7 @@ def main():
                 jointMsg.velocity.append(curr_velocity)
                 jointMsg.effort.append(0.0)
             except Exception as e:
-                rospy.logerr("Motor " + key +  " driver error: " + str(e))
+                rospy.logerr("Motor " + str(key) +  " driver error: " + str(e))
 
         state_publisher.publish(jointMsg)
         command_queue = {}
