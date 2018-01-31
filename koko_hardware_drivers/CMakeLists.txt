@@ -10,15 +10,23 @@ project(koko_hardware_drivers)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
-  sensor_msgs
   serial
   std_msgs
+  sensor_msgs
+  message_generation
+)
+
+add_message_files(FILES MotorState.msg)
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  sensor_msgs
 )
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES koko_hardware_drivers
-  CATKIN_DEPENDS roscpp rospy sensor_msgs serial std_msgs
+  CATKIN_DEPENDS roscpp rospy sensor_msgs serial std_msgs message_runtime
 )
 include_directories(
   include

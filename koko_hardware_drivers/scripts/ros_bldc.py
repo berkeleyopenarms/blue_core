@@ -8,9 +8,8 @@ import signal
 import sys
 import rospy
 import json
-from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64
-from std_msgs.msg import Float32
+from koko_hardware_drivers.msg import MotorState
 from comms import *
 
 
@@ -75,7 +74,7 @@ def main():
         s.flush()
     time.sleep(0.5)
 
-    state_publisher = rospy.Publisher("motor_states", JointState, queue_size=1)
+    state_publisher = rospy.Publisher("motor_states", MotorState, queue_size=1)
     for key in name_mapping:
         rospy.Subscriber(name_mapping[key] + "_cmd", Float64, makeSetCommand(key), queue_size=1)
 
@@ -119,11 +118,10 @@ def main():
 
     r = rospy.Rate(CONTROL_LOOP_FREQ)
     while not rospy.is_shutdown():
-        jointMsg = JointState()
-        jointMsg.name = []
-        jointMsg.position = []
-        jointMsg.velocity = []
-        jointMsg.effort = []
+        stateMsg = MotorState()
+        stateMsg.name = []
+        stateMsg.position = []
+        stateMsg.velocity = []
         for key in name_mapping:
             try:
                 curr_time = time.time()
@@ -138,14 +136,13 @@ def main():
                     prev_time, prev_position = recorded_positions[key].popleft()
                     curr_velocity = (curr_position - prev_position) / (curr_time - prev_time)
 
-                jointMsg.name.append(name_mapping[key])
-                jointMsg.position.append(curr_position)
-                jointMsg.velocity.append(curr_velocity)
-                jointMsg.effort.append(0.0)
+                stateMsg.name.append(name_mapping[key])
+                stateMsg.position.append(curr_position)
+                stateMsg.velocity.append(curr_velocity)
             except Exception as e:
                 rospy.logerr("Motor " + str(key) +  " driver error: " + str(e))
 
-        state_publisher.publish(jointMsg)
+        state_publisher.publish(stateMsg)
         command_queue = {}
         r.sleep()
 

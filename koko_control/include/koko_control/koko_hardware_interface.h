@@ -4,6 +4,7 @@
 #include <urdf/model.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Float64.h>
+#include <koko_hardware_drivers/MotorState.h>
 #include <ros/node_handle.h>
 #include <vector>
 #include <string>
@@ -113,7 +114,7 @@ public:
     ROS_ERROR("%d", y++);
     jnt_state_tracker_subscriber = nh.subscribe("joint_state_tracker", 1000, &KokoHW::CalibrateJointState, this);
 
-    jnt_state_subscriber = nh.subscribe("koko_hardware/motor_states", 1000, &KokoHW::UpdateJointState, this);
+    motor_state_subscriber = nh.subscribe("koko_hardware/motor_states", 1000, &KokoHW::UpdateMotorState, this);
 
     for (int i = 0; i < motor_names.size(); i++) {
       jnt_cmd_publishers[i] = nh.advertise<std_msgs::Float64>("koko_hardware/" + motor_names[i] + "_cmd", 1000);
@@ -122,7 +123,7 @@ public:
     ROS_ERROR("%d", y++);
   }
 
-  void UpdateJointState(const sensor_msgs::JointState::ConstPtr& msg) {
+  void UpdateMotorState(const sensor_msgs::MotorState::ConstPtr& msg) {
     for (int i = 0; i < msg->name.size(); i++) {
       int index = -1;
 
@@ -281,7 +282,7 @@ private:
   hardware_interface::JointStateInterface jnt_state_interface;
   hardware_interface::EffortJointInterface jnt_effort_interface;
 
-  ros::Subscriber jnt_state_subscriber;
+  ros::Subscriber motor_state_subscriber;
   std::vector<ros::Publisher> jnt_cmd_publishers;
   ros::Subscriber jnt_state_tracker_subscriber;
 
