@@ -1,4 +1,3 @@
-
 #include <ros/ros.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
@@ -54,9 +53,10 @@ public:
       ROS_INFO("No koko_hardware/hardstop_torque_limit given (namespace: %s)", nh.getNamespace().c_str());
     }
 
-    ROS_ERROR("%d", y++);
     num_joints = joint_names.size();
 
+    // loading in joint limits
+    //https://github.com/ros-controls/ros_control/wiki/joint_limits_interface
     boost::shared_ptr<urdf::ModelInterface> koko_urdf;
     joint_limits_interface::JointLimits limits;
     //joint_limits_interface::SoftJointLimits soft_limits;
@@ -72,25 +72,8 @@ public:
       //const bool urdf_soft_limits_ok = getSoftJointLimits(urdf_joint, soft_limits);
       ROS_ERROR("min: %f, max: %f", min_angles[j], max_angles[j])
     }
-    //https://github.com/ros-controls/ros_control/wiki/joint_limits_interface
 
-    // adding joint limits
-    // ROS_ERROR("%d", y++);
-    // min_angles.resize(num_joints, 0.0);
-    // max_angles.resize(num_joints, 0.0);
-    // ROS_ERROR("%d", y++);
-    // for (int j; j < num_joints; j ++){
-    //   ROS_ERROR("%d", j);
-    //   if ( !nh.getParam("koko_hardware/simple_controller/" + motor_names[j] + "/min_angle", min_angles[j]) ) {
-    //     ROS_INFO("No min angle given (namespace: %s)", nh.getNamespace().c_str());
-    //   }
-    //   if ( !nh.getParam("koko_hardware/simple_controller/" + motor_names[j] + "/max_angle", max_angles[j]) ) {
-    //     ROS_INFO("No max angle given (namespace: %s)", nh.getNamespace().c_str());
-    //   }
-    // }
-    ////
-    ROS_ERROR("%d", y++);
-
+    // resizing vectors to number of joints of the robot
     motor_pos.resize(num_joints, 0.0);
     motor_vel.resize(num_joints, 0.0);
     cmd.resize(num_joints, 0.0);
@@ -102,29 +85,24 @@ public:
     angle_after_calibration.resize(num_joints, 0.0);
 
     jnt_cmd_publishers.resize(num_joints);
-    ROS_ERROR("%d", y++);
 
     for (int i = 0; i < num_joints; i++) {
       cmd[i] = 0.0;
       hardware_interface::JointStateHandle state_handle_a(joint_names[i], &pos[i], &vel[i], &eff[i]);
-      //ROS_INFO("joint %s", joint_names[i].c_str());
       jnt_state_interface.registerHandle(state_handle_a);
+      ROS_INFO("joint %s", joint_names[i].c_str());
     }
-
-    ROS_ERROR("%d", y++);
     registerInterface(&jnt_state_interface);
 
     for (int i = 0; i < num_joints; i++) {
       hardware_interface::JointHandle effort_handle_a(jnt_state_interface.getHandle(joint_names[i]), &cmd[i]);
       jnt_effort_interface.registerHandle(effort_handle_a);
     }
-    ROS_ERROR("%d", y++);
     registerInterface(&jnt_effort_interface);
 
     position_read = 0;
     calibrated = 0;
     prev_is_calibrated = 0;
-    ROS_ERROR("%d", y++);
     is_calibrated = 0;
 
     for (int i = 0; i < num_joints; i++) {
@@ -133,16 +111,107 @@ public:
 
     calibration_num = 10;
 
-    ROS_ERROR("%d", y++);
     jnt_state_tracker_subscriber = nh.subscribe("joint_state_tracker", 1000, &KokoHW::CalibrateJointState, this);
-
     jnt_state_subscriber = nh.subscribe("koko_hardware/motor_states", 1000, &KokoHW::UpdateJointState, this);
 
     for (int i = 0; i < motor_names.size(); i++) {
       jnt_cmd_publishers[i] = nh.advertise<std_msgs::Float64>("koko_hardware/" + motor_names[i] + "_cmd", 1000);
       ROS_INFO("Publishers %s", motor_names[i].c_str());
     }
-    ROS_ERROR("%d", y++);
+
+    // TODO fill in parameters from read in
+    base_trans();
+    shoulder_trans();
+    upper_arm_trans();
+    wrist_trans();
+
+    // Wrap base simple transmission raw data - current state
+    a_state_data[0].position.push_back(&a_curr_pos[0]);
+    a_state_data[0].velocity.push_back(&a_curr_vel[0]);
+    a_state_data[0].effort.push_back(&a_curr_eff[0]);
+
+    j_state_data[0].position.push_back(&j_curr_pos[0]);
+    j_state_data[0].velocity.push_back(&j_curr_vel[0]);
+    j_state_data[0].effort.push_back(&j_curr_eff[0]);
+
+    // Wrap differential transmission raw data - current state
+    for(int k = 1; k < 4 ; k++ ) {
+      a_state_data[k].position.push_back(&a_curr_pos[k * 2 - 1]);
+      a_state_data[k].position.push_back(&a_curr_pos[k * 2]);
+      a_state_data[k].velocity.push_back(&a_curr_vel[k * 2 - 1]);
+      a_state_data[k].velocity.push_back(&a_curr_vel[k * 2]);
+      a_state_data[k].effort.push_back(&a_curr_eff[k * 2 - 1]);
+      a_state_data[k].effort.push_back(&a_curr_eff[k * 2]);
+
+      j_state_data[k].position.push_back(&j_curr_pos[k * 2 - 1]);
+      j_state_data[k].position.push_back(&j_curr_pos[k * 2]);
+      j_state_data[k].velocity.push_back(&j_curr_vel[k * 2 - 1]);
+      j_state_data[k].velocity.push_back(&j_curr_vel[k * 2]);
+      j_state_data[k].effort.push_back(&j_curr_eff[k * 2 - 1]);
+      j_state_data[k].effort.push_back(&j_curr_eff[k * 2]);
+      j_state_data[k].position.push_back(&j_curr_pos[k * 2 - 1]);
+      j_state_data[k].position.push_back(&j_curr_pos[k * 2]);
+      j_state_data[k].velocity.push_back(&j_curr_vel[k * 2 - 1]);
+      j_state_data[k].velocity.push_back(&j_curr_vel[k * 2]);
+      j_state_data[k].effort.push_back(&j_curr_eff[k * 2 - 1]);
+      j_state_data[k].effort.push_back(&j_curr_eff[k * 2]);
+
+    }
+    // Wrap simple transmission raw data - position command
+    a_cmd_data[0].effort.push_back(&a_cmd_eff[0]);
+    j_cmd_data[0].effort.push_back(&j_cmd_eff[0]);
+
+    // Wrap differential transmission raw data - position command
+    for(int k = 1; k < 4 ; k++ ) {
+      a_cmd_data[k].position.push_back(&a_cmd_pos[k * 2 - 1]);
+      a_cmd_data[k].position.push_back(&a_cmd_pos[k * 2]);
+      j_cmd_data[k].position.push_back(&j_cmd_pos[k * 2 - 1]);
+      j_cmd_data[k].position.push_back(&j_cmd_pos[k * 2]);
+    }
+    // ...once the raw data has been wrapped, the rest is straightforward //////////////////////////////////////////////
+
+    // Register transmissions to each interface
+    act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("base_trans",
+                                                               &base_trans,
+                                                               a_state_data[0],
+                                                               j_state_data[0]));
+
+    act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("shoulder_trans",
+                                                              &shoulder_trans,
+                                                              a_state_data[1],
+                                                              j_state_data[1]));
+
+    act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("upper_arm_trans",
+                                                              &upper_arm_trans,
+                                                              a_state_data[2],
+                                                              j_state_data[2]));
+
+    act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("wrist_trans",
+                                                              &wrist_trans,
+                                                              a_state_data[3],
+                                                              j_state_data[3]));
+
+
+
+    jnt_to_act_pos.registerHandle(JointToActuatorEffortHandle("base_trans",
+                                                                &base_trans,
+                                                                a_cmd_data[0],
+                                                                j_cmd_data[0]));
+
+    jnt_to_act_pos.registerHandle(JointToActuatorEffortHandle("shoulder_trans",
+                                                                &shoulder_trans,
+                                                                a_cmd_data[1],
+                                                                j_cmd_data[1]));
+
+    jnt_to_act_pos.registerHandle(JointToActuatorEffortHandle("upper_arm_trans",
+                                                                &upper_arm_trans,
+                                                                a_cmd_data[2],
+                                                                j_cmd_data[2]));
+
+    jnt_to_act_pos.registerHandle(JointToActuatorEffortHandle("wrist_trans",
+                                                                &wrist_trans,
+                                                                a_cmd_data[3],
+                                                                j_cmd_data[3]));
   }
 
   void UpdateJointState(const sensor_msgs::JointState::ConstPtr& msg) {
@@ -313,8 +382,8 @@ private:
   std::vector<double> pos;
   std::vector<double> vel;
   std::vector<double> eff;
-  // std::vector<double> min_angles;
-  // std::vector<double> max_angles;
+  std::vector<double> min_angles;
+  std::vector<double> max_angles;
 
 
   std::vector<double> current_slope;
@@ -338,4 +407,33 @@ private:
   int prev_is_calibrated;
 
   int num_joints;
+
+  // adding transmissions
+  // Transmission interfaces
+  ActuatorToJointStateInterface act_to_jnt_state; // For motor to joint state
+  JointToActuatorEffortInterface jnt_to_act_pos; // For joint position to actuator
+
+  // Transmissions
+  SimpleTransmission base_trans;
+  DifferentialTransmission shoulder_diff;
+  DifferentialTransmission upper_arm_diff;
+  DifferentialTransmission wrist_diff;
+
+  //Actuator and joint space variables
+  ActuatorData a_state_data[4];
+  ActuatorData a_cmd_data[4];
+  
+  JointData j_state_data[4];
+  JointData j_cmd_data[4];
+
+  // Actuator and joint variables
+  double a_curr_pos[7];
+  double a_curr_vel[7];
+  double a_curr_eff[7];
+  double a_cmd_eff[7];
+
+  double j_curr_pos[7];
+  double j_curr_vel[7];
+  double j_curr_eff[7];
+  double j_cmd_eff[7];
 };
