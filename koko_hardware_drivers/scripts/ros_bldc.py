@@ -22,6 +22,7 @@ name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
 angle_mapping = {15: 13002, 14: 4484, 16: 2373, 10: 11067, 17: 10720, 21: 5899, 19: 2668 }#, 2: 11349}
 erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 21: 21, 19: 21 }#, 2: 21}
 invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 21: False, 19: False }#, 2: False}
+torque_constant_mapping = {15: 1.45, 14: 1.45, 16: 1.45, 10: 1.45, 17: 1.45, 21: 0.6 , 19: 0.6 }#, 2: False}
 
 flip_mapping = {21: True}
 
@@ -48,12 +49,13 @@ def makeSetCommand(key):
         effort_filtered = effort_raw
 
         if key in flip_mapping and flip_mapping[key]:
-            effort_filtered = -effort_filtered
+            effort_filtered = effort_filtered
 
         if effort_filtered > MAX_CURRENT:
             effort_filtered = MAX_CURRENT
         elif effort_filtered < -MAX_CURRENT:
             effort_filtered = -MAX_CURRENT
+        # re uncomment
         command_queue[key] = effort_filtered
     return lambda msg: setCommand(key, msg)
 
@@ -105,6 +107,9 @@ def main():
 
     for id, erevs_per_mrev in erevs_per_mrev_mapping.items():
         device.setERevsPerMRev(id, int(erevs_per_mrev))
+
+    for id, tc in torque_constant_mapping.items():
+        device.writeRegisters(id, 0x1022, 1, struct.pack('<f', tc))
 
     start_time = time.time()
     time_previous = start_time

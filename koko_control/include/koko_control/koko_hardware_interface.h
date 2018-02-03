@@ -17,7 +17,7 @@ public:
   KokoHW(ros::NodeHandle &nh)
   {
     int y = 1000;
-    ROS_ERROR("%d", y++);
+    //ROS_ERROR("%d", y++);
     if (!nh.getParam("koko_hardware/joint_names", joint_names)) {
       ROS_INFO("No koko_hardware/joint_names given (namespace: %s)", nh.getNamespace().c_str());
     }
@@ -49,7 +49,7 @@ public:
       ROS_INFO("No koko_hardware/hardstop_torque_limit given (namespace: %s)", nh.getNamespace().c_str());
     }
 
-    ROS_ERROR("%d", y++);
+    //ROS_ERROR("%d", y++);
     num_joints = joint_names.size();
 
     // adding joint limits
@@ -67,12 +67,11 @@ public:
     //   }
     // }
     ////
-    ROS_ERROR("%d", y++);
+    //ROS_ERROR("%d", y++);
 
     motor_pos.resize(num_joints, 0.0);
     motor_vel.resize(num_joints, 0.0);
     cmd.resize(num_joints, 0.0);
-    ROS_ERROR("%d", y++);
     pos.resize(num_joints, 0.0);
     vel.resize(num_joints, 0.0);
     eff.resize(num_joints, 0.0);
@@ -80,7 +79,7 @@ public:
     angle_after_calibration.resize(num_joints, 0.0);
 
     jnt_cmd_publishers.resize(num_joints);
-    ROS_ERROR("%d", y++);
+    //ROS_ERROR("%d", y++);
 
     for (int i = 0; i < num_joints; i++) {
       cmd[i] = 0.0;
@@ -89,14 +88,14 @@ public:
       jnt_state_interface.registerHandle(state_handle_a);
     }
 
-    ROS_ERROR("%d", y++);
+    //ROS_ERROR("%d", y++);
     registerInterface(&jnt_state_interface);
 
     for (int i = 0; i < num_joints; i++) {
       hardware_interface::JointHandle effort_handle_a(jnt_state_interface.getHandle(joint_names[i]), &cmd[i]);
       jnt_effort_interface.registerHandle(effort_handle_a);
     }
-    ROS_ERROR("%d", y++);
+    //ROS_ERROR("%d", y++);
     registerInterface(&jnt_effort_interface);
 
     position_read = 0;
@@ -123,7 +122,7 @@ public:
     ROS_ERROR("%d", y++);
   }
 
-  void UpdateMotorState(const sensor_msgs::MotorState::ConstPtr& msg) {
+  void UpdateMotorState(const koko_hardware_drivers::MotorState::ConstPtr& msg) {
     for (int i = 0; i < msg->name.size(); i++) {
       int index = -1;
 
@@ -148,18 +147,18 @@ public:
         double pre_vel = msg->velocity[i];
 
         if(std::find(paired_constraints.begin(), paired_constraints.end(), index) != paired_constraints.end()) {
-          ROS_INFO("f10");
+          //ROS_INFO("f10");
           int a = std::find(paired_constraints.begin(), paired_constraints.end(), index) - paired_constraints.begin();
           //trying to set index a
           if (a % 2 == 0) {
-            ROS_INFO("f11");
+            //ROS_INFO("f11");
             int b = a + 1;
             //Might have to change signs
             pre_pos = -.5 * motor_pos[paired_constraints[a]] + .5 * motor_pos[paired_constraints[b]];
             pre_vel = -.5 * motor_vel[paired_constraints[a]] + .5 * motor_vel[paired_constraints[b]];
 
           } else {
-            ROS_INFO("f12");
+            //ROS_INFO("f12");
             int b = a - 1;
             pre_pos = .5 * motor_pos[paired_constraints[b]] + .5 * motor_pos[paired_constraints[a]];
             pre_vel = .5 * motor_vel[paired_constraints[b]] + .5 * motor_vel[paired_constraints[a]];
@@ -168,7 +167,9 @@ public:
 
         pos[index] = directions[index] * (pre_pos / gear_ratios[index]) + joint_state_initial[index];
         vel[index] = directions[index] * pre_vel / gear_ratios[index];
-        eff[index] = torque_directions[index] * msg->effort[i] * gear_ratios[index];
+        // eff[index] = torque_directions[index] * msg->effort[i] * gear_ratios[index];
+        // TODO: populate effort
+        eff[index] = torque_directions[index] * 0.0 * gear_ratios[index];
         position_read = 1;
       }
     }
@@ -222,7 +223,7 @@ public:
   void PublishJointCommand() {
 
     if (is_calibrated) {
-      ROS_INFO("d0");
+      // ROS_INFO("d0");
       std::vector<double> pre(num_joints);
       std::vector<double> cmd_oriented(num_joints);
 
@@ -270,7 +271,7 @@ public:
         //ROS_INFO("current command for %s is %f", joint_names[i].c_str(), commandMsg.data);
 
       }
-      ROS_INFO("d9");
+      //ROS_INFO("d9");
     }
   }
 

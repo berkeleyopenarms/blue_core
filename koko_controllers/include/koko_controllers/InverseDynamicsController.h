@@ -60,6 +60,7 @@ private:
   ros::Publisher commandPub;
   ros::Publisher deltaPub;
   ros::Publisher inverseDynamicsPub;
+  bool zero_g_mode;
 
 
 };
