@@ -26,6 +26,8 @@ public:
   double computeCommand(double error, ros::Duration dt, int index, double vel);
   void starting(const ros::Time& time);
   void jointCallback(const sensor_msgs::JointState msg);
+  void pCallback(const std_msgs::Float64MultiArrayConstPtr& p_terms);
+  void dCallback(const std_msgs::Float64MultiArrayConstPtr& d_terms);
   ~InverseDynamicsController();
 
 
@@ -53,6 +55,8 @@ private:
   std::vector<int> paired_constraints;
   ros::Subscriber sub_command;
   ros::Subscriber sub_joint;
+  ros::Subscriber sub_p;
+  ros::Subscriber sub_d;
   KDL::Chain chain;
   KDL::JntArray id_torques; 
   std::vector<double> error_filter;

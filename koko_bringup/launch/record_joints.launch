@@ -1,12 +1,8 @@
 <launch>
-  <arg name="record_cameras" default="true" />
-  <arg name="record_hrpsys" default="true" />
+  <arg name="record_joints" default="true" />
 
-  <node pkg="rosbag" type="rosbag" name="rosbag_record_cam"
-        args="record -o /narrow/left/camera_info    /narrow/right/image_raw /narrow/right/camera_info"
-        if="$(arg record_cameras)" />
+  <node pkg="rosbag" type="rosbag" name="rosbag_record_koko_states"
+    args="record -o /joint_states /koko_hardware/motor_states /koko_controllers/joint_position_controller/command"
+    if="$(arg record_joints)" />
 
-  <node pkg="rosbag" type="rosbag" name="rosbag_record_hrpsys"
-        args="record -o /tmp/hrp2-hrpsys /imu /joint_states /joint_command /force_0 /force_1 /force_2 /force_3 /base_link"
-        if="$(arg record_hrpsys)" />
 </launch>

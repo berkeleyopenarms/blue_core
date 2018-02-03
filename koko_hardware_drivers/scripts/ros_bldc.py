@@ -9,22 +9,24 @@ import sys
 import rospy
 import json
 from std_msgs.msg import Float64
+from std_msgs.msg import Bool
 from koko_hardware_drivers.msg import MotorState
 from comms import *
 
 
 ENCODER_ANGLE_PERIOD = 1 << 14
-MAX_CURRENT = 1.2
+MAX_CURRENT = 1.5
 CONTROL_LOOP_FREQ = 1000
 
 name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
-           10: "right_motor2", 17: "left_motor2", 21: "right_motor3", 19: "left_motor3" }#, 2: "gripper_motor"}
-angle_mapping = {15: 13002, 14: 4484, 16: 2373, 10: 11067, 17: 10720, 21: 5899, 19: 2668 }#, 2: 11349}
-erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 21: 21, 19: 21 }#, 2: 21}
-invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 21: False, 19: False }#, 2: False}
-torque_constant_mapping = {15: 1.45, 14: 1.45, 16: 1.45, 10: 1.45, 17: 1.45, 21: 0.6 , 19: 0.6 }#, 2: False}
+           10: "right_motor2", 17: "left_motor2", 20: "right_motor3", 18: "left_motor3" }#, 2: "gripper_motor"}
+angle_mapping = {15: 13002, 14: 4484, 16: 2373, 10: 11067, 17: 10720, 20: 3839, 18: 284 }#, 2: 11349}
+erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 20: 21, 18: 21 }#, 2: 21}
+invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 20: False, 18: False }#, 2: False}
+torque_constant_mapping = {15: 1.45, 14: 1.45, 16: 1.45, 10: 1.45, 17: 1.45, 20: 0.6 , 18: 0.6 }#, 2: False}
 
-flip_mapping = {21: True}
+# flip_mapping = {21: True}
+flip_mapping = {}
 
 
 # name_mapping = {15: "gripper_motor"}
@@ -34,6 +36,8 @@ flip_mapping = {21: True}
 
 global command_queue
 command_queue = {}
+global stop_motors
+stop_motors = False
 #################################################################################################
 ############### Helper Functions ################################################################
 #################################################################################################
@@ -49,16 +53,21 @@ def makeSetCommand(key):
         effort_filtered = effort_raw
 
         if key in flip_mapping and flip_mapping[key]:
-            effort_filtered = effort_filtered
+            effort_filtered = -effort_filtered
 
         if effort_filtered > MAX_CURRENT:
             effort_filtered = MAX_CURRENT
         elif effort_filtered < -MAX_CURRENT:
             effort_filtered = -MAX_CURRENT
-        # re uncomment
         command_queue[key] = effort_filtered
     return lambda msg: setCommand(key, msg)
 
+def set_motor_current_zero(msg):
+    global stop_motors
+    if msg.data:
+        stop_motors = True
+    else:
+        stop_motors = False
 #################################################################################################
 
 def main():
@@ -66,6 +75,7 @@ def main():
     #rate = rospy.Rate(CONTROL_LOOP_FREQ)
     global device
     global command_queue
+    global stop_motors
 
     # Find and connect to the motor controller
     port = sys.argv[1]
@@ -80,6 +90,8 @@ def main():
     for key in name_mapping:
         rospy.Subscriber(name_mapping[key] + "_cmd", Float64, makeSetCommand(key), queue_size=1)
 
+    # subscriber listens for a stop motor command to set zero current to motors if something goes wrong
+    rospy.Subscriber("stop_motors", Bool, set_motor_current_zero, queue_size=1)
     # Set up a signal handler so Ctrl-C causes a clean exit
     def sigintHandler(signal, frame):
         print 'quitting'
@@ -114,7 +126,7 @@ def main():
     start_time = time.time()
     time_previous = start_time
     angle_start = {}
-    velocity_window_size =10 
+    velocity_window_size =15
     recorded_positions = {} # map of rolling window of (time, position)
 
     for id in name_mapping:
@@ -130,10 +142,13 @@ def main():
         for key in name_mapping:
             try:
                 curr_time = time.time()
-                if key in command_queue:
-                    curr_position = device.setCommandAndGetRotorPosition(key, command_queue[key]) - angle_start[key]
+                if not stop_motors:
+                    if key in command_queue:
+                        curr_position = device.setCommandAndGetRotorPosition(key, command_queue[key]) - angle_start[key]
+                    else:
+                        curr_position = device.getRotorPosition(key) - angle_start[key]
                 else:
-                    curr_position = device.getRotorPosition(key) - angle_start[key]
+                    curr_position = device.setCommandAndGetRotorPosition(key, 0.0) - angle_start[key]
 
                 curr_velocity = 0
                 recorded_positions[key].append((curr_time, curr_position))

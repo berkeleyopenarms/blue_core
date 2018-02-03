@@ -139,7 +139,24 @@ namespace koko_controllers{
     //sub_joint = node.subscribe("/" + root_name  + "/joint_states", 1000, &InverseDynamicsController::jointCallback, this);
     sub_joint = node.subscribe( "/joint_states", 1000, &InverseDynamicsController::jointCallback, this);
 
+    sub_p = node.subscribe( "/p_terms", 1000, &InverseDynamicsController::pCallback, this);
+    sub_d = node.subscribe( "/d_terms", 1000, &InverseDynamicsController::dCallback, this);
     return true;
+  }
+
+  void InverseDynamicsController::pCallback(const std_msgs::Float64MultiArrayConstPtr& p_terms) {
+    std::vector<double> p = p_terms->data;
+    for(int i = 0; i < p.size(); i++){
+       ROS_ERROR("Updateing p gain of joint %d, to %f", i, p[i]);
+       joint_vector[i]->p_gain = p[i];
+    }
+  }
+  void InverseDynamicsController::dCallback(const std_msgs::Float64MultiArrayConstPtr& d_terms) {
+    std::vector<double> d = d_terms->data;
+    for(int i = 0; i < d.size(); i++){
+       ROS_ERROR("Updateing d gain of joint %d, to %f", i, d[i]);
+       joint_vector[i]->d_gain = d[i];
+    }
   }
 
   void InverseDynamicsController::starting(const ros::Time& time)
@@ -264,6 +281,7 @@ namespace koko_controllers{
       // ROS_ERROR("ZERO GRAVITY MODE");
       return id_torques(index) * joint_vector[index]->id_gain;
     }
+    //ROS_INFO("d_term Torques: %f", d_term);
     return (p_term + d_term) + id_torques(index) * joint_vector[index]->id_gain;
     //return p_term + d_term + 0.3 * id_torques(index);
   }
@@ -294,15 +312,13 @@ namespace koko_controllers{
 
     KDL::ChainIdSolver_RNE chainIdSolver(chain, gravity);
     int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques);
-    ROS_INFO("status: %d", statusID);
+    // ROS_INFO("status: %d", statusID);
     //ROS_INFO("pos vel =  %f, %f", msg.position[0], msg.velocity[0]);
-
 
 
     std_msgs::Float64MultiArray inverseDynamicsMsg;
     for (int i = 0; i < joint_vector.size(); i++) {
       inverseDynamicsMsg.data.push_back(id_torques(i));
-      ROS_INFO("Inverse Dynamics Torques: %f", id_torques(i));
     }
     inverseDynamicsPub.publish(inverseDynamicsMsg);
   }

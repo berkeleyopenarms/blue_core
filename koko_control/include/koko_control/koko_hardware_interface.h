@@ -120,9 +120,14 @@ public:
       ROS_INFO("Publishers %s", motor_names[i].c_str());
     }
     ROS_ERROR("%d", y++);
+    debug_adv = nh.advertise<std_msgs::Float64>("koko_hardware/joints_pos_update", 1000);
   }
 
   void UpdateMotorState(const koko_hardware_drivers::MotorState::ConstPtr& msg) {
+    std_msgs::Float64 debug_msg;
+    debug_msg.data = 1.0;
+    debug_adv.publish(debug_msg);
+
     for (int i = 0; i < msg->name.size(); i++) {
       int index = -1;
 
@@ -285,6 +290,7 @@ private:
 
   ros::Subscriber motor_state_subscriber;
   std::vector<ros::Publisher> jnt_cmd_publishers;
+  ros::Publisher debug_adv;
   ros::Subscriber jnt_state_tracker_subscriber;
 
   ros::Time last_time;
