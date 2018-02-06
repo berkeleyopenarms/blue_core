@@ -3,7 +3,6 @@ from comms import BLDCControllerClient
 import time
 import serial
 import math
-import collections
 import signal
 import sys
 import rospy
@@ -24,6 +23,24 @@ angle_mapping = {15: 13002, 14: 4484, 16: 2373, 10: 11067, 17: 10720, 20: 3839, 
 erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 20: 21, 18: 21 }#, 2: 21}
 invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 20: False, 18: False }#, 2: False}
 torque_constant_mapping = {15: 1.45, 14: 1.45, 16: 1.45, 10: 1.45, 17: 1.45, 20: 0.6 , 18: 0.6 }#, 2: False}
+
+# name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", }
+# angle_mapping = {15: 13002, 14: 4484, 16: 2373}
+# erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14}
+# invert_mapping = {15: False, 14: False, 16: False}
+# torque_constant_mapping = {15: 1.45, 14: 1.45, 16: 1.45}
+#
+# name_mapping = {15: "base_roll_motor", 14: "right_motor1"}
+# angle_mapping = {15: 13002, 14: 4484}
+# erevs_per_mrev_mapping = {15: 14, 14: 14}
+# invert_mapping = {15: False, 14: False}
+# torque_constant_mapping = {15: 1.45, 14: 1.45}
+#
+# name_mapping = {15: "base_roll_motor"}
+# angle_mapping = {15: 13002}
+# erevs_per_mrev_mapping = {15: 14}
+# invert_mapping = {15: False}
+# torque_constant_mapping = {15: 1.45}
 
 # flip_mapping = {21: True}
 flip_mapping = {}
@@ -126,39 +143,36 @@ def main():
     start_time = time.time()
     time_previous = start_time
     angle_start = {}
-    velocity_window_size =15
-    recorded_positions = {} # map of rolling window of (time, position)
 
     for id in name_mapping:
         angle_start[id] = device.getRotorPosition(id)
-        recorded_positions[id] = collections.deque()
+        rospy.loginfo("Motor %d startup: supply voltage=%fV", id, device.getVoltage(id))
 
     r = rospy.Rate(CONTROL_LOOP_FREQ)
     while not rospy.is_shutdown():
         stateMsg = MotorState()
-        stateMsg.name = []
-        stateMsg.position = []
-        stateMsg.velocity = []
         for key in name_mapping:
             try:
                 curr_time = time.time()
                 if not stop_motors:
                     if key in command_queue:
-                        curr_position = device.setCommandAndGetRotorPosition(key, command_queue[key]) - angle_start[key]
+                        state = device.setCommandAndGetState(key, command_queue[key])
                     else:
-                        curr_position = device.getRotorPosition(key) - angle_start[key]
+                        state = device.getState(key)
                 else:
-                    curr_position = device.setCommandAndGetRotorPosition(key, 0.0) - angle_start[key]
+                    state = device.setCommandAndGetState(key, 0.0)
 
-                curr_velocity = 0
-                recorded_positions[key].append((curr_time, curr_position))
-                if len(recorded_positions[key]) >= velocity_window_size:
-                    prev_time, prev_position = recorded_positions[key].popleft()
-                    curr_velocity = (curr_position - prev_position) / (curr_time - prev_time)
+                angle, velocity, direct_current, quadrature_current, \
+                        supply_voltage, temperature, accel_x, accel_y, accel_z = state
+                angle -= angle_start[key]
 
                 stateMsg.name.append(name_mapping[key])
-                stateMsg.position.append(curr_position)
-                stateMsg.velocity.append(curr_velocity)
+                stateMsg.position.append(angle)
+                stateMsg.velocity.append(velocity)
+                stateMsg.direct_current.append(direct_current)
+                stateMsg.quadrature_current.append(quadrature_current)
+                stateMsg.supply_voltage.append(supply_voltage)
+                stateMsg.temperature.append(temperature)
             except Exception as e:
                 rospy.logerr("Motor " + str(key) +  " driver error: " + str(e))
 
