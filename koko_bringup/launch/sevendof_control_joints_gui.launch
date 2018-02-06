@@ -42,7 +42,8 @@
   <node
     name="koko_controller_manager"
     pkg="koko_control"
-    type="koko_controller_manager" />
+    type="koko_controller_manager"
+    output="screen" />
 
   <node
     name="transformer"

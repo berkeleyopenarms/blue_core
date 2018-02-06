@@ -30,7 +30,8 @@ koko_controllers:
     type: koko_controllers/InverseDynamicsController
     root_name: DOF
     base_roll_joint:
-      p: 100
+      # p: 100.0
+      p: 0.0
       d: 0.0
       id: 1
       max_torque: 30
@@ -38,31 +39,35 @@ koko_controllers:
       max_angle: 1.6
       min_angle: -1.4
     shoulder_lift_joint:
-      p: 100
+      # p: 100.0
+      p: 0.0
       d: 0.0
       id: 1
       max_torque: 30
       min_torque: -30
       max_angle: 3.14
-      min_angle: -1.4  
+      min_angle: -1.4
     shoulder_roll_joint:
-      p: 100
+      # p: 100.0
+      p: 0.0
       d: 0.0
       id: 1.0
       max_torque: 30
       min_torque: -30
       max_angle: 1.5
-      min_angle: -1.5  
+      min_angle: -1.5
     elbow_lift_joint:
-      p: 80
+      # p: 80
+      p: 0.0
       d: 0.0
       id: 1
       max_torque: 30
       min_torque: -30
       max_angle: 3.5
-      min_angle: -1.4  
+      min_angle: -1.4
     elbow_roll_joint:
-      p: 50
+      # p: 50
+      p: 0.0
       d: 0.0
       id: 1.0
       max_torque: 30
@@ -70,17 +75,19 @@ koko_controllers:
       max_angle: 1.5
       min_angle: -1.5
     wrist_lift_joint:
-      p: 50.0
+      # p: 50.0
+      p: 0.0
       d: 0.0
-      id: 0.0 
+      id: 1.0
       max_torque: 15
       min_torque: -15
       max_angle: 3.4
-      min_angle: -3.4  
+      min_angle: -3.4
     wrist_roll_joint:
-      p: 30.0
+      # p: 30.0
+      p: 0.0
       d: 0.0
-      id: 0.0
+      id: 1.0
       max_torque: 15
       min_torque: -15
       max_angle: 3.4

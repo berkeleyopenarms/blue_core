@@ -37,6 +37,10 @@ namespace koko_controllers{
       ROS_ERROR("No endlink given node namespace %s", n.getNamespace().c_str());
     }
 
+    if (!n.getParam("zero_g_mode", zero_g_mode)) {
+      ROS_ERROR("No zero_g_mode given node namespace %s", n.getNamespace().c_str());
+    }
+
     if (!n.getParam("paired_constraints", paired_constraints)) {
       ROS_ERROR("No paired_constraint given node namespace %s", n.getNamespace().c_str());
     }
@@ -115,6 +119,8 @@ namespace koko_controllers{
         jointPD->err_dot_filter_length = filter_length;
         joint_vector.push_back(jointPD);
 
+        ROS_INFO("Joint %s, has inverse dynamics gain of: %f", jointName.c_str(), id_gain);
+
       }
     }
 
@@ -130,9 +136,27 @@ namespace koko_controllers{
     inverseDynamicsPub = node.advertise<std_msgs::Float64MultiArray>("/inverseDynamicsPub", 1);
 
     sub_command = n.subscribe("command", 1, &InverseDynamicsController::setCommand, this);
-    sub_joint = node.subscribe("/" + root_name  + "/joint_states", 1000, &InverseDynamicsController::jointCallback, this);
+    //sub_joint = node.subscribe("/" + root_name  + "/joint_states", 1000, &InverseDynamicsController::jointCallback, this);
+    sub_joint = node.subscribe( "/joint_states", 1000, &InverseDynamicsController::jointCallback, this);
 
+    sub_p = node.subscribe( "/p_terms", 1000, &InverseDynamicsController::pCallback, this);
+    sub_d = node.subscribe( "/d_terms", 1000, &InverseDynamicsController::dCallback, this);
     return true;
+  }
+
+  void InverseDynamicsController::pCallback(const std_msgs::Float64MultiArrayConstPtr& p_terms) {
+    std::vector<double> p = p_terms->data;
+    for(int i = 0; i < p.size(); i++){
+       ROS_ERROR("Updateing p gain of joint %d, to %f", i, p[i]);
+       joint_vector[i]->p_gain = p[i];
+    }
+  }
+  void InverseDynamicsController::dCallback(const std_msgs::Float64MultiArrayConstPtr& d_terms) {
+    std::vector<double> d = d_terms->data;
+    for(int i = 0; i < d.size(); i++){
+       ROS_ERROR("Updateing d gain of joint %d, to %f", i, d[i]);
+       joint_vector[i]->d_gain = d[i];
+    }
   }
 
   void InverseDynamicsController::starting(const ros::Time& time)
@@ -204,7 +228,7 @@ namespace koko_controllers{
       int roll_index = paired_constraints[i+1];
       double lift = commands[lift_index];
       double roll = commands[roll_index];
-      ROS_INFO("lift: %f, roll: %f", commands[lift_index],  commands[roll_index]);
+      //ROS_INFO("lift: %f, roll: %f", commands[lift_index],  commands[roll_index]);
 
       double max_effort = joint_vector[lift_index]->max_torque + joint_vector[roll_index]->max_torque;
       double scalar = 1;
@@ -225,8 +249,6 @@ namespace koko_controllers{
       joint_vector[i]->joint.setCommand(commands[i]);
     }
   }
-
-
 
   double InverseDynamicsController::computeCommand(double error, ros::Duration dt, int index, double vel)
   {
@@ -254,7 +276,12 @@ namespace koko_controllers{
     p_term = joint_vector[index]->p_gain * error;
     d_term = joint_vector[index]->d_gain * -vel;
 
-    //return 0.0;
+    //ROS_DEBUG("inverse dynamics torques %f", id_torques(index));
+    if (zero_g_mode){
+      // ROS_ERROR("ZERO GRAVITY MODE");
+      return id_torques(index) * joint_vector[index]->id_gain;
+    }
+    //ROS_INFO("d_term Torques: %f", d_term);
     return (p_term + d_term) + id_torques(index) * joint_vector[index]->id_gain;
     //return p_term + d_term + 0.3 * id_torques(index);
   }
@@ -285,9 +312,8 @@ namespace koko_controllers{
 
     KDL::ChainIdSolver_RNE chainIdSolver(chain, gravity);
     int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques);
-    //ROS_INFO("status: %d", statusID);
+    // ROS_INFO("status: %d", statusID);
     //ROS_INFO("pos vel =  %f, %f", msg.position[0], msg.velocity[0]);
-
 
 
     std_msgs::Float64MultiArray inverseDynamicsMsg;
@@ -295,14 +321,6 @@ namespace koko_controllers{
       inverseDynamicsMsg.data.push_back(id_torques(i));
     }
     inverseDynamicsPub.publish(inverseDynamicsMsg);
-
-    //ROS_INFO("nr_segments = %d", ns);
-    /**for(int i = 0; i < ns; i++){
-      KDL::Segment seg = chain.segments[i];
-      ROS_INFO("seg %d name: %s", i, seg.getName().c_str());
-      ROS_INFO("joint name: %s type: %d", seg.getJoint().getName().c_str(), seg.getJoint().getType());
-    } **/
-    //ROS_INFO("id torques =  %f", id_torques(0));
   }
 
 }

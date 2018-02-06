@@ -94,6 +94,21 @@ class BLDCControllerClient:
         angle = struct.unpack('<f', self.readRegisters(server_id, 0x3000, 1))[0]
         return angle
 
+    def getState(self, server_id):
+        # order: angle, velocity, direct_current, quadrature_current, supply_voltage, board_temp, accel_x, accel_y, accel_z
+        state = struct.unpack('<fffffffff', self.readRegisters(server_id, 0x3000, 9))
+        return state
+
+    def getVoltage(self, server_id):
+        # order: angle, velocity, direct_current, quadrature_current, supply_voltage, board_temp, accel_x, accel_y, accel_z
+        state = struct.unpack('<f', self.readRegisters(server_id, 0x3004, 1))[0]
+        return state
+
+    def getTemperature(self, server_id):
+        # order: angle, velocity, direct_current, quadrature_current, supply_voltage, board_temp, accel_x, accel_y, accel_z
+        state = struct.unpack('<f', self.readRegisters(server_id, 0x3005, 1))[0]
+        return state
+
     def setZeroAngle(self, server_id, value):
         return self.writeRegisters(server_id, 0x1000, 1, struct.pack('<H', value))
 
@@ -110,10 +125,10 @@ class BLDCControllerClient:
         ret = self.writeRegisters(server_id, 0x2002, 1, struct.pack('<f', value))
         return ret
 
-    def setCommandAndGetRotorPosition(self, server_id, value):
-        ret = self.readWriteRegisters(server_id, 0x3000, 1, 0x2002, 1, struct.pack('<f', value))
-        angle = struct.unpack('<f', ret)[0]
-        return angle
+    def setCommandAndGetState(self, server_id, value):
+        ret = self.readWriteRegisters(server_id, 0x3000, 9, 0x2002, 1, struct.pack('<f', value))
+        state = struct.unpack('<fffffffff', ret)
+        return state
 
     def leaveBootloader(self, server_id):
         self.jumpToAddress(server_id, COMM_FIRMWARE_OFFSET)
