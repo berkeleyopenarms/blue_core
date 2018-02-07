@@ -1,4 +1,5 @@
 import struct
+import json
 import time
 
 class ProtocolError(Exception):
@@ -201,8 +202,8 @@ class BLDCControllerClient:
         return data
 
     def readCalibration(self, server_id):
-        l = struct.unpack('<H', device.readFlash(server_id, COMM_NVPARAMS_OFFSET+1, 2))
-        return json.loads(device.readFlash(server_id, COMM_NVPARAMS_OFFSET+3, l))
+        l = struct.unpack('<H', self.readFlash(server_id, COMM_NVPARAMS_OFFSET+1, 2))[0]
+        return json.loads(self.readFlash(server_id, COMM_NVPARAMS_OFFSET+3, l))
 
     def verifyFlash(self, server_id, dest_addr, data):
         for i in range(0, len(data), COMM_SINGLE_VERIFY_LENGTH):
@@ -277,10 +278,6 @@ class BLDCControllerClient:
             sector_sizes.append(self.getFlashSectorSize(server_id, sector_num))
 
         return FlashSectorMap(sector_count, sector_starts, sector_sizes)
-    
-    def readCalibration(self, board_id):
-        l = self.readFlash(board_id, COMM_NVPARAMS_OFFSET+1, 1)
-        return device.readFlash(board_id, COMM_NVPARAMS_OFFSET+2, ord(l))
 
     def doTransaction(self, server_id, func_code, data):
         self._ser.flushInput()

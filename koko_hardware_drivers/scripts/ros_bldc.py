@@ -24,6 +24,8 @@ erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 20: 21, 18: 21
 invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 20: False, 18: False }#, 2: False}
 torque_constant_mapping = {15: 1.45, 14: 1.45, 16: 1.45, 10: 1.45, 17: 1.45, 20: 0.6 , 18: 0.6 }#, 2: False}
 
+mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
+           10: "right_motor2", 17: "left_motor2", 20: "right_motor3", 18: "left_motor3" }#, 2: "gripper_motor"}
 # name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", }
 # angle_mapping = {15: 13002, 14: 4484, 16: 2373}
 # erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14}
@@ -117,28 +119,30 @@ def main():
 
     time.sleep(0.2)
 
-    # # Write calibration values
-    # for id in mapping:
-    #     calibrations = device.readCalibration(id)
-    #     device.setZeroAngle(id, calibrations['angle'])
-    #     device.setCurrentControlMode(id)
-    #     device.setInvertPhases(id, calibrations['inv'])
-    #     device.setERevsPerMRev(id, calibrations['epm'])
-
-    # Old calibration method:
-    for id, angle in angle_mapping.items():
+    # Write calibration values
+    for id in mapping:
         rospy.loginfo("Calibrating motor %d" % id)
-        device.setZeroAngle(id, angle)
+        calibrations = device.readCalibration(id)
+        device.setZeroAngle(id, calibrations['angle'])
         device.setCurrentControlMode(id)
+        device.setInvertPhases(id, calibrations['inv'])
+        device.setERevsPerMRev(id, calibrations['epm'])
+        device.writeRegisters(id, 0x1022, 1, struct.pack('<f', calibrations['torque']))
 
-    for id, invert in invert_mapping.items():
-        device.setInvertPhases(id, int(invert))
+    ## Old calibration method:
+    #for id, angle in angle_mapping.items():
+    #    rospy.loginfo("Calibrating motor %d" % id)
+    #    device.setZeroAngle(id, angle)
+    #    device.setCurrentControlMode(id)
 
-    for id, erevs_per_mrev in erevs_per_mrev_mapping.items():
-        device.setERevsPerMRev(id, int(erevs_per_mrev))
+    #for id, invert in invert_mapping.items():
+    #    device.setInvertPhases(id, int(invert))
 
-    for id, tc in torque_constant_mapping.items():
-        device.writeRegisters(id, 0x1022, 1, struct.pack('<f', tc))
+    #for id, erevs_per_mrev in erevs_per_mrev_mapping.items():
+    #    device.setERevsPerMRev(id, int(erevs_per_mrev))
+
+    #for id, tc in torque_constant_mapping.items():
+    #    device.writeRegisters(id, 0x1022, 1, struct.pack('<f', tc))
 
     start_time = time.time()
     time_previous = start_time
