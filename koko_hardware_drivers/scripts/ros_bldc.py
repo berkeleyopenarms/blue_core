@@ -15,6 +15,8 @@ from comms import *
 
 ENCODER_ANGLE_PERIOD = 1 << 14
 MAX_CURRENT = 1.5
+MAX_TEMP_WARN = 55 # degrees C
+MAX_TEMP_MOTORS_OFF = 65
 CONTROL_LOOP_FREQ = 1000
 
 #name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
@@ -179,6 +181,13 @@ def main():
                 stateMsg.quadrature_current.append(quadrature_current)
                 stateMsg.supply_voltage.append(supply_voltage)
                 stateMsg.temperature.append(temperature)
+                if temperature > MAX_TEMP_WARN:
+                    rospy.logerr("Motor " + str(key) +  " is too hot, currently at  " + str(temperature) + " degrees C")
+                    rospy.logerr("Please Shut of the motors")
+                    if temperature > MAX_TEMP_MOTORS_OFF:
+                        stop_motors = True
+                        rospy.logerr("Motor " + str(key) +  " is too hot, setting motor currents to zero" )
+
             except Exception as e:
                 rospy.logerr("Motor " + str(key) +  " driver error: " + str(e))
 
