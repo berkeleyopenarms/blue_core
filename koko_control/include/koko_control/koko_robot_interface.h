@@ -59,17 +59,12 @@ public:
     //https://github.com/ros-controls/ros_control/wiki/joint_limits_interface
     boost::shared_ptr<urdf::ModelInterface> koko_urdf;
     joint_limits_interface::JointLimits limits;
-    //joint_limits_interface::SoftJointLimits soft_limits;
-
-    //limits.has_velocity_limits = false;
-    //limits.max_velocity = 2.0;
     ROS_ERROR("getting joint limits")
     for (int j; j< num_joints; j ++){
       boost::shared_ptr<const urdf::Joint> urdf_joint = urdf->getJoint(joint_names[j]);
       const bool urdf_limits_ok = getJointLimits(urdf_joint, limits);
       min_angles[j] = urdf_joint.min_position;
       max_angles[j] = urdf_joint.max_position;
-      //const bool urdf_soft_limits_ok = getSoftJointLimits(urdf_joint, soft_limits);
       ROS_ERROR("min: %f, max: %f", min_angles[j], max_angles[j])
     }
 
@@ -77,7 +72,6 @@ public:
     motor_pos.resize(num_joints, 0.0);
     motor_vel.resize(num_joints, 0.0);
     cmd.resize(num_joints, 0.0);
-    ROS_ERROR("%d", y++);
     pos.resize(num_joints, 0.0);
     vel.resize(num_joints, 0.0);
     eff.resize(num_joints, 0.0);
@@ -120,7 +114,7 @@ public:
     }
 
     // TODO fill in parameters from read in
-    base_trans();
+    base_trans(gear_ratios[0], 0);
     shoulder_trans();
     upper_arm_trans();
     wrist_trans();
