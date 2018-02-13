@@ -87,7 +87,7 @@ koko_controllers:
     z_offset_controller: 0.0
     root_name: koko
     base_roll_joint:
-      id: 1.0
+      id: 0.0
       max_torque: 30
       min_torque: -30
       max_angle: 3.3
@@ -110,19 +110,19 @@ koko_controllers:
       max_angle: 0.5
       min_angle: -2.2
     elbow_roll_joint:
-      id: 1.0
+      id: 0.0
       max_torque: 30
       min_torque: -30
       max_angle: 2.6
       min_angle: -2.6
     wrist_lift_joint:
-      id: 1
+      id: 0
       max_torque: 30
       min_torque: -30
       max_angle: 0.5
       min_angle: -2.2
     wrist_roll_joint:
-      id: 1.0
+      id: 0.0
       max_torque: 30
       min_torque: -30
       max_angle: 2.6

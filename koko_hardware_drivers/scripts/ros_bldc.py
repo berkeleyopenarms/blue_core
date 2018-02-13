@@ -17,15 +17,17 @@ ENCODER_ANGLE_PERIOD = 1 << 14
 MAX_CURRENT = 1.5
 CONTROL_LOOP_FREQ = 1000
 
-name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
-           10: "right_motor2", 17: "left_motor2", 20: "right_motor3", 18: "left_motor3" }#, 2: "gripper_motor"}
-angle_mapping = {15: 13002, 14: 4484, 16: 2373, 10: 11067, 17: 10720, 20: 3839, 18: 284 }#, 2: 11349}
-erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 20: 21, 18: 21 }#, 2: 21}
-invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 20: False, 18: False }#, 2: False}
-torque_constant_mapping = {15: 1.45, 14: 1.45, 16: 1.45, 10: 1.45, 17: 1.45, 20: 0.6 , 18: 0.6 }#, 2: False}
+#name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
+#           10: "right_motor2", 17: "left_motor2", 20: "right_motor3", 18: "left_motor3" }#, 2: "gripper_motor"}
+#angle_mapping = {15: 13002, 14: 4484, 16: 2373, 10: 11067, 17: 10720, 20: 3839, 18: 284 }#, 2: 11349}
+#erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 20: 21, 18: 21 }#, 2: 21}
+#invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 20: False, 18: False }#, 2: False}
+#torque_constant_mapping = {15: 1.45, 14: 1.45, 16: 1.45, 10: 1.45, 17: 1.45, 20: 0.6 , 18: 0.6 }#, 2: False}
 
 mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
            10: "right_motor2", 17: "left_motor2", 20: "right_motor3", 18: "left_motor3" }#, 2: "gripper_motor"}
+#mapping = {15: "base_roll_motor", 10: "right_motor1", 17: "left_motor1", \
+#          14: "right_motor2", 16: "left_motor2", 20: "right_motor3", 18: "left_motor3" }#, 2: "gripper_motor"}
 # name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", }
 # angle_mapping = {15: 13002, 14: 4484, 16: 2373}
 # erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14}
@@ -100,14 +102,14 @@ def main():
     port = sys.argv[1]
     s = serial.Serial(port=port, baudrate=1000000, timeout=0.1)
     device = BLDCControllerClient(s)
-    for key in name_mapping:
+    for key in mapping:
         device.leaveBootloader(key)
         s.flush()
     time.sleep(0.5)
 
     state_publisher = rospy.Publisher("motor_states", MotorState, queue_size=1)
-    for key in name_mapping:
-        rospy.Subscriber(name_mapping[key] + "_cmd", Float64, makeSetCommand(key), queue_size=1)
+    for key in mapping:
+        rospy.Subscriber(mapping[key] + "_cmd", Float64, makeSetCommand(key), queue_size=1)
 
     # subscriber listens for a stop motor command to set zero current to motors if something goes wrong
     rospy.Subscriber("stop_motors", Bool, set_motor_current_zero, queue_size=1)
@@ -148,14 +150,14 @@ def main():
     time_previous = start_time
     angle_start = {}
 
-    for id in name_mapping:
+    for id in mapping:
         angle_start[id] = device.getRotorPosition(id)
         rospy.loginfo("Motor %d startup: supply voltage=%fV", id, device.getVoltage(id))
 
     r = rospy.Rate(CONTROL_LOOP_FREQ)
     while not rospy.is_shutdown():
         stateMsg = MotorState()
-        for key in name_mapping:
+        for key in mapping:
             try:
                 curr_time = time.time()
                 if not stop_motors:
@@ -170,7 +172,7 @@ def main():
                         supply_voltage, temperature, accel_x, accel_y, accel_z = state
                 angle -= angle_start[key]
 
-                stateMsg.name.append(name_mapping[key])
+                stateMsg.name.append(mapping[key])
                 stateMsg.position.append(angle)
                 stateMsg.velocity.append(velocity)
                 stateMsg.direct_current.append(direct_current)
@@ -181,7 +183,6 @@ def main():
                 rospy.logerr("Motor " + str(key) +  " driver error: " + str(e))
 
         state_publisher.publish(stateMsg)
-        command_queue = {}
         r.sleep()
 
 if __name__ == '__main__':
