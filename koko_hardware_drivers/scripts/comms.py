@@ -1,4 +1,5 @@
 import struct
+import json
 import time
 
 class ProtocolError(Exception):
@@ -94,6 +95,21 @@ class BLDCControllerClient:
         angle = struct.unpack('<f', self.readRegisters(server_id, 0x3000, 1))[0]
         return angle
 
+    def getState(self, server_id):
+        # order: angle, velocity, direct_current, quadrature_current, supply_voltage, board_temp, accel_x, accel_y, accel_z
+        state = struct.unpack('<fffffffff', self.readRegisters(server_id, 0x3000, 9))
+        return state
+
+    def getVoltage(self, server_id):
+        # order: angle, velocity, direct_current, quadrature_current, supply_voltage, board_temp, accel_x, accel_y, accel_z
+        state = struct.unpack('<f', self.readRegisters(server_id, 0x3004, 1))[0]
+        return state
+
+    def getTemperature(self, server_id):
+        # order: angle, velocity, direct_current, quadrature_current, supply_voltage, board_temp, accel_x, accel_y, accel_z
+        state = struct.unpack('<f', self.readRegisters(server_id, 0x3005, 1))[0]
+        return state
+
     def setZeroAngle(self, server_id, value):
         return self.writeRegisters(server_id, 0x1000, 1, struct.pack('<H', value))
 
@@ -110,10 +126,10 @@ class BLDCControllerClient:
         ret = self.writeRegisters(server_id, 0x2002, 1, struct.pack('<f', value))
         return ret
 
-    def setCommandAndGetRotorPosition(self, server_id, value):
-        ret = self.readWriteRegisters(server_id, 0x3000, 1, 0x2002, 1, struct.pack('<f', value))
-        angle = struct.unpack('<f', ret)[0]
-        return angle
+    def setCommandAndGetState(self, server_id, value):
+        ret = self.readWriteRegisters(server_id, 0x3000, 9, 0x2002, 1, struct.pack('<f', value))
+        state = struct.unpack('<fffffffff', ret)
+        return state
 
     def leaveBootloader(self, server_id):
         self.jumpToAddress(server_id, COMM_FIRMWARE_OFFSET)
@@ -186,8 +202,8 @@ class BLDCControllerClient:
         return data
 
     def readCalibration(self, server_id):
-        l = struct.unpack('<H', device.readFlash(server_id, COMM_NVPARAMS_OFFSET+1, 2))
-        return json.loads(device.readFlash(server_id, COMM_NVPARAMS_OFFSET+3, l))
+        l = struct.unpack('<H', self.readFlash(server_id, COMM_NVPARAMS_OFFSET+1, 2))[0]
+        return json.loads(self.readFlash(server_id, COMM_NVPARAMS_OFFSET+3, l))
 
     def verifyFlash(self, server_id, dest_addr, data):
         for i in range(0, len(data), COMM_SINGLE_VERIFY_LENGTH):
@@ -262,10 +278,6 @@ class BLDCControllerClient:
             sector_sizes.append(self.getFlashSectorSize(server_id, sector_num))
 
         return FlashSectorMap(sector_count, sector_starts, sector_sizes)
-    
-    def readCalibration(self, board_id):
-        l = self.readFlash(board_id, COMM_NVPARAMS_OFFSET+1, 1)
-        return device.readFlash(board_id, COMM_NVPARAMS_OFFSET+2, ord(l))
 
     def doTransaction(self, server_id, func_code, data):
         self._ser.flushInput()

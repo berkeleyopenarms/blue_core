@@ -1,4 +1,7 @@
 <launch>
+  <rosparam file="$(find koko_bringup)/config/robot_parameters.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/control_parameters.yaml" command="load"/>
+
   <node
     name="console"
     pkg="rqt_console"
@@ -12,19 +15,15 @@
     name="robot_description"
     textfile="$(find koko_description_sevendof_kin)/robots/koko_description_sevendof_kin.urdf" />
   <param
-    name="/DOF/robot_dyn_description"
+    name="robot_dyn_description"
     textfile="$(find koko_description_sevendof_dyn)/robots/koko_description_sevendof_dyn.urdf" />
-  <param 
+  <param
     name="use_gui"
     value="$(arg gui)" />
-  <rosparam file="$(find koko_bringup)/config/control_7dof.yaml" command="load"/>
   <node
     name="robot_state_publisher"
     pkg="robot_state_publisher"
     type="state_publisher" />
-  <remap 
-    from="/joint_state_tracker" 
-    to="/DOF/joint_state_tracker" />
   <node
     name="rviz"
     pkg="rviz"
@@ -38,22 +37,19 @@
     name="hardstop_calibrator"
     pkg="koko_bringup"
     type="hardstop_calibrate"
-    output="screen"/> 
+    output="screen"/>
+
   <node
     name="koko_controller_manager"
     pkg="koko_control"
-    type="koko_controller_manager_independent"
-    ns="DOF" /> 
-  <node
-    name="joint_state_relay"
-    pkg="topic_tools"
-    type="relay"
-    args="/DOF/joint_states /joint_states" />
+    type="koko_controller_manager"
+    output="screen" />
+
   <node
     name="transformer"
     pkg="tf"
-    type="static_transform_publisher" 
-    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>    
+    type="static_transform_publisher"
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>
   <include
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
   <include

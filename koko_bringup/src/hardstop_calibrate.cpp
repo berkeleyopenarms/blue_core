@@ -43,12 +43,12 @@ int main(int argc, char** argv)
 
   if(!kdl_parser::treeFromString(robot_desc_string, my_tree)){
     ROS_ERROR("Failed to contruct kdl tree");
-    return false; 
+    return false;
   }
 
   std::string ee_tracker;
-  if (!node.getParam("/DOF/ee_tracker",  ee_tracker)) {
-    ROS_ERROR("No /DOF/ee_tracker loaded in rosparam");
+  if (!node.getParam("/koko_hardware/ee_tracker",  ee_tracker)) {
+    ROS_ERROR("No /koko_hardware/koko_hardware loaded in rosparam");
   }
 
   bool exit_value = my_tree.getChain("base_tracker_link", ee_tracker, chain);
@@ -56,12 +56,12 @@ int main(int argc, char** argv)
 
 
   pub = node.advertise<sensor_msgs::JointState>("/joint_state_tracker", 1000);
-  if (!node.getParam("DOF/joint_names", joint_names)) {
+  if (!node.getParam("koko_hardware/joint_names", joint_names)) {
     ROS_ERROR("No joint_names given (namespace: %s)", node.getNamespace().c_str());
   } 
 
   // getting hardstop angles
-  if (!node.getParam("DOF/hardstop_start_angles", hardstop_start_angles)) {
+  if (!node.getParam("koko_hardware/hardstop_start_angles", hardstop_start_angles)) {
     ROS_ERROR("No hardstop_start_angles given (namespace: %s)", node.getNamespace().c_str());
   } 
   nj = hardstop_start_angles.size();
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
     joint_state_msg.effort.push_back(0.0);
   }
 
-  ros::Rate  loop_rate(10);
+  ros::Rate  loop_rate(500);
   while(ros::ok){
     ros::spinOnce();
     loop_rate.sleep();

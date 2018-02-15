@@ -10,6 +10,7 @@ project(koko_misc)
 find_package(catkin REQUIRED COMPONENTS
   interactive_markers
   roscpp
+  sensor_msgs
   rospy
   std_msgs
   tf
