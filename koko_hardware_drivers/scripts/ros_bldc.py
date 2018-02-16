@@ -61,6 +61,7 @@ global command_queue
 command_queue = {}
 global stop_motors
 stop_motors = False
+
 #################################################################################################
 ############### Helper Functions ################################################################
 #################################################################################################
@@ -95,19 +96,54 @@ def set_motor_current_zero(msg):
 
 def main():
     rospy.init_node('jointInterface', anonymous=True)
-    #rate = rospy.Rate(CONTROL_LOOP_FREQ)
+
     global device
     global command_queue
     global stop_motors
+
+    # Set up a signal handler so Ctrl-C causes a clean exit
+    def sigintHandler(signal, frame):
+        print 'quitting'
+        sys.exit()
+    signal.signal(signal.SIGINT, sigintHandler)
 
     # Find and connect to the motor controller
     port = sys.argv[1]
     s = serial.Serial(port=port, baudrate=1000000, timeout=0.1)
     device = BLDCControllerClient(s)
-    for key in mapping:
-        device.leaveBootloader(key)
-        s.flush()
-    time.sleep(0.5)
+
+    # Initial hardware setup
+    for id in mapping:
+        rospy.loginfo("Booting motor %d..." % id)
+        device.leaveBootloader(id)
+    rospy.sleep(0.5)
+    s.flush()
+
+    calibration_success = False
+    for attempt in range(5):
+        try:
+            # Write calibration values
+            for id in mapping:
+                rospy.loginfo("Calibrating motor %d..." % id)
+                calibrations = device.readCalibration(id)
+                device.setZeroAngle(id, calibrations['angle'])
+                device.setCurrentControlMode(id)
+                device.setInvertPhases(id, calibrations['inv'])
+                device.setERevsPerMRev(id, calibrations['epm'])
+                device.writeRegisters(id, 0x1022, 1, struct.pack('<f', calibrations['torque']))
+            calibration_success = True
+            break
+        except Exception as e:
+            rospy.logwarn(str(e))
+            rospy.sleep(0.5)
+            pass
+
+    if not calibration_success:
+        rospy.logerr("Could not calibrate motors")
+        rospy.signal_shutdown("Could not calibrate motors")
+        exit()
+
+    rospy.loginfo("Successfully calibrated motors")
 
     state_publisher = rospy.Publisher("motor_states", MotorState, queue_size=1)
     for key in mapping:
@@ -115,43 +151,8 @@ def main():
 
     # subscriber listens for a stop motor command to set zero current to motors if something goes wrong
     rospy.Subscriber("stop_motors", Bool, set_motor_current_zero, queue_size=1)
-    # Set up a signal handler so Ctrl-C causes a clean exit
-    def sigintHandler(signal, frame):
-        print 'quitting'
-        sys.exit()
-    signal.signal(signal.SIGINT, sigintHandler)
 
-    time.sleep(0.2)
-
-    # Write calibration values
-    for id in mapping:
-        rospy.loginfo("Calibrating motor %d" % id)
-        calibrations = device.readCalibration(id)
-        device.setZeroAngle(id, calibrations['angle'])
-        device.setCurrentControlMode(id)
-        device.setInvertPhases(id, calibrations['inv'])
-        device.setERevsPerMRev(id, calibrations['epm'])
-        device.writeRegisters(id, 0x1022, 1, struct.pack('<f', calibrations['torque']))
-
-    ## Old calibration method:
-    #for id, angle in angle_mapping.items():
-    #    rospy.loginfo("Calibrating motor %d" % id)
-    #    device.setZeroAngle(id, angle)
-    #    device.setCurrentControlMode(id)
-
-    #for id, invert in invert_mapping.items():
-    #    device.setInvertPhases(id, int(invert))
-
-    #for id, erevs_per_mrev in erevs_per_mrev_mapping.items():
-    #    device.setERevsPerMRev(id, int(erevs_per_mrev))
-
-    #for id, tc in torque_constant_mapping.items():
-    #    device.writeRegisters(id, 0x1022, 1, struct.pack('<f', tc))
-
-    start_time = time.time()
-    time_previous = start_time
     angle_start = {}
-
     for id in mapping:
         angle_start[id] = device.getRotorPosition(id)
         rospy.loginfo("Motor %d startup: supply voltage=%fV", id, device.getVoltage(id))
@@ -161,10 +162,9 @@ def main():
         stateMsg = MotorState()
         for key in mapping:
             try:
-                curr_time = time.time()
                 if not stop_motors:
                     if key in command_queue:
-                        state = device.setCommandAndGetState(key, command_queue[key])
+                        state = device.setCommandAndGetState(key, command_queue.pop(key))
                     else:
                         state = device.getState(key)
                 else:
@@ -181,9 +181,9 @@ def main():
                 stateMsg.quadrature_current.append(quadrature_current)
                 stateMsg.supply_voltage.append(supply_voltage)
                 stateMsg.temperature.append(temperature)
+
                 if temperature > MAX_TEMP_WARN:
-                    rospy.logerr("Motor " + str(key) +  " is too hot, currently at  " + str(temperature) + " degrees C")
-                    rospy.logerr("Please Shut of the motors")
+                    rospy.logwarn_throttle(1, "Motor " + str(key) +  " is overheating, currently at  " + str(temperature) + " degrees C")
                     if temperature > MAX_TEMP_MOTORS_OFF:
                         stop_motors = True
                         rospy.logerr("Motor " + str(key) +  " is too hot, setting motor currents to zero" )

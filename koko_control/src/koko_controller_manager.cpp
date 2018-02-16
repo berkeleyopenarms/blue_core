@@ -9,7 +9,7 @@ typedef struct update_struct{
   controller_manager::ControllerManager *manager;
 } update_struct;
 
-void ExecuteUpdate(update_struct *my_Data) {
+void ExecuteUpdate(update_struct *my_data) {
    (* my_data->robot).read();
    (* my_data->manager).update((* my_data->robot).get_time(), (* my_data->robot).get_period());
    (* my_data->robot).write();

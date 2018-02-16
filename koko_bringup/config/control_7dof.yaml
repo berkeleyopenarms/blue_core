@@ -33,7 +33,7 @@ koko_controllers:
       # p: 100.0
       p: 0.0
       d: 0.0
-      id: 1
+      id: 0
       max_torque: 30
       min_torque: -30
       max_angle: 1.6
@@ -42,7 +42,7 @@ koko_controllers:
       # p: 100.0
       p: 0.0
       d: 0.0
-      id: 1
+      id: 0
       max_torque: 30
       min_torque: -30
       max_angle: 3.14
@@ -51,7 +51,7 @@ koko_controllers:
       # p: 100.0
       p: 0.0
       d: 0.0
-      id: 1.0
+      id: 0.0
       max_torque: 30
       min_torque: -30
       max_angle: 1.5
@@ -60,7 +60,7 @@ koko_controllers:
       # p: 80
       p: 0.0
       d: 0.0
-      id: 1
+      id: 0
       max_torque: 30
       min_torque: -30
       max_angle: 3.5
@@ -69,7 +69,7 @@ koko_controllers:
       # p: 50
       p: 0.0
       d: 0.0
-      id: 1.0
+      id: 0.0
       max_torque: 30
       min_torque: -30
       max_angle: 1.5
@@ -78,7 +78,7 @@ koko_controllers:
       # p: 50.0
       p: 0.0
       d: 0.0
-      id: 1.0
+      id: 0.0
       max_torque: 15
       min_torque: -15
       max_angle: 3.4
@@ -87,7 +87,7 @@ koko_controllers:
       # p: 30.0
       p: 0.0
       d: 0.0
-      id: 1.0
+      id: 0.0
       max_torque: 15
       min_torque: -15
       max_angle: 3.4
