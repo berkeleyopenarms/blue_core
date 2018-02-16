@@ -184,11 +184,11 @@ def main():
                 stateMsg.supply_voltage.append(supply_voltage)
                 stateMsg.temperature.append(temperature)
 
-                grav_vect = Vector3()
-                grav_vect.x = accel_x
-                grav_vect.y = accel_y
-                grav_vect.z = accel_z
-                stateMsg.gravity_vector.append(grav_vect)
+                accel = Vector3()
+                accel.x = accel_x
+                accel.y = accel_y
+                accel.z = accel_z
+                stateMsg.accel.append(accel)
 
                 if temperature > MAX_TEMP_WARN:
                     rospy.logwarn_throttle(1, "Motor " + str(key) +  " is overheating, currently at  " + str(temperature) + " degrees C")
