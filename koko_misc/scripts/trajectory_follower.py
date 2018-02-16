@@ -1,18 +1,16 @@
 #!/usr/bin/env python
-
 import csv
 import numpy
-import time
 import rospy
 from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import JointState
 global joint
+
 def joint_callback(msg):
     joints = msg.position
 
 def main():
     reader = csv.reader(open("trajectory_vert.csv", "rb"), delimiter=",")
-    # reader = csv.reader(open("trajectory.csv", "rb"), delimiter=",")
     x = list(reader)
     traj = numpy.array(x).astype("float")
 
