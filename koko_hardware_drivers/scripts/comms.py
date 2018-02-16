@@ -97,7 +97,7 @@ class BLDCControllerClient:
 
     def getState(self, server_id):
         # order: angle, velocity, direct_current, quadrature_current, supply_voltage, board_temp, accel_x, accel_y, accel_z
-        state = struct.unpack('<fffffffff', self.readRegisters(server_id, 0x3000, 9))
+        state = struct.unpack('<ffffffiii', self.readRegisters(server_id, 0x3000, 9))
         return state
 
     def getVoltage(self, server_id):
@@ -128,7 +128,7 @@ class BLDCControllerClient:
 
     def setCommandAndGetState(self, server_id, value):
         ret = self.readWriteRegisters(server_id, 0x3000, 9, 0x2002, 1, struct.pack('<f', value))
-        state = struct.unpack('<fffffffff', ret)
+        state = struct.unpack('<ffffffiii', ret)
         return state
 
     def leaveBootloader(self, server_id):

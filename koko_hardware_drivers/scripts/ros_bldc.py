@@ -9,6 +9,7 @@ import rospy
 import json
 from std_msgs.msg import Float64
 from std_msgs.msg import Bool
+from geometry_msgs.msg import Vector3
 from koko_hardware_drivers.msg import MotorState
 from comms import *
 
@@ -116,7 +117,8 @@ def main():
     for id in mapping:
         rospy.loginfo("Booting motor %d..." % id)
         device.leaveBootloader(id)
-    rospy.sleep(0.5)
+        rospy.sleep(0.1)
+        s.flush()
     s.flush()
 
     calibration_success = False
@@ -181,6 +183,12 @@ def main():
                 stateMsg.quadrature_current.append(quadrature_current)
                 stateMsg.supply_voltage.append(supply_voltage)
                 stateMsg.temperature.append(temperature)
+
+                grav_vect = Vector3()
+                grav_vect.x = accel_x
+                grav_vect.y = accel_y
+                grav_vect.z = accel_z
+                stateMsg.gravity_vector.append(grav_vect)
 
                 if temperature > MAX_TEMP_WARN:
                     rospy.logwarn_throttle(1, "Motor " + str(key) +  " is overheating, currently at  " + str(temperature) + " degrees C")

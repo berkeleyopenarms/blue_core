@@ -8,3 +8,4 @@ float32[] quadrature_current
 float32[] supply_voltage
 float32[] temperature
 sensor_msgs/Imu[] imu_data
+geometry_msgs/Vector3[] gravity_vector
