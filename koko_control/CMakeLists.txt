@@ -6,6 +6,8 @@ find_package(catkin REQUIRED COMPONENTS
   controller_interface
   controller_manager
   joint_limits_interface
+  hardware_interface
+  transmission_interface
   geometry_msgs
   kdl_parser
   roscpp
