@@ -16,8 +16,6 @@ class KokoHW: public hardware_interface::RobotHW
 public:
   KokoHW(ros::NodeHandle &nh)
   {
-    int y = 1000;
-    //ROS_ERROR("%d", y++);
     if (!nh.getParam("koko_hardware/joint_names", joint_names)) {
       ROS_INFO("No koko_hardware/joint_names given (namespace: %s)", nh.getNamespace().c_str());
     }
@@ -49,14 +47,11 @@ public:
       ROS_INFO("No koko_hardware/hardstop_torque_limit given (namespace: %s)", nh.getNamespace().c_str());
     }
 
-    //ROS_ERROR("%d", y++);
     num_joints = joint_names.size();
 
     // adding joint limits
-    // ROS_ERROR("%d", y++);
     // min_angles.resize(num_joints, 0.0);
     // max_angles.resize(num_joints, 0.0);
-    // ROS_ERROR("%d", y++);
     // for (int j; j < num_joints; j ++){
     //   ROS_ERROR("%d", j);
     //   if ( !nh.getParam("koko_hardware/simple_controller/" + motor_names[j] + "/min_angle", min_angles[j]) ) {
@@ -67,7 +62,6 @@ public:
     //   }
     // }
     ////
-    //ROS_ERROR("%d", y++);
 
     motor_pos.resize(num_joints, 0.0);
     motor_vel.resize(num_joints, 0.0);
@@ -79,7 +73,6 @@ public:
     angle_after_calibration.resize(num_joints, 0.0);
 
     jnt_cmd_publishers.resize(num_joints);
-    //ROS_ERROR("%d", y++);
 
     for (int i = 0; i < num_joints; i++) {
       cmd[i] = 0.0;
@@ -88,20 +81,17 @@ public:
       jnt_state_interface.registerHandle(state_handle_a);
     }
 
-    //ROS_ERROR("%d", y++);
     registerInterface(&jnt_state_interface);
 
     for (int i = 0; i < num_joints; i++) {
       hardware_interface::JointHandle effort_handle_a(jnt_state_interface.getHandle(joint_names[i]), &cmd[i]);
       jnt_effort_interface.registerHandle(effort_handle_a);
     }
-    //ROS_ERROR("%d", y++);
     registerInterface(&jnt_effort_interface);
 
     position_read = 0;
     calibrated = 0;
     prev_is_calibrated = 0;
-    ROS_ERROR("%d", y++);
     is_calibrated = 0;
 
     for (int i = 0; i < num_joints; i++) {
@@ -110,7 +100,6 @@ public:
 
     calibration_num = 10;
 
-    ROS_ERROR("%d", y++);
     jnt_state_tracker_subscriber = nh.subscribe("joint_state_tracker", 1000, &KokoHW::CalibrateJointState, this);
 
     motor_state_subscriber = nh.subscribe("koko_hardware/motor_states", 1000, &KokoHW::UpdateMotorState, this);
@@ -119,7 +108,6 @@ public:
       jnt_cmd_publishers[i] = nh.advertise<std_msgs::Float64>("koko_hardware/" + motor_names[i] + "_cmd", 1000);
       ROS_INFO("Publishers %s", motor_names[i].c_str());
     }
-    ROS_ERROR("%d", y++);
     debug_adv = nh.advertise<std_msgs::Float64>("koko_hardware/joints_pos_update", 1000);
   }
 
@@ -186,7 +174,7 @@ public:
       for (int i = 0; i < joint_state_initial.size(); i++) {
         joint_state_initial[i] = msg->position[i];
         pos[i] = joint_state_initial[i];
-        ROS_INFO("calibrated initial joint state %f", joint_state_initial[i]);
+        ROS_INFO("Calibrated joint %d to state %f", i, joint_state_initial[i]);
       }
       calibrated++;
       is_calibrated = 1;
@@ -197,9 +185,12 @@ public:
       for (int i = 0; i < joint_state_initial.size(); i++) {
         joint_state_initial[i] = msg->position[i];
         pos[i] = joint_state_initial[i];
-        ROS_INFO("calibrated initial joint state %f", joint_state_initial[i]);
       }
       calibrated++;
+
+      if (calibrated % (calibration_num / 5) == 0) {
+        ROS_INFO("Calibrating - received message %d/%d", calibrated, calibration_num);
+      }
     }
   }
 
