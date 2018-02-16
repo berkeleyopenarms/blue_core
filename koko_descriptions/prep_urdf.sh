@@ -6,5 +6,5 @@
 file_folder=$1
 mv $file_folder/urdf $file_folder/robots
 sed -i 's/False/True/g' $file_folder/launch/display.launch
-cp koko_description_fivedof_kin/urdf.rviz $file_folder
+cp koko_description_sevendof_kin_old/urdf.rviz $file_folder
 sed -i 's:<maintainer email="me2email.com" />:<maintainer email="lxd20@todo.todo">lxd20</maintainer>:g' $file_folder/package.xml
