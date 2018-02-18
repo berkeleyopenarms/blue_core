@@ -5,6 +5,7 @@
 #include <urdf/model.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Float64.h>
+#include <koko_hardware_drivers/MotorState.h>
 #include <ros/node_handle.h>
 #include <vector>
 #include <string>
@@ -25,8 +26,6 @@ class KokoHW: public hardware_interface::RobotHW
 public:
   KokoHW(ros::NodeHandle &nh)
   {
-    int y = 1000;
-    ROS_ERROR("%d", y++);
     if (!nh.getParam("koko_hardware/joint_names", joint_names)) {
       ROS_INFO("No koko_hardware/joint_names given (namespace: %s)", nh.getNamespace().c_str());
     }
@@ -59,21 +58,6 @@ public:
     }
 
     num_joints = joint_names.size();
-
-    // loading in joint limits
-    //https://github.com/ros-controls/ros_control/wiki/joint_limits_interface
-    boost::shared_ptr<urdf::ModelInterface> koko_urdf;
-    joint_limits_interface::JointLimits limits;
-    ROS_ERROR("getting joint limits");
-    for (int j; j< num_joints; j ++){
-      boost::shared_ptr<const urdf::Joint> urdf_joint = koko_urdf->getJoint(joint_names[j]);
-      const bool urdf_limits_ok = getJointLimits(urdf_joint, limits);
-      min_angles[j] = limits.min_position;
-      max_angles[j] = limits.max_position;
-      ROS_ERROR("min: %f, max: %f", min_angles[j], max_angles[j]);
-    }
-
-    // resizing vectors to number of joints of the robot
     motor_pos.resize(num_joints, 0.0);
     motor_vel.resize(num_joints, 0.0);
     cmd.resize(num_joints, 0.0);
@@ -85,12 +69,29 @@ public:
 
     jnt_cmd_publishers.resize(num_joints);
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // add for Joint limits reading from urdf
+    // loading in joint limits
+    //https://github.com/ros-controls/ros_control/wiki/joint_limits_interface
+    //boost::shared_ptr<urdf::ModelInterface> koko_urdf;
+    //joint_limits_interface::JointLimits limits;
+    //ROS_ERROR("getting joint limits");
+    //for (int j; j< num_joints; j ++){
+    //  boost::shared_ptr<const urdf::Joint> urdf_joint = koko_urdf->getJoint(joint_names[j]);
+    //  const bool urdf_limits_ok = getJointLimits(urdf_joint, limits);
+    //  min_angles[j] = limits.min_position;
+    //  max_angles[j] = limits.max_position;
+    //  ROS_ERROR("min: %f, max: %f", min_angles[j], max_angles[j]);
+    //}
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+
     for (int i = 0; i < num_joints; i++) {
       cmd[i] = 0.0;
       hardware_interface::JointStateHandle state_handle_a(joint_names[i], &pos[i], &vel[i], &eff[i]);
       jnt_state_interface.registerHandle(state_handle_a);
-      ROS_INFO("joint %s", joint_names[i].c_str());
     }
+
     registerInterface(&jnt_state_interface);
 
     for (int i = 0; i < num_joints; i++) {
@@ -111,39 +112,48 @@ public:
     calibration_num = 10;
 
     jnt_state_tracker_subscriber = nh.subscribe("joint_state_tracker", 1000, &KokoHW::CalibrateJointState, this);
-    jnt_state_subscriber = nh.subscribe("koko_hardware/motor_states", 1000, &KokoHW::UpdateJointState, this);
+
+    motor_state_subscriber = nh.subscribe("koko_hardware/motor_states", 1000, &KokoHW::UpdateMotorState, this);
 
     for (int i = 0; i < motor_names.size(); i++) {
       jnt_cmd_publishers[i] = nh.advertise<std_msgs::Float64>("koko_hardware/" + motor_names[i] + "_cmd", 1000);
       ROS_INFO("Publishers %s", motor_names[i].c_str());
     }
-
+    debug_adv = nh.advertise<std_msgs::Float64>("koko_hardware/joints_pos_update", 1000);
     //*******************************************************************************************************************// added for hardware interaface
-    // TODO fill in parameters from read in
     int j_idx = 0;
-    base_trans = new SimpleTransmission(gear_ratios[j_idx], 1.0);
+    base_trans = new SimpleTransmission(-gear_ratios[j_idx], 0.0);
     j_idx ++;
 
     std::vector<double> shoulder_gear_ratios(2, 1.0);
-    shoulder_gear_ratios[0] = gear_ratios[j_idx];
+    std::vector<double> act_1(2, 1.0);
+    act_1[0] = -1.0;
+
+    shoulder_gear_ratios[0] = -gear_ratios[j_idx];
     j_idx ++;
-    shoulder_gear_ratios[1] = gear_ratios[j_idx];
+    shoulder_gear_ratios[1] = -gear_ratios[j_idx];
     j_idx ++;
-    shoulder_trans = new DifferentialTransmission(shoulder_gear_ratios, std::vector<double>(2, 1.0));
+    shoulder_trans = new DifferentialTransmission(act_1, shoulder_gear_ratios);
 
     std::vector<double> upper_arm_gear_ratios(2, 1.0);
-    upper_arm_gear_ratios[0] = gear_ratios[j_idx];
+    std::vector<double> act_2(2, 1.0);
+    act_2[0] = -1.0;
+
+    upper_arm_gear_ratios[0] = -gear_ratios[j_idx];
     j_idx ++;
-    upper_arm_gear_ratios[1] = gear_ratios[j_idx];
+    upper_arm_gear_ratios[1] = -gear_ratios[j_idx];
     j_idx ++;
-    upper_arm_trans = new DifferentialTransmission(upper_arm_gear_ratios, std::vector<double>(2, 1.0));
+    upper_arm_trans = new DifferentialTransmission(act_2, upper_arm_gear_ratios);
 
     std::vector<double> wrist_gear_ratios(2, 1.0);
-    wrist_gear_ratios[0] = gear_ratios[j_idx];
+    std::vector<double> act_3(2, 1.0);
+    act_3[0] = -1.0;
+
+    wrist_gear_ratios[0] = -gear_ratios[j_idx];
     j_idx ++;
-    wrist_gear_ratios[1] = gear_ratios[j_idx];
+    wrist_gear_ratios[1] = -gear_ratios[j_idx];
     j_idx ++;
-    wrist_trans = new DifferentialTransmission(wrist_gear_ratios, std::vector<double>(2, 1.0));
+    wrist_trans = new DifferentialTransmission(act_3, wrist_gear_ratios);
 
     // Wrap base simple transmission raw data - current state
     a_state_data[0].position.push_back(&a_curr_pos[0]);
@@ -226,14 +236,20 @@ public:
                                                                 j_cmd_data[3]));
   }
 
-  void UpdateJointState(const sensor_msgs::JointState::ConstPtr& msg) {
+  void UpdateMotorState(const koko_hardware_drivers::MotorState::ConstPtr& msg) {
+    std_msgs::Float64 debug_msg;
+    debug_msg.data = 1.0;
+    debug_adv.publish(debug_msg);
+
     for (int i = 0; i < msg->name.size(); i++) {
       int index = -1;
+
       for (int j = 0; j < motor_names.size(); j++) {
         if (msg->name[i].compare(motor_names[j]) == 0){
           index = j;
         }
       }
+
       if (index == -1){
         ROS_ERROR("Some Joint koko_hwi error, msg name %s, with %d joints", msg->name[i].c_str(), num_joints);
       }
@@ -244,44 +260,62 @@ public:
 
         motor_pos[index] = msg->position[i] - angle_after_calibration[index];
         motor_vel[index] = msg->velocity[i];
+
         double pre_pos = msg->position[i] - angle_after_calibration[index];
         double pre_vel = msg->velocity[i];
+
         if(std::find(paired_constraints.begin(), paired_constraints.end(), index) != paired_constraints.end()) {
-          ROS_INFO("f10");
+          //ROS_INFO("f10");
           int a = std::find(paired_constraints.begin(), paired_constraints.end(), index) - paired_constraints.begin();
           //trying to set index a
           if (a % 2 == 0) {
+            //ROS_INFO("f11");
             int b = a + 1;
+            //Might have to change signs
             pre_pos = -.5 * motor_pos[paired_constraints[a]] + .5 * motor_pos[paired_constraints[b]];
             pre_vel = -.5 * motor_vel[paired_constraints[a]] + .5 * motor_vel[paired_constraints[b]];
+
           } else {
+            //ROS_INFO("f12");
             int b = a - 1;
             pre_pos = .5 * motor_pos[paired_constraints[b]] + .5 * motor_pos[paired_constraints[a]];
             pre_vel = .5 * motor_vel[paired_constraints[b]] + .5 * motor_vel[paired_constraints[a]];
           }
         }
+
         pos[index] = directions[index] * (pre_pos / gear_ratios[index]) + joint_state_initial[index];
         vel[index] = directions[index] * pre_vel / gear_ratios[index];
-        eff[index] = torque_directions[index] * msg->effort[i] * gear_ratios[index];
+        // eff[index] = torque_directions[index] * msg->effort[i] * gear_ratios[index];
+        // TODO: populate effort
+        eff[index] = torque_directions[index] * 0.0 * gear_ratios[index];
         position_read = 1;
 
+        /////////////////////////////////////////////////////////////////////////
         // added for using transmission interface
         a_curr_pos[index] = msg->position[i] - angle_after_calibration[index];
         a_curr_vel[index] = msg->velocity[i];
-        a_curr_eff[index] = msg->effort[i];
+        //a_curr_eff[index] = msg->effort[i];
         // update state of all motors
       }
     }
-
+    ///////////////////////////////////////////
     // added for using transmission interface
     act_to_jnt_state.propagate();
     for(int i = 0; i < num_joints; i ++) {
-      pos[i] = j_curr_pos[i];
-      vel[i] = j_curr_pos[i];
-      eff[i] = j_curr_pos[i];
+      //TODO add back in when confiremted that this works
+      // pos[i] = j_curr_pos[i] + joint_state_initial[i];
+      // vel[i] = j_curr_vel[i];
+      // eff[i] = j_curr_eff[i];
     }
     //  update all positions of joints
 
+    // For Comparing the commands
+    for(int i = 0; i < num_joints; i ++){
+      double old_pos = vel[i];
+      double new_pos = j_curr_vel[i];
+      //ROS_ERROR("difference in vel to joint %d, is %f", i, old_pos - new_pos);
+      //ROS_ERROR("vel to joint %d, old %f new %f", i, old_pos, new_pos);
+    }
   }
 
   void CalibrateJointState(const sensor_msgs::JointState::ConstPtr& msg) {
@@ -290,7 +324,7 @@ public:
       for (int i = 0; i < joint_state_initial.size(); i++) {
         joint_state_initial[i] = msg->position[i];
         pos[i] = joint_state_initial[i];
-        ROS_INFO("calibrated initial joint state %f", joint_state_initial[i]);
+        ROS_INFO("Calibrated joint %d to state %f", i, joint_state_initial[i]);
       }
       calibrated++;
       is_calibrated = 1;
@@ -301,9 +335,12 @@ public:
       for (int i = 0; i < joint_state_initial.size(); i++) {
         joint_state_initial[i] = msg->position[i];
         pos[i] = joint_state_initial[i];
-        ROS_INFO("calibrated initial joint state %f", joint_state_initial[i]);
       }
       calibrated++;
+
+      if (calibrated % (calibration_num / 5) == 0) {
+        ROS_INFO("Calibrating - received message %d/%d", calibrated, calibration_num);
+      }
     }
   }
 
@@ -331,56 +368,58 @@ public:
 
   void PublishJointCommand() {
 
-    if (!is_calibrated) {
-      return;
-    }
+    if (is_calibrated) {
+      // ROS_INFO("d0");
+      std::vector<double> pre(num_joints);
+      std::vector<double> cmd_oriented(num_joints);
 
-    std::vector<double> pre(num_joints);
-    std::vector<double> cmd_oriented(num_joints);
-    for (int k = 0; k < num_joints; k++) {
-      pre[k] = cmd[k];
-      cmd_oriented[k] = torque_directions[k] * cmd[k];
+      for (int k = 0; k < num_joints; k++) {
+        pre[k] = cmd[k];
+        cmd_oriented[k] = torque_directions[k] * cmd[k];
+      }
 
-      // making sure robot is not trying to push past joint limits
-      double current_angle = pos[k];
-      if ( (current_angle < min_angles[k] && cmd_oriented[k] < 0) || (current_angle > max_angles[k] && cmd_oriented[k] > 0) ){
-          if ( abs(cmd_oriented[k]) > hardstop_torque_limit) {
-            cmd_oriented[k] = hardstop_torque_limit;
-          }
+      for (int j = 0; j < paired_constraints.size(); j = j + 2) {
+        int index_a = paired_constraints[j];
+        int index_b = paired_constraints[j + 1];
+        pre[index_a] = -0.5 * cmd_oriented[index_a] + 0.5 * cmd_oriented[index_b];
+        pre[index_b] =  0.5 * cmd_oriented[index_a] + 0.5 * cmd_oriented[index_b];
+      }
+
+      for (int i = 0; i < num_joints; i++) {
+
+        double motor_torque =  pre[i] / gear_ratios[i];
+        double motor_current = convertMotorTorqueToCurrent(motor_torque, i);
+        std_msgs::Float64 commandMsg;
+        commandMsg.data =  motor_current;
+        jnt_cmd_publishers[i].publish(commandMsg);
+
+      }
+      // ********************************************************************* //
+      // added for using transmission interface
+      for (int i = 0; i < num_joints; i++){
+        j_cmd_eff[i] = cmd[i];
+      }
+      //propagate through transmission
+      jnt_to_act_eff.propagate();
+      for (int i = 0; i < num_joints; i++) {
+        double motor_torque = a_cmd_eff[i];
+        double motor_current = convertMotorTorqueToCurrent(motor_torque, i);
+        std_msgs::Float64 commandMsg;
+        commandMsg.data =  motor_current;
+        //TODO add back in after verfitying that this workss
+        //jnt_cmd_publishers[i].publish(commandMsg);
+      }
+      // done for using transmission interface
+      // ********************************************************************* //
+
+      // For Comparing the commands
+      for(int i = 0; i < num_joints; i ++){
+        double motor_torque_orig =  pre[i] / gear_ratios[i];
+        double motor_torque_new = a_cmd_eff[i];
+        ROS_ERROR("motor %d torques %f, %f", i, motor_torque_orig, motor_torque_new);
+        ROS_ERROR("difference in torque to motor %d, is %f \n", i, motor_torque_orig - motor_torque_new);
       }
     }
-
-    for (int j = 0; j < paired_constraints.size(); j = j + 2) {
-      int index_a = paired_constraints[j];
-      int index_b = paired_constraints[j + 1];
-      pre[index_a] = -0.5 * cmd_oriented[index_a] + 0.5 * cmd_oriented[index_b];
-      pre[index_b] =  0.5 * cmd_oriented[index_a] + 0.5 * cmd_oriented[index_b];
-    }
-
-    for (int i = 0; i < num_joints; i++) {
-      double motor_torque =  pre[i] / gear_ratios[i];
-      double motor_current = convertMotorTorqueToCurrent(motor_torque, i);
-      std_msgs::Float64 commandMsg;
-      commandMsg.data =  motor_current;
-      jnt_cmd_publishers[i].publish(commandMsg);
-    }
-
-    // ********************************************************************* //
-    // added for using transmission interface
-    for (int i = 0; i < num_joints; i++){
-      a_cmd_eff[i] = cmd[i];
-    }
-    //propoate through transmission
-    jnt_to_act_eff.propagate();
-    for (int i = 0; i < num_joints; i++) {
-      double motor_torque = j_cmd_eff[i];
-      double motor_current = convertMotorTorqueToCurrent(motor_torque, i);
-      std_msgs::Float64 commandMsg;
-      commandMsg.data =  motor_current;
-      jnt_cmd_publishers[i].publish(commandMsg);
-    }
-    // done for using transmission interface
-    // ********************************************************************* //
   }
 
   const int getPositionRead() {
@@ -391,8 +430,9 @@ private:
   hardware_interface::JointStateInterface jnt_state_interface;
   hardware_interface::EffortJointInterface jnt_effort_interface;
 
-  ros::Subscriber jnt_state_subscriber;
+  ros::Subscriber motor_state_subscriber;
   std::vector<ros::Publisher> jnt_cmd_publishers;
+  ros::Publisher debug_adv;
   ros::Subscriber jnt_state_tracker_subscriber;
 
   ros::Time last_time;
@@ -404,8 +444,8 @@ private:
   std::vector<double> pos;
   std::vector<double> vel;
   std::vector<double> eff;
-  std::vector<double> min_angles;
-  std::vector<double> max_angles;
+  // std::vector<double> min_angles;
+  // std::vector<double> max_angles;
 
 
   std::vector<double> current_slope;

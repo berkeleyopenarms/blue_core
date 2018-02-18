@@ -1,4 +1,4 @@
-#include <koko_control/koko_hardware_interface.h>
+#include <koko_control/koko_robot_interface.h>
 #include <controller_manager/controller_manager.h>
 #include <vector>
 #include <ros/console.h>
