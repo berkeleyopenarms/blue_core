@@ -1,8 +1,0 @@
-<launch>
-  <arg name="record_joints" default="true" />
-
-  <node pkg="rosbag" type="rosbag" name="rosbag_record_koko_states"
-    args="record -o /joint_states /koko_hardware/motor_states /koko_controllers/joint_position_controller/command"
-    if="$(arg record_joints)" />
-
-</launch>
