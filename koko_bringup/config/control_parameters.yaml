@@ -83,7 +83,7 @@ koko_controllers:
     d_gains: [0, 0, 0, 0.0, 0.0, 0.0]
     posture_control: false
     posture_gain: 10.0
-    posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29] # for real control
+    posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29]
     z_offset_controller: 0.0
     root_name: koko
     base_roll_joint:

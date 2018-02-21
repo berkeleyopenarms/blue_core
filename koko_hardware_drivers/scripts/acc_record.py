@@ -35,7 +35,13 @@ def get_accel(msg):
     global y_accum
     global z_accum
     global num
-    acc_vect = msg.accel[0]
+    base_name = 'base_roll_motor'
+    index = -1
+    for i, name_test in enumerate(msg.name):
+        if base_name == name_test:
+            index = i
+
+    acc_vect = msg.accel[index]
     x_acc = acc_vect.x
     y_acc = acc_vect.y
     z_acc = acc_vect.z
@@ -66,23 +72,23 @@ def main():
     r = rospy.Rate(CONTROL_LOOP_FREQ)
 
     while not rospy.is_shutdown():
-        if num%100 == 0:
+        if num%10 == 0:
             axis = [0.0, 0.0, 1.0]
             # correction z rotation
             theta = 4.301 - np.pi
             best_z = np.linalg.inv(rotation_matrix(axis, theta))
             best_z = transformations.rotation_matrix(-theta, axis)[:3,:3]
 
-            print 'iteration {}'.format(num)
-            print 'x_accum: {}'.format(x_accum)
-            print 'y_accum: {}'.format(y_accum)
-            print 'z_accum: {}'.format(z_accum)
+            #print 'iteration {}'.format(num)
+            #print 'x_accum: {}'.format(x_accum)
+            #print 'y_accum: {}'.format(y_accum)
+            #print 'z_accum: {}'.format(z_accum)
             raw = np.array([[x_accum],[y_accum],[z_accum]])
             corrected = best_z.dot(raw)
             norm_val = np.linalg.norm(corrected) / 9.81
             grav_msg = Vector3()
-            grav_msg.x = -corrected[0] / norm_val
-            grav_msg.y = -corrected[1] / norm_val
+            grav_msg.x = corrected[0] / norm_val
+            grav_msg.y = corrected[1] / norm_val
             grav_msg.z = -corrected[2] / norm_val
             grav_pub.publish(grav_msg)
 

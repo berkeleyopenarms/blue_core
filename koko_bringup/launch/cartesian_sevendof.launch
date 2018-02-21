@@ -1,0 +1,67 @@
+<launch>
+  <rosparam file="$(find koko_bringup)/config/robot_parameters.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/control_parameters.yaml" command="load"/>
+
+  <node
+    name="console"
+    pkg="rqt_console"
+    type="rqt_console" />
+  <arg
+    name="model" />
+  <arg
+    name="gui"
+    default="True" />
+  <param
+    name="robot_description"
+    textfile="$(find koko_description_sevendof_kin)/robots/koko_description_sevendof_kin.urdf" />
+  <param
+    name="robot_dyn_description"
+    textfile="$(find koko_description_sevendof_dyn)/robots/koko_description_sevendof_dyn.urdf" />
+  <param
+    name="use_gui"
+    value="$(arg gui)" />
+  <node
+    name="robot_state_publisher"
+    pkg="robot_state_publisher"
+    type="state_publisher" />
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find koko_description_sevendof_kin)/urdf.rviz" />
+  <!-- <node
+    name="tracker_calibrate_joints"
+    pkg="koko_vive"
+    type="calibrate_joint_state" /> -->
+  <node
+    name="hardstop_calibrator"
+    pkg="koko_bringup"
+    type="hardstop_calibrate"
+    output="screen"/>
+
+  <node
+    name="acc_grav_publisher"
+    pkg="koko_hardware_drivers"
+    type="acc_record.py"
+    output="screen"/>
+  <node
+    name="koko_controller_manager"
+    pkg="koko_control"
+    type="koko_controller_manager"
+    output="screen" />
+
+    <!--  -->
+    <!-- <node name="controller" pkg="controller_manager" type="spawner" respawn="false" -->
+    <!--   output="screen" args="/koko_control/joint_state_controller /koko_control/joint_position_controller" /> -->
+
+  <node
+    name="transformer"
+    pkg="tf"
+    type="static_transform_publisher"
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>
+  <include
+    file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+  <include
+    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
+
+</launch>

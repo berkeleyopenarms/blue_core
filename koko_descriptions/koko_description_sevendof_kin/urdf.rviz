@@ -89,11 +89,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        kinect_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         shoulder_lift_link:
           Alpha: 1
           Show Axes: false
@@ -124,7 +119,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        wrist_link:
+        wrist_roll_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -204,6 +199,62 @@ Visualization Manager:
       Topic: /ee_tracker_pose
       Unreliable: false
       Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        base_link:
+          Value: true
+        base_tracker_link:
+          Value: true
+        ee_tracker_link:
+          Value: true
+        forearm_link:
+          Value: true
+        forearm_tracker_link:
+          Value: true
+        shoulder_lift_link:
+          Value: true
+        shoulder_link:
+          Value: true
+        upper_arm_lift_link:
+          Value: true
+        upper_arm_link:
+          Value: true
+        upper_arm_tracker_link:
+          Value: true
+        world:
+          Value: true
+        wrist_lift_link:
+          Value: true
+        wrist_roll_link:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        world:
+          base_link:
+            base_tracker_link:
+              {}
+            shoulder_link:
+              shoulder_lift_link:
+                upper_arm_link:
+                  upper_arm_lift_link:
+                    forearm_link:
+                      forearm_tracker_link:
+                        {}
+                      wrist_lift_link:
+                        wrist_roll_link:
+                          ee_tracker_link:
+                            {}
+                  upper_arm_tracker_link:
+                    {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -228,7 +279,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.89309847
+      Distance: 2.65966702
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -243,10 +294,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.265398115
+      Pitch: 0.840397656
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 6.13358259
+      Yaw: 3.46857691
     Saved: ~
 Window Geometry:
   Displays:

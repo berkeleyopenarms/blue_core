@@ -41,6 +41,9 @@ public:
     if (!nh.getParam("koko_hardware/torque_directions", torque_directions)) {
       ROS_INFO("No koko_hardware/torque_directions given (namespace: %s)", nh.getNamespace().c_str());
     }
+    if (!nh.getParam("koko_hardware/joint_torque_directions", joint_torque_directions)) {
+      ROS_INFO("No koko_hardware/joint_torque_directions given (namespace: %s)", nh.getNamespace().c_str());
+    }
     if (!nh.getParam("koko_hardware/current_slope", current_slope)) {
       ROS_INFO("No koko_hardware/current_slope given (namespace: %s)", nh.getNamespace().c_str());
     }
@@ -265,18 +268,15 @@ public:
         double pre_vel = msg->velocity[i];
 
         if(std::find(paired_constraints.begin(), paired_constraints.end(), index) != paired_constraints.end()) {
-          //ROS_INFO("f10");
           int a = std::find(paired_constraints.begin(), paired_constraints.end(), index) - paired_constraints.begin();
           //trying to set index a
           if (a % 2 == 0) {
-            //ROS_INFO("f11");
             int b = a + 1;
             //Might have to change signs
             pre_pos = -.5 * motor_pos[paired_constraints[a]] + .5 * motor_pos[paired_constraints[b]];
             pre_vel = -.5 * motor_vel[paired_constraints[a]] + .5 * motor_vel[paired_constraints[b]];
 
           } else {
-            //ROS_INFO("f12");
             int b = a - 1;
             pre_pos = .5 * motor_pos[paired_constraints[b]] + .5 * motor_pos[paired_constraints[a]];
             pre_vel = .5 * motor_vel[paired_constraints[b]] + .5 * motor_vel[paired_constraints[a]];
@@ -369,13 +369,21 @@ public:
   void PublishJointCommand() {
 
     if (is_calibrated) {
-      // ROS_INFO("d0");
       std::vector<double> pre(num_joints);
       std::vector<double> cmd_oriented(num_joints);
 
       for (int k = 0; k < num_joints; k++) {
         pre[k] = cmd[k];
         cmd_oriented[k] = torque_directions[k] * cmd[k];
+
+        // joint limits checking
+        //double current_angle = pos[k];
+        //if ( (current_angle < min_angles[k] && cmd_oriented[k] < 0) || (current_angle > max_angles[k] && cmd_oriented[k] > 0) ){
+        //  if(abs(cmd_oriented[k]) > hardstop_torque_limit){
+        //    cmd_oriented[k] = hardstop_torque_limit;
+        //  }
+        //}
+
       }
 
       for (int j = 0; j < paired_constraints.size(); j = j + 2) {
@@ -402,6 +410,9 @@ public:
       //propagate through transmission
       jnt_to_act_eff.propagate();
       for (int i = 0; i < num_joints; i++) {
+        //trying to fix torque directions
+        a_cmd_eff[i] = joint_torque_directions[i] * a_cmd_eff[i];
+
         double motor_torque = a_cmd_eff[i];
         double motor_current = convertMotorTorqueToCurrent(motor_torque, i);
         std_msgs::Float64 commandMsg;
@@ -416,8 +427,8 @@ public:
       for(int i = 0; i < num_joints; i ++){
         double motor_torque_orig =  pre[i] / gear_ratios[i];
         double motor_torque_new = a_cmd_eff[i];
-        // ROS_INFO("motor %d torques %f, %f", i, motor_torque_orig, motor_torque_new);
-        // ROS_INFO("difference in torque to motor %d, is %f \n", i, motor_torque_orig - motor_torque_new);
+        ROS_INFO("motor %d torques %f, %f", i, motor_torque_orig, motor_torque_new);
+        ROS_INFO("difference in torque to motor %d, is %f \n", i, motor_torque_orig - motor_torque_new);
       }
     }
   }
@@ -460,6 +471,7 @@ private:
   std::vector<double> joint_state_initial;
   std::vector<double> directions;
   std::vector<double> torque_directions;
+  std::vector<double> joint_torque_directions;
   double hardstop_torque_limit;
   double i_to_T_slope;
   double i_to_T_intercept;
