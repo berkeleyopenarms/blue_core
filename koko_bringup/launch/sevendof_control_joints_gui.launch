@@ -40,10 +40,19 @@
     output="screen"/>
 
   <node
+    name="acc_grav_publisher"
+    pkg="koko_hardware_drivers"
+    type="acc_record.py"
+    output="screen"/>
+  <node
     name="koko_controller_manager"
     pkg="koko_control"
     type="koko_controller_manager"
     output="screen" />
+
+    <!--  -->
+    <!-- <node name="controller" pkg="controller_manager" type="spawner" respawn="false" -->
+    <!--   output="screen" args="/koko_control/joint_state_controller /koko_control/joint_position_controller" /> -->
 
   <node
     name="transformer"
@@ -54,4 +63,5 @@
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
   <include
     file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
+
 </launch>

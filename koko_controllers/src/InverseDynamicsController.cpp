@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <math.h>
 #include <numeric>
+#include <geometry_msgs/Vector3.h>
 namespace koko_controllers{
 
   InverseDynamicsController::~InverseDynamicsController() {
@@ -62,6 +63,10 @@ namespace koko_controllers{
 
     int ns = dummyChain.getNrOfSegments();
     ROS_INFO("ns = %d", ns);
+    gravity.data[0] = 0;
+    gravity.data[1] = 0;
+    gravity.data[2] = -9.81;
+
     for(int i = 0; i < ns; i++){
       KDL::Segment seg = dummyChain.segments[i];
 
@@ -138,10 +143,17 @@ namespace koko_controllers{
     sub_command = n.subscribe("command", 1, &InverseDynamicsController::setCommand, this);
     //sub_joint = node.subscribe("/" + root_name  + "/joint_states", 1000, &InverseDynamicsController::jointCallback, this);
     sub_joint = node.subscribe( "/joint_states", 1000, &InverseDynamicsController::jointCallback, this);
+    sub_grav = node.subscribe( "/koko_hardware/gravity", 1000, &InverseDynamicsController::gravCallback, this);
 
     sub_p = node.subscribe( "/p_terms", 1000, &InverseDynamicsController::pCallback, this);
     sub_d = node.subscribe( "/d_terms", 1000, &InverseDynamicsController::dCallback, this);
     return true;
+  }
+
+  void InverseDynamicsController::gravCallback(const geometry_msgs::Vector3ConstPtr& grav) {
+    gravity[0] = grav->x;
+    gravity[1] = grav->y;
+    gravity[2] = grav->z;
   }
 
   void InverseDynamicsController::pCallback(const std_msgs::Float64MultiArrayConstPtr& p_terms) {
@@ -307,8 +319,6 @@ namespace koko_controllers{
         }
       }
     }
-
-    KDL::Vector gravity(0, 0, -9.8);
 
     KDL::ChainIdSolver_RNE chainIdSolver(chain, gravity);
     int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques);

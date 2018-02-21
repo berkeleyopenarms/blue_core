@@ -10,6 +10,7 @@
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Vector3.h>
 #include <visualization_msgs/Marker.h>
 #include <kdl/frames.hpp>
 #include <kdl/chain.hpp>
@@ -23,7 +24,9 @@
 #include <kdl/jacobian.hpp>
 #include <Eigen/Core>
 #include <Eigen/Dense>
-#include <tf2/LinearMath/Transform.h> 
+#include <tf2/LinearMath/Transform.h>
+#include <koko_hardware_drivers/MotorState.h>
+
 KDL::Tree my_tree;
 KDL::Chain chain;
 std::vector<KDL::Chain> chains;
@@ -32,6 +35,7 @@ std::vector<double> hardstop_start_angles;
 std::vector<std::string> joint_names;
 KDL::JntArray jointCur;
 ros::Publisher pub;
+
 
 
 int main(int argc, char** argv)
@@ -54,8 +58,9 @@ int main(int argc, char** argv)
   bool exit_value = my_tree.getChain("base_tracker_link", ee_tracker, chain);
   ros::Duration(2.0).sleep();
 
-
+  // publisher and subscriber setup
   pub = node.advertise<sensor_msgs::JointState>("/joint_state_tracker", 1000);
+
   if (!node.getParam("koko_hardware/joint_names", joint_names)) {
     ROS_ERROR("No joint_names given (namespace: %s)", node.getNamespace().c_str());
   }
@@ -85,6 +90,7 @@ int main(int argc, char** argv)
   }
 
   ros::Rate  loop_rate(500);
+
   while(ros::ok){
     ros::spinOnce();
     loop_rate.sleep();
@@ -95,3 +101,4 @@ int main(int argc, char** argv)
 
   return 0;
 }
+

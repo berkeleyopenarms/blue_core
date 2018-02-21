@@ -29,6 +29,7 @@ CONTROL_LOOP_FREQ = 1000
 
 mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
            10: "right_motor2", 17: "left_motor2", 20: "right_motor3", 18: "left_motor3" }#, 2: "gripper_motor"}
+#mapping = {15: "base_roll_motor"}
 #mapping = {15: "base_roll_motor", 10: "right_motor1", 17: "left_motor1", \
 #          14: "right_motor2", 16: "left_motor2", 20: "right_motor3", 18: "left_motor3" }#, 2: "gripper_motor"}
 # name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", }

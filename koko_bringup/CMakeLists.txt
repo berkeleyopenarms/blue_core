@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf2
   visualization_msgs
+  koko_hardware_drivers
 )
 
 ## System dependencies are found with CMake's conventions

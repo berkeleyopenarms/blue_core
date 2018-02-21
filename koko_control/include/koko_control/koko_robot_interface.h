@@ -416,8 +416,8 @@ public:
       for(int i = 0; i < num_joints; i ++){
         double motor_torque_orig =  pre[i] / gear_ratios[i];
         double motor_torque_new = a_cmd_eff[i];
-        ROS_ERROR("motor %d torques %f, %f", i, motor_torque_orig, motor_torque_new);
-        ROS_ERROR("difference in torque to motor %d, is %f \n", i, motor_torque_orig - motor_torque_new);
+        // ROS_INFO("motor %d torques %f, %f", i, motor_torque_orig, motor_torque_new);
+        // ROS_INFO("difference in torque to motor %d, is %f \n", i, motor_torque_orig - motor_torque_new);
       }
     }
   }

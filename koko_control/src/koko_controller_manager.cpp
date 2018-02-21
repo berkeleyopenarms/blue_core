@@ -66,16 +66,13 @@ int main(int argc, char** argv)
   }
 
   cm.loadController("koko_controllers/joint_position_controller");
-
   std::vector<std::string> controllers_start;
   controllers_start.push_back("koko_controllers/joint_position_controller");
-
-
   cm.switchController(controllers_start, controllers_stop, 1);
   while (ros::ok())
   {
     loop_rate2.sleep();
   }
-  
+
 
 }
