@@ -97,7 +97,7 @@ public:
 
 
   }
-  
+
   void jointCallback(const sensor_msgs::JointState msg)
   {
 
@@ -110,18 +110,18 @@ public:
         if (msg.name[i].compare(joint_names[index]) == 0) {
           jointPositions(index) = msg.position[i];
           break;
-        } else if (index == nj - 1){ 
+        } else if (index == nj - 1){
            ROS_ERROR("No joint %s for controller", msg.name[i].c_str());
         }
       }
-    } 
+    }
 
     //ROS_INFO("current joint pos %f, %f, %f", msg.position[0], msg.position[1], msg.position[2]);
 
     KDL::JntArray jointOut = KDL::JntArray(nj);
 
     KDL::ChainFkSolverPos_recursive fksolver1(chain);
-  
+
 
     //ROS_INFO("desired commandpos with joint count %d:  %f, %f, %f", nj, commandPose.position.x, commandPose.position.y, commandPose.position.z);
 
@@ -143,7 +143,7 @@ public:
     marker.points[1].x = cartpos.p.data[0] + jacobian(0,0);
     marker.points[1].y = cartpos.p.data[1] + jacobian(1,0);
     marker.points[1].z = cartpos.p.data[2] + jacobian(2,0);
-    
+
     markerRot.points[0].x = cartpos.p.data[0];
     markerRot.points[0].y = cartpos.p.data[1];
     markerRot.points[0].z = cartpos.p.data[2];
@@ -160,7 +160,7 @@ public:
     for (int i = 0; i < nj; i++) {
       jointInverseKin(i) = jointPositions(i);
     }
-    
+
     Eigen::Matrix<double, 3, Eigen::Dynamic> ee_pose_desired(3,1);
     ee_pose_desired(0, 0) = commandPose.position.x;
     ee_pose_desired(1, 0) = commandPose.position.y;
@@ -179,7 +179,7 @@ public:
       int status = fksolver1.JntToCart(jointInverseKin, cartpos);
       //ROS_INFO("cartpos: %f, %f, %f", cartpos.p.data[0], cartpos.p.data[1], cartpos.p.data[2]);
       jacSolver.JntToJac(jointInverseKin, jacobian, -1);
-   
+
       Eigen::Matrix<double,6,Eigen::Dynamic> jacPos(6,nj);
 
       for (unsigned int joint = 0; joint < nj; joint++) {
@@ -187,8 +187,8 @@ public:
           jacPos(index,joint) = jacobian(index,joint);
           //ROS_INFO("jacobian %d, %d = %f", index, joint, jacPos(index,joint));
         }
-      } 
-    
+      }
+
       Eigen::Matrix<double,3, Eigen::Dynamic> ee_pose_cur(3,1);
       for (int i = 0; i < 3; i ++) {
         ee_pose_cur(i, 0) = cartpos.p.data[i];
@@ -216,7 +216,7 @@ public:
 
       Eigen::MatrixXd deltaJoint = jacPos.transpose() * deltaX;
 
-      
+
       for (int k = 0; k < nj; k++) {
         jointInverseKin(k) = deltaJoint(k,0) + jointInverseKin(k);
       }
@@ -245,7 +245,7 @@ public:
   }
 
 
-  void visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg) 
+  void visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg)
   {
     if (!receivedVisualTarget){
       receivedVisualTarget = true;
@@ -255,34 +255,34 @@ public:
     }
   }
 
-  void controllerPoseCallback(const geometry_msgs::PoseStamped msg) 
+  void controllerPoseCallback(const geometry_msgs::PoseStamped msg)
   {
     if (!receivedVisualTarget){
       receivedVisualTarget = true;
     }
-    
+
     commandPose = msg.pose;
-    
+
   }
 
-  void commandCallback(const std_msgs::Int32 msg) 
+  void commandCallback(const std_msgs::Int32 msg)
   {
      command_label = msg.data;
-    
+
   }
- 
+
 
 private:
   ros::NodeHandle n_;
   ros::Publisher pub;
   ros::Publisher arrowPub;
   ros::Subscriber subJoint;
-  ros::Subscriber subVisual; 
+  ros::Subscriber subVisual;
   ros::Subscriber subController;
   ros::Subscriber subCommand;
   geometry_msgs::Pose commandPose;
-  visualization_msgs::Marker marker; 
-  visualization_msgs::Marker markerRot; 
+  visualization_msgs::Marker marker;
+  visualization_msgs::Marker markerRot;
   std::vector<std::string> joint_names;
   bool receivedVisualTarget;
   int command_label;

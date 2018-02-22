@@ -22,8 +22,6 @@ CONTROL_LOOP_FREQ = 1000
 
 flip_mapping = {}
 
-
-
 global command_queue
 command_queue = {}
 global stop_motors
@@ -32,9 +30,6 @@ stop_motors = False
 #################################################################################################
 ############### Helper Functions ################################################################
 #################################################################################################
-
-def setpointFunction(t):
-    return math.sin(t * 2 * math.pi * 0.5) * 5.0
 
 def makeSetCommand(key):
     def setCommand(key, msg):
@@ -53,12 +48,13 @@ def makeSetCommand(key):
         command_queue[key] = effort_filtered
     return lambda msg: setCommand(key, msg)
 
-def set_motor_current_zero(msg):
+def stop_motors_cb(msg):
     global stop_motors
     if msg.data:
         stop_motors = True
     else:
         stop_motors = False
+
 #################################################################################################
 
 def main():
@@ -125,7 +121,7 @@ def main():
         rospy.Subscriber(mapping[key] + "_cmd", Float64, makeSetCommand(key), queue_size=1)
 
     # subscriber listens for a stop motor command to set zero current to motors if something goes wrong
-    rospy.Subscriber("stop_motors", Bool, set_motor_current_zero, queue_size=1)
+    rospy.Subscriber("stop_motors", Bool, stop_motors_cb, queue_size=1)
 
     angle_start = {}
     for id in mapping:
@@ -164,10 +160,10 @@ def main():
                 stateMsg.accel.append(accel)
 
                 if temperature > MAX_TEMP_WARN:
-                    rospy.logwarn_throttle(1, "Motor " + str(key) +  " is overheating, currently at  " + str(temperature) + " degrees C")
+                    rospy.logwarn_throttle(1, "Motor %d is overheating, currently at  %dC", key, temperature)
                     if temperature > MAX_TEMP_MOTORS_OFF:
                         stop_motors = True
-                        rospy.logerr("Motor " + str(key) +  " is too hot, setting motor currents to zero" )
+                        rospy.logerr("Motor %d is too hot, setting motor currents to zero", key)
 
             except Exception as e:
                 rospy.logerr("Motor " + str(key) +  " driver error: " + str(e))
