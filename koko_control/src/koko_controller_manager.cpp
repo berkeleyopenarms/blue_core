@@ -4,30 +4,9 @@
 #include <ros/console.h>
 #include <pthread.h>
 
-struct thread_struct{
-  KokoHW *robot;
-  controller_manager::ControllerManager *manager;
-  ros::Rate *loop_rate;
-};
-
-void *ExecuteUpdate(void *threadarg) {
-
-  struct thread_struct *my_data;
-  my_data = (struct thread_struct *) threadarg;
-
-  while (ros::ok())
-  {
-     (* my_data->robot).read();
-     (* my_data->manager).update((* my_data->robot).get_time(), (* my_data->robot).get_period());
-     (* my_data->robot).write();
-     (* my_data->loop_rate).sleep();
-  }
-  pthread_exit(NULL);
-}
-
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "handler");
+  ros::init(argc, argv, "koko_controller_manager");
 
   if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
     ros::console::notifyLoggerLevelsChanged();
@@ -38,29 +17,21 @@ int main(int argc, char** argv)
   if( ros::console::set_logger_level("ros.controller_manager", ros::console::levels::Debug) ) {
     ros::console::notifyLoggerLevelsChanged();
   }
-  int x = 0;
+
   ros::NodeHandle nh("");
   KokoHW robot(nh);
   controller_manager::ControllerManager cm(&robot, nh);
-  ros::spinOnce();
 
   ros::Rate loop_rate(1000);
-  ros::Rate loop_rate2(500);
-
-  thread_struct ts;
-  ts.manager = &cm;
-  ts.robot = &robot;
-  ts.loop_rate = &loop_rate;
-  pthread_t thread;
-  int rc = pthread_create(&thread, NULL, ExecuteUpdate, (void *) &ts);
 
   ros::AsyncSpinner spinner(2);
   spinner.start();
 
   while (ros::ok())
   {
-    loop_rate2.sleep();
+    robot.read();
+    cm.update(robot.get_time(), robot.get_period());
+    robot.write();
+    loop_rate.sleep();
   }
-
-
 }
