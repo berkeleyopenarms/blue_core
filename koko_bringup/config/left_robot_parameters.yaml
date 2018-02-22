@@ -1,6 +1,7 @@
 koko_hardware:
     joint_names: ['base_roll_joint', 'shoulder_lift_joint', 'shoulder_roll_joint', 'elbow_lift_joint', 'elbow_roll_joint', 'wrist_lift_joint', 'wrist_roll_joint']
     motor_names: ['base_roll_motor', 'right_motor1', 'left_motor1', 'right_motor2', 'left_motor2', 'right_motor3', 'left_motor3']
+    motor_ids: [15, 14, 16, 10, 17, 20, 18]
     gear_ratio: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412] # 8.24448529412 results from 7.1875 * (39 / 34) from the output gear
     current_slope: [-0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0] # 1.0 is decent approx for small motors
     current_offset: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]

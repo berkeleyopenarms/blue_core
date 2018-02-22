@@ -1,6 +1,6 @@
 <launch>
-  <rosparam file="$(find koko_bringup)/config/robot_parameters.yaml" command="load"/>
-  <rosparam file="$(find koko_bringup)/config/control_parameters.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/left_robot_parameters.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/left_control_parameters.yaml" command="load"/>
 
   <node
     name="console"
@@ -50,12 +50,9 @@
     type="koko_controller_manager"
     output="screen" />
 
-  <node name="controller"
-    pkg="controller_manager"
-    type="spawner"
-    respawn="false"
-    output="screen"
-    args="koko_controllers/joint_state_controller koko_controllers/joint_position_controller" />
+    <!--  -->
+    <!-- <node name="controller" pkg="controller_manager" type="spawner" respawn="false" -->
+    <!--   output="screen" args="/koko_control/joint_state_controller /koko_control/joint_position_controller" /> -->
 
   <node
     name="transformer"
@@ -65,6 +62,6 @@
   <include
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
   <include
-    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
+    file="$(find koko_hardware_drivers)/launch/left_motor_drivers.launch" />
 
 </launch>

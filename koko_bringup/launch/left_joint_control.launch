@@ -1,0 +1,69 @@
+<launch>
+  <!-- Load configuration -->
+  <rosparam file="$(find koko_bringup)/config/left_robot_parameters.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/left_control_parameters.yaml" command="load"/>
+
+  <!-- Load URDFs -->
+  <param
+    name="robot_description"
+    textfile="$(find koko_description_sevendof_kin)/robots/koko_description_sevendof_kin.urdf" />
+  <param
+    name="robot_dyn_description"
+    textfile="$(find koko_description_sevendof_dyn)/robots/koko_description_sevendof_dyn.urdf" />
+
+  <!-- Start rviz for visualization/debugging -->
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find koko_description_sevendof_kin)/urdf.rviz" />
+
+  <!-- Start the hardware drivers -->
+  <include
+    file="$(find koko_hardware_drivers)/launch/left_motor_drivers.launch" />
+
+  <!-- Start the control stack -->
+  <node
+    name="koko_controller_manager"
+    pkg="koko_control"
+    type="koko_controller_manager"
+    output="screen" />
+  <node name="controller_spawner"
+    pkg="controller_manager"
+    type="spawner"
+    respawn="false"
+    output="screen"
+    args="koko_controllers/joint_state_controller koko_controllers/joint_position_controller" />
+
+  <!-- Publish a gravity vector -->
+  <node
+    name="accel_grav_publisher"
+    pkg="koko_control"
+    type="accel_gravity_publisher.py"
+    output="screen"/>
+
+  <!-- Joint calibration -->
+  <node
+    name="hardstop_calibrator"
+    pkg="koko_bringup"
+    type="hardstop_calibrate"
+    output="screen"/>
+
+  <!-- Broadcast our joint states as TFs -->
+  <node
+    name="robot_state_publisher"
+    pkg="robot_state_publisher"
+    type="state_publisher" />
+
+  <!-- Position the robot in the world-->
+  <node
+    name="transformer"
+    pkg="tf"
+    type="static_transform_publisher"
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>
+
+  <!-- Accept connections from our Python API via rosbridge -->
+  <include
+    file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+
+</launch>

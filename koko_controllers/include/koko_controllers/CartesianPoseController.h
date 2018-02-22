@@ -10,6 +10,7 @@
 #include <vector>
 #include <visualization_msgs/InteractiveMarkerFeedback.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Vector3.h>
 #include <std_msgs/Int32.h>
 
 
@@ -35,6 +36,7 @@ public:
   void publishCommandMsg(KDL::Vector desired_position, KDL::Rotation desired_rotation);
   void publishDeltaMsg(KDL::Twist twist_error);
   void publishInverseDynamicsMsg();
+  void gravCallback(const geometry_msgs::Vector3ConstPtr& grav);
   geometry_msgs::Pose enforceJointLimits(geometry_msgs::Pose commandPose);
 
 private:
@@ -49,6 +51,7 @@ private:
     double max_angle;
     double min_angle;
   }; 
+  KDL::Vector gravity;
   std::vector<std::string> joint_names;
   std::vector<JointPD> joint_vector; 
   std::vector<int> paired_constraints;
@@ -62,6 +65,7 @@ private:
   ros::Subscriber subController;
   ros::Subscriber subVisual; 
   ros::Subscriber subCommand;  
+  ros::Subscriber sub_grav;  
   std::vector<double> p_gains;
   std::vector<double> d_gains;
   std::vector<double> p_error_last; 

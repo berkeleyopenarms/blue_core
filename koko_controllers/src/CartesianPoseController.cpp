@@ -148,6 +148,7 @@ namespace koko_controllers{
     subController = node.subscribe("/right_controller_pose", 1000, &CartesianPoseController::controllerPoseCallback, this);
     subCommand = node.subscribe("/command_label", 1000, &CartesianPoseController::commandCallback, this);
 
+    sub_grav = node.subscribe( "/koko_hardware/gravity", 1000, &CartesianPoseController::gravCallback, this);
     sub_joint = node.subscribe("/" + root_name  + "/joint_states", 1000, &CartesianPoseController::jointCallback, this);
 
     ROS_INFO("nj %d", chain.getNrOfJoints());
@@ -402,6 +403,11 @@ namespace koko_controllers{
     return p_term + d_term; 
   }
 
+  void CartesianPoseController::gravCallback(const geometry_msgs::Vector3ConstPtr& grav) {
+    gravity[0] = grav->x;
+    gravity[1] = grav->y;
+    gravity[2] = grav->z;
+  }
 
   void CartesianPoseController::jointCallback(const sensor_msgs::JointState msg)
   {
@@ -423,9 +429,7 @@ namespace koko_controllers{
            ROS_ERROR("No joint %s for controller", msg.name[i].c_str());
         }
       }
-    } 
-
-    KDL::Vector gravity(0, 0, -9.8);
+    }
 
     KDL::ChainIdSolver_RNE chainIdSolver(chain, gravity);
     int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques); 
