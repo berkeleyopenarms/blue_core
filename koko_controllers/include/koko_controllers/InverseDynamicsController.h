@@ -54,7 +54,7 @@ private:
   };
   KDL::Vector gravity;
   std::vector<std::string> joint_names;
-  std::vector<JointPD*> joint_vector; 
+  std::vector<JointPD*> joint_vector;
   std::vector<int> paired_constraints;
   ros::Subscriber sub_command;
   ros::Subscriber sub_joint;
@@ -62,9 +62,9 @@ private:
   ros::Subscriber sub_d;
   ros::Subscriber sub_grav;
   KDL::Chain chain;
-  KDL::JntArray id_torques; 
+  KDL::JntArray id_torques;
   std::vector<double> error_filter;
-  double error_filter_size; 
+  double error_filter_size;
   ros::Publisher commandPub;
   ros::Publisher deltaPub;
   ros::Publisher inverseDynamicsPub;

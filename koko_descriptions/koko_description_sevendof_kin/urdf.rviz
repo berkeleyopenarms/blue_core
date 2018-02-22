@@ -12,6 +12,8 @@ Panels:
         - /Pose2
         - /Pose3
         - /Pose4
+        - /TF1
+        - /TF1/Frames1
       Splitter Ratio: 0.522221982
     Tree Height: 775
   - Class: rviz/Selection
@@ -203,31 +205,31 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
-        All Enabled: true
+        All Enabled: false
         base_link:
           Value: true
         base_tracker_link:
-          Value: true
+          Value: false
         ee_tracker_link:
-          Value: true
+          Value: false
         forearm_link:
-          Value: true
+          Value: false
         forearm_tracker_link:
-          Value: true
+          Value: false
         shoulder_lift_link:
-          Value: true
+          Value: false
         shoulder_link:
-          Value: true
+          Value: false
         upper_arm_lift_link:
-          Value: true
+          Value: false
         upper_arm_link:
-          Value: true
+          Value: false
         upper_arm_tracker_link:
-          Value: true
+          Value: false
         world:
-          Value: true
+          Value: false
         wrist_lift_link:
-          Value: true
+          Value: false
         wrist_roll_link:
           Value: true
       Marker Scale: 1
@@ -279,7 +281,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.65966702
+      Distance: 4.68724203
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -294,10 +296,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.840397656
+      Pitch: 0.235398427
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.46857691
+      Yaw: 3.34357309
     Saved: ~
 Window Geometry:
   Displays:
