@@ -10,7 +10,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
-
+#include <sstream>
 #include <joint_limits_interface/joint_limits.h>
 #include <joint_limits_interface/joint_limits_urdf.h>
 #include <joint_limits_interface/joint_limits_rosparam.h>
@@ -82,6 +82,8 @@ public:
     a_cmd_data_vect.resize(num_actuators);
     j_state_data_vect.resize(num_actuators);
     j_cmd_data_vect.resize(num_actuators);
+    simple_transmissions.resize(num_simple_actuators);
+    differential_transmissions.resize(num_differential_actuators);
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // add for Joint limits reading from urdf
     // loading in joint limits
@@ -97,7 +99,6 @@ public:
     //  ROS_ERROR("min: %f, max: %f", min_angles[j], max_angles[j]);
     //}
     /////////////////////////////////////////////////////////////////////////////////////////////
-
 
     for (int i = 0; i < num_joints; i++) {
       cmd[i] = 0.0;
@@ -134,39 +135,32 @@ public:
     }
     debug_adv = nh.advertise<std_msgs::Float64>("koko_hardware/joints_pos_update", 1000);
     //*******************************************************************************************************************// added for hardware interaface
-    int j_idx = 0;
-    base_trans = new SimpleTransmission(-gear_ratios[j_idx], 0.0);
-    j_idx ++;
 
-    std::vector<double> shoulder_gear_ratios(2, 1.0);
-    std::vector<double> act_1(2, 1.0);
-    act_1[0] = -1.0;
+    int simple_idx = 0;
+    int differential_idx = 0;
+    for(int j_idx = 0; j_idx < num_joints; j_idx += 0){
+      if(std::find(paired_constraints.begin(), paired_constraints.end(), j_idx) != paired_constraints.end()){
+        // a differential transmission if in paired constraints
+        std::vector<double> gear_ratios_temp(2, 1.0);
+        std::vector<double> actuator_ratios(2, 1.0);
+        actuator_ratios[0] = -1.0;
 
-    shoulder_gear_ratios[0] = -gear_ratios[j_idx];
-    j_idx ++;
-    shoulder_gear_ratios[1] = -gear_ratios[j_idx];
-    j_idx ++;
-    shoulder_trans = new DifferentialTransmission(act_1, shoulder_gear_ratios);
+        gear_ratios_temp[0] = -gear_ratios[j_idx];
+        j_idx ++;
+        ROS_ERROR("%f, %f", gear_ratios[j_idx - 1], gear_ratios[j_idx]);
+        gear_ratios_temp[1] = -gear_ratios[j_idx];
+        j_idx ++;
 
-    std::vector<double> upper_arm_gear_ratios(2, 1.0);
-    std::vector<double> act_2(2, 1.0);
-    act_2[0] = -1.0;
+        differential_transmissions[differential_idx] = new DifferentialTransmission(actuator_ratios, gear_ratios_temp);
+        differential_idx ++;
 
-    upper_arm_gear_ratios[0] = -gear_ratios[j_idx];
-    j_idx ++;
-    upper_arm_gear_ratios[1] = -gear_ratios[j_idx];
-    j_idx ++;
-    upper_arm_trans = new DifferentialTransmission(act_2, upper_arm_gear_ratios);
-
-    std::vector<double> wrist_gear_ratios(2, 1.0);
-    std::vector<double> act_3(2, 1.0);
-    act_3[0] = -1.0;
-
-    wrist_gear_ratios[0] = -gear_ratios[j_idx];
-    j_idx ++;
-    wrist_gear_ratios[1] = -gear_ratios[j_idx];
-    j_idx ++;
-    wrist_trans = new DifferentialTransmission(act_3, wrist_gear_ratios);
+      } else {
+        // a simple transmission because not in paired constraints
+        simple_transmissions[simple_idx] = new SimpleTransmission(-gear_ratios[j_idx], 0.0);
+        simple_idx ++;
+        j_idx ++;
+      }
+    }
 
     // Wrap base simple transmission raw data - current state
     a_state_data_vect[0].position.push_back(&a_curr_pos[0]);
@@ -204,48 +198,51 @@ public:
       j_cmd_data_vect[k].effort.push_back(&j_cmd_eff[k * 2 - 1]);
       j_cmd_data_vect[k].effort.push_back(&j_cmd_eff[k * 2]);
     }
-    // ...once the raw data has been wrapped, the rest is straightforward //////////////////////////////////////////////
+    // ...once the raw data has been wrapped, the rest is straightforward ///
+
+
+
+
+
+
+
+
+
 
     // Register transmissions to each interface
-    act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("base_trans",
-                                                               base_trans,
-                                                               a_state_data_vect[0],
-                                                               j_state_data_vect[0]));
+    simple_idx = 0;
+    differential_idx = 0;
+    for(int a_idx = 0; a_idx < num_actuators; a_idx += 1){
+      ROS_ERROR("%d", a_idx);
+      std::ostringstream oss;
+      oss << a_idx;
+      if(std::find(paired_constraints.begin(), paired_constraints.end(), a_idx) != paired_constraints.end()){
+        // a differential transmission if in paired constraints
 
-    act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("shoulder_trans",
-                                                              shoulder_trans,
-                                                              a_state_data_vect[1],
-                                                              j_state_data_vect[1]));
+        act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("differential_trans" + oss.str(),
+                                                                   differential_transmissions[differential_idx],
+                                                                   a_state_data_vect[a_idx],
+                                                                   j_state_data_vect[a_idx]));
+        jnt_to_act_eff.registerHandle(JointToActuatorEffortHandle("differential_trans" + oss.str(),
+                                                                    differential_transmissions[differential_idx],
+                                                                    a_cmd_data_vect[a_idx],
+                                                                    j_cmd_data_vect[a_idx]));
+        differential_idx ++;
+      } else {
+        // a simple transmission because not in paired constraints
+        act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("simple_trans" + oss.str(),
+                                                                   simple_transmissions[simple_idx],
+                                                                   a_state_data_vect[a_idx],
+                                                                   j_state_data_vect[a_idx]));
+        jnt_to_act_eff.registerHandle(JointToActuatorEffortHandle("simple_trans" + oss.str(),
+                                                                    simple_transmissions[simple_idx],
+                                                                    a_cmd_data_vect[a_idx],
+                                                                    j_cmd_data_vect[a_idx]));
+        simple_idx ++;
+      }
+    }
 
-    act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("upper_arm_trans",
-                                                              upper_arm_trans,
-                                                              a_state_data_vect[2],
-                                                              j_state_data_vect[2]));
 
-    act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("wrist_trans",
-                                                              wrist_trans,
-                                                              a_state_data_vect[3],
-                                                              j_state_data_vect[3]));
-
-    jnt_to_act_eff.registerHandle(JointToActuatorEffortHandle("base_trans",
-                                                                base_trans,
-                                                                a_cmd_data_vect[0],
-                                                                j_cmd_data_vect[0]));
-
-    jnt_to_act_eff.registerHandle(JointToActuatorEffortHandle("shoulder_trans",
-                                                                shoulder_trans,
-                                                                a_cmd_data_vect[1],
-                                                                j_cmd_data_vect[1]));
-
-    jnt_to_act_eff.registerHandle(JointToActuatorEffortHandle("upper_arm_trans",
-                                                                upper_arm_trans,
-                                                                a_cmd_data_vect[2],
-                                                                j_cmd_data_vect[2]));
-
-    jnt_to_act_eff.registerHandle(JointToActuatorEffortHandle("wrist_trans",
-                                                                wrist_trans,
-                                                                a_cmd_data_vect[3],
-                                                                j_cmd_data_vect[3]));
   }
 
   void UpdateMotorState(const koko_hardware_drivers::MotorState::ConstPtr& msg) {
@@ -420,8 +417,8 @@ private:
   JointToActuatorEffortInterface jnt_to_act_eff; // For joint eff to actuator
 
   //For arbitrary length
-  //SimpleTransmission simple_transmissions[];
-  //DifferentialTransmission differential_transmissions[];
+  std::vector<SimpleTransmission*> simple_transmissions;
+  std::vector<DifferentialTransmission*> differential_transmissions;
 
   // Transmissions
   SimpleTransmission *base_trans;
@@ -432,13 +429,9 @@ private:
   //Actuator and joint space variables
   std::vector<ActuatorData> a_state_data_vect;
   std::vector<ActuatorData> a_cmd_data_vect;
-  ActuatorData a_state_data[4];
-  ActuatorData a_cmd_data[4];
 
   std::vector<JointData> j_state_data_vect;
   std::vector<JointData> j_cmd_data_vect;
-  JointData j_state_data[4];
-  JointData j_cmd_data[4];
 
   // Actuator and joint variables
   double a_curr_pos[7];
