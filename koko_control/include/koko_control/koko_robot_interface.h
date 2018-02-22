@@ -261,35 +261,7 @@ public:
         angle_after_calibration[index] = msg->position[i];
       } else if (is_calibrated == 1){
 
-        motor_pos[index] = msg->position[i] - angle_after_calibration[index];
-        motor_vel[index] = msg->velocity[i];
-
-        double pre_pos = msg->position[i] - angle_after_calibration[index];
-        double pre_vel = msg->velocity[i];
-
-        if(std::find(paired_constraints.begin(), paired_constraints.end(), index) != paired_constraints.end()) {
-          int a = std::find(paired_constraints.begin(), paired_constraints.end(), index) - paired_constraints.begin();
-          //trying to set index a
-          if (a % 2 == 0) {
-            int b = a + 1;
-            //Might have to change signs
-            pre_pos = -.5 * motor_pos[paired_constraints[a]] + .5 * motor_pos[paired_constraints[b]];
-            pre_vel = -.5 * motor_vel[paired_constraints[a]] + .5 * motor_vel[paired_constraints[b]];
-
-          } else {
-            int b = a - 1;
-            pre_pos = .5 * motor_pos[paired_constraints[b]] + .5 * motor_pos[paired_constraints[a]];
-            pre_vel = .5 * motor_vel[paired_constraints[b]] + .5 * motor_vel[paired_constraints[a]];
-          }
-        }
-
-        pos[index] = directions[index] * (pre_pos / gear_ratios[index]) + joint_state_initial[index];
-        vel[index] = directions[index] * pre_vel / gear_ratios[index];
-        // eff[index] = torque_directions[index] * msg->effort[i] * gear_ratios[index];
-        // TODO: populate effort
-        eff[index] = torque_directions[index] * 0.0 * gear_ratios[index];
         position_read = 1;
-
         /////////////////////////////////////////////////////////////////////////
         // added for using transmission interface
         a_curr_pos[index] = msg->position[i] - angle_after_calibration[index];
@@ -303,19 +275,11 @@ public:
     act_to_jnt_state.propagate();
     for(int i = 0; i < num_joints; i ++) {
       //TODO add back in when confiremted that this works
-      // pos[i] = j_curr_pos[i] + joint_state_initial[i];
-      // vel[i] = j_curr_vel[i];
-      // eff[i] = j_curr_eff[i];
+      pos[i] = j_curr_pos[i] + joint_state_initial[i];
+      vel[i] = j_curr_vel[i];
+      eff[i] = j_curr_eff[i];
     }
     //  update all positions of joints
-
-    // For Comparing the commands
-    for(int i = 0; i < num_joints; i ++){
-      double old_pos = vel[i];
-      double new_pos = j_curr_vel[i];
-      //ROS_ERROR("difference in vel to joint %d, is %f", i, old_pos - new_pos);
-      //ROS_ERROR("vel to joint %d, old %f new %f", i, old_pos, new_pos);
-    }
   }
 
   void CalibrateJointState(const sensor_msgs::JointState::ConstPtr& msg) {
@@ -371,37 +335,6 @@ public:
     if (is_calibrated) {
       std::vector<double> pre(num_joints);
       std::vector<double> cmd_oriented(num_joints);
-
-      for (int k = 0; k < num_joints; k++) {
-        pre[k] = cmd[k];
-        cmd_oriented[k] = torque_directions[k] * cmd[k];
-
-        // joint limits checking
-        //double current_angle = pos[k];
-        //if ( (current_angle < min_angles[k] && cmd_oriented[k] < 0) || (current_angle > max_angles[k] && cmd_oriented[k] > 0) ){
-        //  if(abs(cmd_oriented[k]) > hardstop_torque_limit){
-        //    cmd_oriented[k] = hardstop_torque_limit;
-        //  }
-        //}
-
-      }
-
-      for (int j = 0; j < paired_constraints.size(); j = j + 2) {
-        int index_a = paired_constraints[j];
-        int index_b = paired_constraints[j + 1];
-        pre[index_a] = -0.5 * cmd_oriented[index_a] + 0.5 * cmd_oriented[index_b];
-        pre[index_b] =  0.5 * cmd_oriented[index_a] + 0.5 * cmd_oriented[index_b];
-      }
-
-      for (int i = 0; i < num_joints; i++) {
-
-        double motor_torque =  pre[i] / gear_ratios[i];
-        double motor_current = convertMotorTorqueToCurrent(motor_torque, i);
-        std_msgs::Float64 commandMsg;
-        commandMsg.data =  motor_current;
-        jnt_cmd_publishers[i].publish(commandMsg);
-
-      }
       // ********************************************************************* //
       // added for using transmission interface
       for (int i = 0; i < num_joints; i++){
@@ -418,17 +351,7 @@ public:
         std_msgs::Float64 commandMsg;
         commandMsg.data =  motor_current;
         //TODO add back in after verfitying that this workss
-        //jnt_cmd_publishers[i].publish(commandMsg);
-      }
-      // done for using transmission interface
-      // ********************************************************************* //
-
-      // For Comparing the commands
-      for(int i = 0; i < num_joints; i ++){
-        double motor_torque_orig =  pre[i] / gear_ratios[i];
-        double motor_torque_new = a_cmd_eff[i];
-        ROS_INFO("motor %d torques %f, %f", i, motor_torque_orig, motor_torque_new);
-        ROS_INFO("difference in torque to motor %d, is %f \n", i, motor_torque_orig - motor_torque_new);
+        jnt_cmd_publishers[i].publish(commandMsg);
       }
     }
   }
