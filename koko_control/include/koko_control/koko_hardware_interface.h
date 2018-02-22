@@ -72,6 +72,16 @@ public:
 
     jnt_cmd_publishers.resize(num_joints);
 
+
+
+    int num_simple_actuators = num_joints - paired_constraints.size();
+    int num_differential_actuators = paired_constraints.size() / 2;
+    int num_actuators = num_simple_actuators + num_differential_actuators;
+
+    a_state_data_vect.resize(num_actuators);
+    a_cmd_data_vect.resize(num_actuators);
+    j_state_data_vect.resize(num_actuators);
+    j_cmd_data_vect.resize(num_actuators);
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // add for Joint limits reading from urdf
     // loading in joint limits
@@ -159,84 +169,83 @@ public:
     wrist_trans = new DifferentialTransmission(act_3, wrist_gear_ratios);
 
     // Wrap base simple transmission raw data - current state
-    a_state_data[0].position.push_back(&a_curr_pos[0]);
-    a_state_data[0].velocity.push_back(&a_curr_vel[0]);
-    a_state_data[0].effort.push_back(&a_curr_eff[0]);
-
-    j_state_data[0].position.push_back(&j_curr_pos[0]);
-    j_state_data[0].velocity.push_back(&j_curr_vel[0]);
-    j_state_data[0].effort.push_back(&j_curr_eff[0]);
+    a_state_data_vect[0].position.push_back(&a_curr_pos[0]);
+    a_state_data_vect[0].velocity.push_back(&a_curr_vel[0]);
+    a_state_data_vect[0].effort.push_back(&a_curr_eff[0]);
+    j_state_data_vect[0].position.push_back(&j_curr_pos[0]);
+    j_state_data_vect[0].velocity.push_back(&j_curr_vel[0]);
+    j_state_data_vect[0].effort.push_back(&j_curr_eff[0]);
 
     // Wrap differential transmission raw data - current state
     for(int k = 1; k < 4 ; k++ ) {
-      a_state_data[k].position.push_back(&a_curr_pos[k * 2 - 1]);
-      a_state_data[k].position.push_back(&a_curr_pos[k * 2]);
-      a_state_data[k].velocity.push_back(&a_curr_vel[k * 2 - 1]);
-      a_state_data[k].velocity.push_back(&a_curr_vel[k * 2]);
-      a_state_data[k].effort.push_back(&a_curr_eff[k * 2 - 1]);
-      a_state_data[k].effort.push_back(&a_curr_eff[k * 2]);
+      a_state_data_vect[k].position.push_back(&a_curr_pos[k * 2 - 1]);
+      a_state_data_vect[k].position.push_back(&a_curr_pos[k * 2]);
+      a_state_data_vect[k].velocity.push_back(&a_curr_vel[k * 2 - 1]);
+      a_state_data_vect[k].velocity.push_back(&a_curr_vel[k * 2]);
+      a_state_data_vect[k].effort.push_back(&a_curr_eff[k * 2 - 1]);
+      a_state_data_vect[k].effort.push_back(&a_curr_eff[k * 2]);
 
-      j_state_data[k].position.push_back(&j_curr_pos[k * 2 - 1]);
-      j_state_data[k].position.push_back(&j_curr_pos[k * 2]);
-      j_state_data[k].velocity.push_back(&j_curr_vel[k * 2 - 1]);
-      j_state_data[k].velocity.push_back(&j_curr_vel[k * 2]);
-      j_state_data[k].effort.push_back(&j_curr_eff[k * 2 - 1]);
-      j_state_data[k].effort.push_back(&j_curr_eff[k * 2]);
+      j_state_data_vect[k].position.push_back(&j_curr_pos[k * 2 - 1]);
+      j_state_data_vect[k].position.push_back(&j_curr_pos[k * 2]);
+      j_state_data_vect[k].velocity.push_back(&j_curr_vel[k * 2 - 1]);
+      j_state_data_vect[k].velocity.push_back(&j_curr_vel[k * 2]);
+      j_state_data_vect[k].effort.push_back(&j_curr_eff[k * 2 - 1]);
+      j_state_data_vect[k].effort.push_back(&j_curr_eff[k * 2]);
 
     }
     // Wrap simple transmission raw data - position command
-    a_cmd_data[0].effort.push_back(&a_cmd_eff[0]);
-    j_cmd_data[0].effort.push_back(&j_cmd_eff[0]);
+    a_cmd_data_vect[0].effort.push_back(&a_cmd_eff[0]);
+    j_cmd_data_vect[0].effort.push_back(&j_cmd_eff[0]);
 
     // Wrap differential transmission raw data - position command
     for(int k = 1; k < 4 ; k++ ) {
-      a_cmd_data[k].effort.push_back(&a_cmd_eff[k * 2 - 1]);
-      a_cmd_data[k].effort.push_back(&a_cmd_eff[k * 2]);
-      j_cmd_data[k].effort.push_back(&j_cmd_eff[k * 2 - 1]);
-      j_cmd_data[k].effort.push_back(&j_cmd_eff[k * 2]);
+      a_cmd_data_vect[k].effort.push_back(&a_cmd_eff[k * 2 - 1]);
+      a_cmd_data_vect[k].effort.push_back(&a_cmd_eff[k * 2]);
+      j_cmd_data_vect[k].effort.push_back(&j_cmd_eff[k * 2 - 1]);
+      j_cmd_data_vect[k].effort.push_back(&j_cmd_eff[k * 2]);
     }
     // ...once the raw data has been wrapped, the rest is straightforward //////////////////////////////////////////////
 
     // Register transmissions to each interface
     act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("base_trans",
                                                                base_trans,
-                                                               a_state_data[0],
-                                                               j_state_data[0]));
+                                                               a_state_data_vect[0],
+                                                               j_state_data_vect[0]));
 
     act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("shoulder_trans",
                                                               shoulder_trans,
-                                                              a_state_data[1],
-                                                              j_state_data[1]));
+                                                              a_state_data_vect[1],
+                                                              j_state_data_vect[1]));
 
     act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("upper_arm_trans",
                                                               upper_arm_trans,
-                                                              a_state_data[2],
-                                                              j_state_data[2]));
+                                                              a_state_data_vect[2],
+                                                              j_state_data_vect[2]));
 
     act_to_jnt_state.registerHandle(ActuatorToJointStateHandle("wrist_trans",
                                                               wrist_trans,
-                                                              a_state_data[3],
-                                                              j_state_data[3]));
+                                                              a_state_data_vect[3],
+                                                              j_state_data_vect[3]));
 
     jnt_to_act_eff.registerHandle(JointToActuatorEffortHandle("base_trans",
                                                                 base_trans,
-                                                                a_cmd_data[0],
-                                                                j_cmd_data[0]));
+                                                                a_cmd_data_vect[0],
+                                                                j_cmd_data_vect[0]));
 
     jnt_to_act_eff.registerHandle(JointToActuatorEffortHandle("shoulder_trans",
                                                                 shoulder_trans,
-                                                                a_cmd_data[1],
-                                                                j_cmd_data[1]));
+                                                                a_cmd_data_vect[1],
+                                                                j_cmd_data_vect[1]));
 
     jnt_to_act_eff.registerHandle(JointToActuatorEffortHandle("upper_arm_trans",
                                                                 upper_arm_trans,
-                                                                a_cmd_data[2],
-                                                                j_cmd_data[2]));
+                                                                a_cmd_data_vect[2],
+                                                                j_cmd_data_vect[2]));
 
     jnt_to_act_eff.registerHandle(JointToActuatorEffortHandle("wrist_trans",
                                                                 wrist_trans,
-                                                                a_cmd_data[3],
-                                                                j_cmd_data[3]));
+                                                                a_cmd_data_vect[3],
+                                                                j_cmd_data_vect[3]));
   }
 
   void UpdateMotorState(const koko_hardware_drivers::MotorState::ConstPtr& msg) {
@@ -421,9 +430,13 @@ private:
   DifferentialTransmission *wrist_trans;
 
   //Actuator and joint space variables
+  std::vector<ActuatorData> a_state_data_vect;
+  std::vector<ActuatorData> a_cmd_data_vect;
   ActuatorData a_state_data[4];
   ActuatorData a_cmd_data[4];
 
+  std::vector<JointData> j_state_data_vect;
+  std::vector<JointData> j_cmd_data_vect;
   JointData j_state_data[4];
   JointData j_cmd_data[4];
 
