@@ -160,7 +160,7 @@ def main():
                 stateMsg.accel.append(accel)
 
                 if temperature > MAX_TEMP_WARN:
-                    rospy.logwarn_throttle(1, "Motor %d is overheating, currently at  %dC", key, temperature)
+                    rospy.logwarn_throttle(1, "Motor {} is overheating, currently at  {}C".format(key, temperature))
                     if temperature > MAX_TEMP_MOTORS_OFF:
                         stop_motors = True
                         rospy.logerr("Motor %d is too hot, setting motor currents to zero", key)
