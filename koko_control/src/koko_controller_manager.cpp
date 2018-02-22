@@ -20,7 +20,6 @@ void *ExecuteUpdate(void *threadarg) {
      (* my_data->robot).read();
      (* my_data->manager).update((* my_data->robot).get_time(), (* my_data->robot).get_period());
      (* my_data->robot).write();
-     ros::spinOnce();
      (* my_data->loop_rate).sleep();
   }
   pthread_exit(NULL);
@@ -55,27 +54,9 @@ int main(int argc, char** argv)
   pthread_t thread;
   int rc = pthread_create(&thread, NULL, ExecuteUpdate, (void *) &ts);
 
-  cm.loadController("koko_controllers/joint_state_controller");
-  std::vector<std::string> controllers_state_start;
-  controllers_state_start.push_back("koko_controllers/joint_state_controller");
-  std::vector<std::string> controllers_stop;
-  cm.switchController(controllers_state_start, controllers_stop, 1);
+  ros::AsyncSpinner spinner(2);
+  spinner.start();
 
-  while (robot.getPositionRead() != 1) {
-    ROS_INFO_ONCE("Waiting for first joint state message read");
-  }
-
-  cm.loadController("koko_controllers/joint_position_controller");
-  // cm.loadController("koko_controllers/cartesian_pose_controller");
-  std::vector<std::string> controllers_start;
-  controllers_start.push_back("koko_controllers/joint_position_controller");
-  //controllers_start.push_back("koko_controllers/cartestian_pose_controller");
-
-  // cm.loadController("koko_controllers/cartesian_pose_controller");
-  // std::vector<std::string> controllers_start;
-  // controllers_start.push_back("koko_controllers/cartesian_pose_controller");
-
-  cm.switchController(controllers_start, controllers_stop, 1);
   while (ros::ok())
   {
     loop_rate2.sleep();
