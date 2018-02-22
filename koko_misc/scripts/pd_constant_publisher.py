@@ -11,7 +11,8 @@ def main():
     p_constants = [10.0, 10.0, 10.0, 5.0, 5.0, 3.0, 3.0]
     #d_constants = [3.0, 3.0, 2.0, 2.0, 1.0, 1.0, 1.0]
 
-    #p_constants = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    p_constants = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    d_constants = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     #d_constants = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]
 
     rospy.init_node('pd_publisher', anonymous=True)

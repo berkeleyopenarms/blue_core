@@ -84,6 +84,17 @@ public:
     j_cmd_data_vect.resize(num_actuators);
     simple_transmissions.resize(num_simple_actuators);
     differential_transmissions.resize(num_differential_actuators);
+
+    a_curr_pos_vect.resize(num_joints);
+    a_curr_vel_vect.resize(num_joints);
+    a_curr_eff_vect.resize(num_joints);
+    a_cmd_eff_vect.resize(num_joints);
+
+    j_curr_pos_vect.resize(num_joints);
+    j_curr_vel_vect.resize(num_joints);
+    j_curr_eff_vect.resize(num_joints);
+    j_cmd_eff_vect.resize(num_joints);
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // add for Joint limits reading from urdf
     // loading in joint limits
@@ -134,6 +145,7 @@ public:
       ROS_INFO("Publishers %s", motor_names[i].c_str());
     }
     debug_adv = nh.advertise<std_msgs::Float64>("koko_hardware/joints_pos_update", 1000);
+
     //*******************************************************************************************************************// added for hardware interaface
 
     int simple_idx = 0;
@@ -162,41 +174,57 @@ public:
       }
     }
 
-    // Wrap base simple transmission raw data - current state
-    a_state_data_vect[0].position.push_back(&a_curr_pos[0]);
-    a_state_data_vect[0].velocity.push_back(&a_curr_vel[0]);
-    a_state_data_vect[0].effort.push_back(&a_curr_eff[0]);
-    j_state_data_vect[0].position.push_back(&j_curr_pos[0]);
-    j_state_data_vect[0].velocity.push_back(&j_curr_vel[0]);
-    j_state_data_vect[0].effort.push_back(&j_curr_eff[0]);
+    simple_idx = 0;
+    differential_idx = 0;
+    int actuator_idx = 0;
+    for(int j_idx = 0; j_idx < num_joints; j_idx += 0){
+      if(std::find(paired_constraints.begin(), paired_constraints.end(), j_idx) != paired_constraints.end()){
+        // a differential transmission if in paired constraints
+        // Wrap differential transmission raw data - current state
 
-    // Wrap differential transmission raw data - current state
-    for(int k = 1; k < 4 ; k++ ) {
-      a_state_data_vect[k].position.push_back(&a_curr_pos[k * 2 - 1]);
-      a_state_data_vect[k].position.push_back(&a_curr_pos[k * 2]);
-      a_state_data_vect[k].velocity.push_back(&a_curr_vel[k * 2 - 1]);
-      a_state_data_vect[k].velocity.push_back(&a_curr_vel[k * 2]);
-      a_state_data_vect[k].effort.push_back(&a_curr_eff[k * 2 - 1]);
-      a_state_data_vect[k].effort.push_back(&a_curr_eff[k * 2]);
+        a_state_data_vect[actuator_idx].position.push_back(&a_curr_pos_vect[j_idx]);
+        a_state_data_vect[actuator_idx].position.push_back(&a_curr_pos_vect[j_idx + 1]);
+        a_state_data_vect[actuator_idx].velocity.push_back(&a_curr_vel_vect[j_idx]);
+        a_state_data_vect[actuator_idx].velocity.push_back(&a_curr_vel_vect[j_idx + 1]);
+        a_state_data_vect[actuator_idx].effort.push_back(&a_curr_eff_vect[j_idx]);
+        a_state_data_vect[actuator_idx].effort.push_back(&a_curr_eff_vect[j_idx + 1]);
 
-      j_state_data_vect[k].position.push_back(&j_curr_pos[k * 2 - 1]);
-      j_state_data_vect[k].position.push_back(&j_curr_pos[k * 2]);
-      j_state_data_vect[k].velocity.push_back(&j_curr_vel[k * 2 - 1]);
-      j_state_data_vect[k].velocity.push_back(&j_curr_vel[k * 2]);
-      j_state_data_vect[k].effort.push_back(&j_curr_eff[k * 2 - 1]);
-      j_state_data_vect[k].effort.push_back(&j_curr_eff[k * 2]);
+        j_state_data_vect[actuator_idx].position.push_back(&j_curr_pos_vect[j_idx]);
+        j_state_data_vect[actuator_idx].position.push_back(&j_curr_pos_vect[j_idx + 1]);
+        j_state_data_vect[actuator_idx].velocity.push_back(&j_curr_vel_vect[j_idx]);
+        j_state_data_vect[actuator_idx].velocity.push_back(&j_curr_vel_vect[j_idx + 1]);
+        j_state_data_vect[actuator_idx].effort.push_back(&j_curr_eff_vect[j_idx]);
+        j_state_data_vect[actuator_idx].effort.push_back(&j_curr_eff_vect[j_idx + 1]);
 
-    }
-    // Wrap simple transmission raw data - position command
-    a_cmd_data_vect[0].effort.push_back(&a_cmd_eff[0]);
-    j_cmd_data_vect[0].effort.push_back(&j_cmd_eff[0]);
+        // Wrap differential transmission raw data - effort command
+        a_cmd_data_vect[actuator_idx].effort.push_back(&a_cmd_eff_vect[j_idx]);
+        a_cmd_data_vect[actuator_idx].effort.push_back(&a_cmd_eff_vect[j_idx + 1]);
+        j_cmd_data_vect[actuator_idx].effort.push_back(&j_cmd_eff_vect[j_idx]);
+        j_cmd_data_vect[actuator_idx].effort.push_back(&j_cmd_eff_vect[j_idx + 1]);
 
-    // Wrap differential transmission raw data - position command
-    for(int k = 1; k < 4 ; k++ ) {
-      a_cmd_data_vect[k].effort.push_back(&a_cmd_eff[k * 2 - 1]);
-      a_cmd_data_vect[k].effort.push_back(&a_cmd_eff[k * 2]);
-      j_cmd_data_vect[k].effort.push_back(&j_cmd_eff[k * 2 - 1]);
-      j_cmd_data_vect[k].effort.push_back(&j_cmd_eff[k * 2]);
+        j_idx ++;
+        j_idx ++;
+
+        differential_idx ++;
+
+      } else {
+        // a simple transmission because not in paired constraints
+        // Wrap base simple transmission raw data - current state
+        a_state_data_vect[actuator_idx].position.push_back(&a_curr_pos_vect[j_idx]);
+        a_state_data_vect[actuator_idx].velocity.push_back(&a_curr_vel_vect[j_idx]);
+        a_state_data_vect[actuator_idx].effort.push_back(&a_curr_eff_vect[j_idx]);
+        j_state_data_vect[actuator_idx].position.push_back(&j_curr_pos_vect[j_idx]);
+        j_state_data_vect[actuator_idx].velocity.push_back(&j_curr_vel_vect[j_idx]);
+        j_state_data_vect[actuator_idx].effort.push_back(&j_curr_eff_vect[j_idx]);
+
+        // Wrap simple transmission raw data - effort command
+        a_cmd_data_vect[actuator_idx].effort.push_back(&a_cmd_eff_vect[j_idx]);
+        j_cmd_data_vect[actuator_idx].effort.push_back(&j_cmd_eff_vect[j_idx]);
+
+        simple_idx ++;
+        j_idx ++;
+      }
+      actuator_idx ++;
     }
     // ...once the raw data has been wrapped, the rest is straightforward ///
 
@@ -270,8 +298,8 @@ public:
         position_read = 1;
         /////////////////////////////////////////////////////////////////////////
         // added for using transmission interface
-        a_curr_pos[index] = msg->position[i] - angle_after_calibration[index];
-        a_curr_vel[index] = msg->velocity[i];
+        a_curr_pos_vect[index] = msg->position[i] - angle_after_calibration[index];
+        a_curr_vel_vect[index] = msg->velocity[i];
         //a_curr_eff[index] = msg->effort[i];
         // update state of all motors
       }
@@ -281,9 +309,9 @@ public:
     act_to_jnt_state.propagate();
     for(int i = 0; i < num_joints; i ++) {
       //TODO add back in when confiremted that this works
-      pos[i] = j_curr_pos[i] + joint_state_initial[i];
-      vel[i] = j_curr_vel[i];
-      eff[i] = j_curr_eff[i];
+      pos[i] = j_curr_pos_vect[i] + joint_state_initial[i];
+      vel[i] = j_curr_vel_vect[i];
+      eff[i] = j_curr_eff_vect[i];
     }
     //  update all positions of joints
   }
@@ -344,15 +372,15 @@ public:
       // ********************************************************************* //
       // added for using transmission interface
       for (int i = 0; i < num_joints; i++){
-        j_cmd_eff[i] = cmd[i];
+        j_cmd_eff_vect[i] = cmd[i];
       }
       //propagate through transmission
       jnt_to_act_eff.propagate();
       for (int i = 0; i < num_joints; i++) {
         //trying to fix torque directions
-        a_cmd_eff[i] = joint_torque_directions[i] * a_cmd_eff[i];
+        a_cmd_eff_vect[i] = joint_torque_directions[i] * a_cmd_eff_vect[i];
 
-        double motor_torque = a_cmd_eff[i];
+        double motor_torque = a_cmd_eff_vect[i];
         double motor_current = convertMotorTorqueToCurrent(motor_torque, i);
         std_msgs::Float64 commandMsg;
         commandMsg.data =  motor_current;
@@ -434,13 +462,13 @@ private:
   std::vector<JointData> j_cmd_data_vect;
 
   // Actuator and joint variables
-  double a_curr_pos[7];
-  double a_curr_vel[7];
-  double a_curr_eff[7];
-  double a_cmd_eff[7];
+  std::vector<double> a_curr_pos_vect;
+  std::vector<double> a_curr_vel_vect;
+  std::vector<double> a_curr_eff_vect;
+  std::vector<double> a_cmd_eff_vect;
 
-  double j_curr_pos[7];
-  double j_curr_vel[7];
-  double j_curr_eff[7];
-  double j_cmd_eff[7];
+  std::vector<double> j_curr_pos_vect;
+  std::vector<double> j_curr_vel_vect;
+  std::vector<double> j_curr_eff_vect;
+  std::vector<double> j_cmd_eff_vect;
 };

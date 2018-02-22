@@ -6,7 +6,7 @@ koko_hardware:
     current_slope: [-0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0] # 1.0 is decent approx for small motors
     current_offset: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0]
-    hardstop_start_angles: [2.3562, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0] # angles that you the robot is in for hardstop calibration
+    hardstop_start_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0] # angles that you the robot is in for hardstop calibration
     directions:        [-1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0]
     torque_directions: [1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0]
     joint_torque_directions: [-1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
