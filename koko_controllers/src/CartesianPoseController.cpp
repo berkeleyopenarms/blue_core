@@ -126,10 +126,6 @@ namespace koko_controllers{
           ROS_ERROR("No %s/id gain given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
           return false;
         }
-        if (!n.getParam(jointName + "/d", id_gain)) {
-          ROS_ERROR("No %s/id gain given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
-          return false;
-        }
 
         jointPD.max_torque = max_torque;
         jointPD.min_torque = min_torque;
@@ -196,26 +192,26 @@ namespace koko_controllers{
 
   void CartesianPoseController::commandCallback(const std_msgs::Int32 msg) 
   {
-    command_label = msg.data;   
+    command_label = msg.data;
   }
- 
+
 
   void CartesianPoseController::visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg) {
     ROS_ERROR("in_pose_callback_before strcmp");
     //if (strcmp(msg.marker_name.c_str(), visualizer.c_str()) == 0 && target_mode == "rviz") {
     if (!target_mode.compare("rviz")) {
       ROS_ERROR("in_pose_callback_after_strcmp");
-      commandPose = msg.pose;  
+      commandPose = msg.pose;
       commandPose.position.z = commandPose.position.z;// + z_offset_controller;
       //commandPose = enforceJointLimits(commandPose);
     }
   }
 
   void CartesianPoseController::controllerPoseCallback(const geometry_msgs::PoseStamped msg) 
-  {  
+  {
     //if (command_label == 25 && !target_mode.compare("vive")) {
     if (command_label == 25) {
-      commandPose = msg.pose; 
+      commandPose = msg.pose;
       //commandPose.position.z = commandPose.position.z;// + z_offset_controller;
       //commandPose = enforceJointLimits(commandPose);
     }

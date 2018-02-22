@@ -65,9 +65,11 @@ int main(int argc, char** argv)
     ROS_INFO_ONCE("Waiting for first joint state message read");
   }
 
-  cm.loadController("koko_controllers/joint_position_controller");
+  // cm.loadController("koko_controllers/joint_position_controller");
+  cm.loadController("koko_controllers/cartesian_pose_controller");
   std::vector<std::string> controllers_start;
-  controllers_start.push_back("koko_controllers/joint_position_controller");
+  // controllers_start.push_back("koko_controllers/joint_position_controller");
+  controllers_start.push_back("koko_controllers/cartestian_pose_controller");
 
   // cm.loadController("koko_controllers/cartesian_pose_controller");
   // std::vector<std::string> controllers_start;

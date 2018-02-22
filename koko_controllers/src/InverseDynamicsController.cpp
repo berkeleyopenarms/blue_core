@@ -187,7 +187,6 @@ namespace koko_controllers{
     for (int i = 0; i < commands.size(); i++)  {
       //account for wrap around
       commands[i] = fmod(commands[i] + 3.14159265359, 6.28318530718);
-      ROS_ERROR("commands: %f", commands[i]);
       if (commands[i] < 0) commands[i] += 6.28318530718;
       commands[i] = commands[i] - 3.1415926535;
       commands[i] = std::min(std::max(commands[i], joint_vector[i]->min_angle), joint_vector[i]->max_angle);
