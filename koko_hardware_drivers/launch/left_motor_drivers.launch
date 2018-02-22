@@ -15,6 +15,7 @@
    />
     <!-- args="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0"  -->
 
+  <rosparam file="$(find koko_bringup)/config/left_robot_parameters.yaml" command="load"/>
  <!--node
     name="lift_motor_interface"
     pkg="koko_hardware_drivers"

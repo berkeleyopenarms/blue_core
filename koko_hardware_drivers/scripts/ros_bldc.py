@@ -20,44 +20,9 @@ MAX_TEMP_WARN = 55 # degrees C
 MAX_TEMP_MOTORS_OFF = 75
 CONTROL_LOOP_FREQ = 1000
 
-#name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
-#           10: "right_motor2", 17: "left_motor2", 20: "right_motor3", 18: "left_motor3" }#, 2: "gripper_motor"}
-#angle_mapping = {15: 13002, 14: 4484, 16: 2373, 10: 11067, 17: 10720, 20: 3839, 18: 284 }#, 2: 11349}
-#erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14, 10: 14, 17: 14, 20: 21, 18: 21 }#, 2: 21}
-#invert_mapping = {15: False, 14: False, 16: False, 10: False, 17: True, 20: False, 18: False }#, 2: False}
-#torque_constant_mapping = {15: 1.45, 14: 1.45, 16: 1.45, 10: 1.45, 17: 1.45, 20: 0.6 , 18: 0.6 }#, 2: False}
-
-mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", \
-           10: "right_motor2", 17: "left_motor2", 20: "right_motor3", 18: "left_motor3" }#, 2: "gripper_motor"}
-#mapping = {15: "base_roll_motor"}
-#mapping = {15: "base_roll_motor", 10: "right_motor1", 17: "left_motor1", \
-#          14: "right_motor2", 16: "left_motor2", 20: "right_motor3", 18: "left_motor3" }#, 2: "gripper_motor"}
-# name_mapping = {15: "base_roll_motor", 14: "right_motor1", 16: "left_motor1", }
-# angle_mapping = {15: 13002, 14: 4484, 16: 2373}
-# erevs_per_mrev_mapping = {15: 14, 14: 14, 16: 14}
-# invert_mapping = {15: False, 14: False, 16: False}
-# torque_constant_mapping = {15: 1.45, 14: 1.45, 16: 1.45}
-#
-# name_mapping = {15: "base_roll_motor", 14: "right_motor1"}
-# angle_mapping = {15: 13002, 14: 4484}
-# erevs_per_mrev_mapping = {15: 14, 14: 14}
-# invert_mapping = {15: False, 14: False}
-# torque_constant_mapping = {15: 1.45, 14: 1.45}
-#
-# name_mapping = {15: "base_roll_motor"}
-# angle_mapping = {15: 13002}
-# erevs_per_mrev_mapping = {15: 14}
-# invert_mapping = {15: False}
-# torque_constant_mapping = {15: 1.45}
-
-# flip_mapping = {21: True}
 flip_mapping = {}
 
 
-# name_mapping = {15: "gripper_motor"}
-# angle_mapping = {15: 13002}
-# erevs_per_mrev_mapping = {15: 14}
-# invert_mapping = {15: False}
 
 global command_queue
 command_queue = {}
@@ -98,6 +63,13 @@ def set_motor_current_zero(msg):
 
 def main():
     rospy.init_node('jointInterface', anonymous=True)
+
+    motor_ids = rospy.get_param('motor_ids')
+    motor_names = rospy.get_param('motor_names')
+    mapping = {}
+
+    for id, name in zip(motor_ids, motor_names):
+        mapping[id] = name
 
     global device
     global command_queue
