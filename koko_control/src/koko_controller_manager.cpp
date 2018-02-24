@@ -22,7 +22,7 @@ int main(int argc, char** argv)
   KokoHW robot(nh);
   controller_manager::ControllerManager cm(&robot, nh);
 
-  ros::Rate loop_rate(1000);
+  ros::Rate loop_rate(200);
 
   ros::AsyncSpinner spinner(2);
   spinner.start();
