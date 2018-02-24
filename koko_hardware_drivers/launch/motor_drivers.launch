@@ -1,0 +1,13 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+ <node
+    name="motor_interface"
+    pkg="koko_hardware_drivers"
+    type="BLDCDriver.py"
+    args="/dev/ttyUSB0"
+    ns="koko_hardware"
+    output="screen"
+   />
+
+</launch>

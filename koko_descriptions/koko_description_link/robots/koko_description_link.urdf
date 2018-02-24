@@ -1,0 +1,159 @@
+<robot
+  name="koko_description_link">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.0043477541389173 0 -0.0764683318824377"
+        rpy="0 0 0" />
+      <mass
+        value="1.80901122392276" />
+      <inertia
+        ixx="0.0091937456982913"
+        ixy="1.27362263865398E-08"
+        ixz="0.00010247865043886"
+        iyy="0.00871917388181738"
+        iyz="3.26622166777351E-06"
+        izz="0.00388062453070139" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_link/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.843137254901961 0.815686274509804 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_link/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="lift_link">
+    <inertial>
+      <origin
+        xyz="-5.0083559080677E-06 0.000232928456050885 -1.77451392545103E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.388307108622636" />
+      <inertia
+        ixx="0.000804272985961788"
+        ixy="4.84548777859872E-08"
+        ixz="2.09160815704306E-06"
+        iyy="0.000818260636171894"
+        iyz="-1.44954778549764E-08"
+        izz="0.000550840705045094" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_link/meshes/lift_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_link/meshes/lift_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="lift_joint"
+    type="revolute">
+    <origin
+      xyz="-0.01143 0 -0.21082"
+      rpy="-1.5708 4.4409E-16 3.1416" />
+    <parent
+      link="base_link" />
+    <child
+      link="lift_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2.2944"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="roll_link">
+    <inertial>
+      <origin
+        xyz="0.0052656488201055 5.32997221069781E-05 -0.0641725544925586"
+        rpy="0 0 0" />
+      <mass
+        value="1.52396434922939" />
+      <inertia
+        ixx="0.00578789299599043"
+        ixy="1.90247522695056E-06"
+        ixz="-6.31088143287672E-05"
+        iyy="0.00530315640050716"
+        iyz="1.26895335190205E-06"
+        izz="0.00342501474546171" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_link/meshes/roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_link/meshes/roll_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="roll_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.070147 -6.25E-05"
+      rpy="-1.5708 1.5673 -3.1416" />
+    <parent
+      link="lift_link" />
+    <child
+      link="roll_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2.6761"
+      upper="2.6761"
+      effort="0"
+      velocity="0" />
+  </joint>
+</robot>

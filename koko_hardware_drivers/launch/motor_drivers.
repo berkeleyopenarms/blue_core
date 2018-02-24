@@ -1,0 +1,15 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+ <node
+    name="motor_interface"
+    pkg="koko_hardware_drivers"
+    type="BLDCDriver.py"
+    args="/dev/ttyUSB0"
+    ns="koko_hardware"
+    output="screen"
+   />
+
+  <rosparam file="$(find koko_bringup)/config/left_robot_parameters.yaml" command="load"/>
+
+</launch>

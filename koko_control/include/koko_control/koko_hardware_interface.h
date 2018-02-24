@@ -99,16 +99,19 @@ public:
     // add for Joint limits reading from urdf
     // loading in joint limits
     //https://github.com/ros-controls/ros_control/wiki/joint_limits_interface
-    //boost::shared_ptr<urdf::ModelInterface> koko_urdf;
-    //joint_limits_interface::JointLimits limits;
-    //ROS_ERROR("getting joint limits");
-    //for (int j; j< num_joints; j ++){
+    // max_angles.resize(num_joints);
+    // min_angles.resize(num_joints);
+
+    // boost::shared_ptr<urdf::ModelInterface> koko_urdf;
+    // joint_limits_interface::JointLimits limits;
+    // ROS_ERROR("getting joint limits");
+    // for (int j; j< num_joints; j ++){
     //  boost::shared_ptr<const urdf::Joint> urdf_joint = koko_urdf->getJoint(joint_names[j]);
     //  const bool urdf_limits_ok = getJointLimits(urdf_joint, limits);
     //  min_angles[j] = limits.min_position;
     //  max_angles[j] = limits.max_position;
     //  ROS_ERROR("min: %f, max: %f", min_angles[j], max_angles[j]);
-    //}
+    // }
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     for (int i = 0; i < num_joints; i++) {
@@ -159,7 +162,6 @@ public:
 
         gear_ratios_temp[0] = -gear_ratios[j_idx];
         j_idx ++;
-        ROS_ERROR("%f, %f", gear_ratios[j_idx - 1], gear_ratios[j_idx]);
         gear_ratios_temp[1] = -gear_ratios[j_idx];
         j_idx ++;
 
@@ -241,7 +243,6 @@ public:
     simple_idx = 0;
     differential_idx = 0;
     for(int a_idx = 0; a_idx < num_actuators; a_idx += 1){
-      ROS_ERROR("%d", a_idx);
       std::ostringstream oss;
       oss << a_idx;
       if(std::find(paired_constraints.begin(), paired_constraints.end(), a_idx) != paired_constraints.end()){
@@ -471,4 +472,7 @@ private:
   std::vector<double> j_curr_vel_vect;
   std::vector<double> j_curr_eff_vect;
   std::vector<double> j_cmd_eff_vect;
+
+  std::vector<double> min_angles;
+  std::vector<double> max_angles;
 };
