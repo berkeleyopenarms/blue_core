@@ -78,10 +78,9 @@ koko_controllers:
     endlink: 'wrist_roll_link'
     paired_constraints: [1, 2, 3, 4, 5, 6]
     filter_length: 20
-    target_mode: "rviz"
     type: koko_controllers/CartesianPoseController
-    p_gains: [10, 10, 10, 0.5, 0.5, 0.5]
-    d_gains: [1.0, 1.0, 1.0, 0.1, 0.1, 0.1]
+    p_gains: [100, 100, 100, 1, 1, 1]
+    d_gains: [5.0, 5.0, 5.0, 0.2, 0.2, 0.2]
     posture_control: false
     posture_gain: 10.0
     posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29]

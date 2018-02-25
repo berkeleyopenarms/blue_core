@@ -30,7 +30,7 @@ public:
   double computeCommand(double error, ros::Duration dt, int index);
   void starting(const ros::Time& time);
   void jointCallback(const sensor_msgs::JointState msg);
-  void visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg); 
+  void visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg);
   void controllerPoseCallback(const geometry_msgs::PoseStamped msg);
   void commandCallback(const std_msgs::Int32 msg);
   void publishCommandMsg(KDL::Vector desired_position, KDL::Rotation desired_rotation);
@@ -42,7 +42,7 @@ public:
 private:
   struct JointPD
   {
-    std::string joint_name; 
+    std::string joint_name;
     hardware_interface::JointHandle joint;
     double d_gain;
     double id_gain;
@@ -50,28 +50,28 @@ private:
     double min_torque;
     double max_angle;
     double min_angle;
-  }; 
+  };
   KDL::Vector gravity;
   std::vector<std::string> joint_names;
-  std::vector<JointPD> joint_vector; 
+  std::vector<JointPD> joint_vector;
   std::vector<int> paired_constraints;
   ros::Subscriber sub_joint;
   KDL::Chain chain;
-  KDL::JntArray id_torques; 
+  KDL::JntArray id_torques;
 
 
   std::string visualizer;
   geometry_msgs::Pose commandPose;
   ros::Subscriber subController;
-  ros::Subscriber subVisual; 
-  ros::Subscriber subCommand;  
-  ros::Subscriber sub_grav;  
+  ros::Subscriber subVisual;
+  ros::Subscriber subCommand;
+  ros::Subscriber sub_grav;
   std::vector<double> p_gains;
   std::vector<double> d_gains;
-  std::vector<double> p_error_last; 
+  std::vector<double> p_error_last;
   std::vector<double> d_error;
   std::vector<std::vector<double> > err_dot_histories;
-  
+
   bool posture_control;
   std::vector<double> posture_target;
   double posture_gain;
@@ -82,7 +82,7 @@ private:
   ros::Publisher commandPub;
   ros::Publisher deltaPub;
   ros::Publisher inverseDynamicsPub;
-  std::string target_mode; 
+  std::string target_mode;
 
 };
 }

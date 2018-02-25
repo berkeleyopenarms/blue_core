@@ -7,6 +7,9 @@ import signal
 import sys
 import rospy
 import json
+import termios
+import fcntl
+import array
 from std_msgs.msg import Float64
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Vector3
@@ -20,8 +23,6 @@ MAX_TEMP_WARN = 55 # degrees C
 MAX_TEMP_MOTORS_OFF = 75
 CONTROL_LOOP_FREQ = 1000
 
-flip_mapping = {}
-
 global command_queue
 command_queue = {}
 global stop_motors
@@ -31,15 +32,23 @@ stop_motors = False
 ############### Helper Functions ################################################################
 #################################################################################################
 
+def low_latency_mode(fd):
+    buf = array.array('i', [0] * 32)
+    try:
+        fcntl.ioctl(fd, termios.TIOCGSERIAL, buf)
+        buf[4] |= 0x2000
+        fcntl.ioctl(fd, termios.TIOCSSERIAL, buf)
+        return True
+    except IOError as e:
+        raise Exception('Could not set low latency mode')
+    return False
+
 def makeSetCommand(key):
     def setCommand(key, msg):
         global device
         global command_queue
         effort_raw = msg.data
         effort_filtered = effort_raw
-
-        if key in flip_mapping and flip_mapping[key]:
-            effort_filtered = -effort_filtered
 
         if effort_filtered > MAX_CURRENT:
             effort_filtered = MAX_CURRENT
@@ -71,22 +80,17 @@ def main():
     global command_queue
     global stop_motors
 
-    # Set up a signal handler so Ctrl-C causes a clean exit
-    def sigintHandler(signal, frame):
-        print 'quitting'
-        sys.exit()
-    signal.signal(signal.SIGINT, sigintHandler)
-
     # Find and connect to the motor controller
     port = sys.argv[1]
     s = serial.Serial(port=port, baudrate=1000000, timeout=0.1)
+    assert low_latency_mode(s.fd)
     device = BLDCControllerClient(s)
 
     # Initial hardware setup
     for id in mapping:
         rospy.loginfo("Booting motor %d..." % id)
         device.leaveBootloader(id)
-        rospy.sleep(0.1)
+        rospy.sleep(0.2)
         s.flush()
     s.flush()
 
@@ -106,7 +110,11 @@ def main():
             break
         except Exception as e:
             rospy.logwarn(str(e))
-            rospy.sleep(0.5)
+            rospy.sleep(0.2)
+            s.flush()
+            device.leaveBootloader(id)
+            rospy.sleep(0.2)
+            s.flush()
             pass
 
     if not calibration_success:

@@ -60,10 +60,16 @@
     name="transformer"
     pkg="tf"
     type="static_transform_publisher"
-    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100" />
 
   <!-- Accept connections from our Python API via rosbridge -->
   <include
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
 
+  <!-- Add a visual marker for teleoperation -->
+  <node
+    name="visual_controller"
+    pkg="koko_misc"
+    type="visual_controller"
+    output="screen" />
 </launch>
