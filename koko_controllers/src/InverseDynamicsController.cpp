@@ -136,9 +136,9 @@ namespace koko_controllers{
     }
 
     id_torques = KDL::JntArray(chain.getNrOfJoints());
-    commandPub = node.advertise<std_msgs::Float64MultiArray>("/commandPub", 1);
-    deltaPub = node.advertise<std_msgs::Float64MultiArray>("/deltaPub", 1);
-    inverseDynamicsPub = node.advertise<std_msgs::Float64MultiArray>("/inverseDynamicsPub", 1);
+    commandPub = node.advertise<std_msgs::Float64MultiArray>("commandPub", 1);
+    deltaPub = node.advertise<std_msgs::Float64MultiArray>("deltaPub", 1);
+    inverseDynamicsPub = node.advertise<std_msgs::Float64MultiArray>("inverseDynamicsPub", 1);
 
     sub_command = n.subscribe("command", 1, &InverseDynamicsController::setCommand, this);
     //sub_joint = node.subscribe("/" + root_name  + "/joint_states", 1000, &InverseDynamicsController::jointCallback, this);

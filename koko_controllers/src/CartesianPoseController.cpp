@@ -47,7 +47,7 @@ namespace koko_controllers{
     if (!n.getParam("posture_target", posture_target)) {
       ROS_ERROR("No posture_target given node namespace %s", n.getNamespace().c_str());
     }
-    
+
     if (!n.getParam("posture_gain", posture_gain)) {
       ROS_ERROR("No posture_gain given node namespace %s", n.getNamespace().c_str());
     }
@@ -71,19 +71,16 @@ namespace koko_controllers{
     if (!n.getParam("filter_length", filter_length)) {
       ROS_ERROR("No filter_length given node namespace %s", n.getNamespace().c_str());
     }
-    if (!n.getParam("target_mode", target_mode)) {
-      ROS_ERROR("No target_mode given (namespace: %s)", n.getNamespace().c_str());
-    }
 
     if (paired_constraints.size() % 2 != 0) {
       ROS_ERROR("Paired_constraints length must be even");
     }
 
-    KDL::Chain dummyChain; 
+    KDL::Chain dummyChain;
 
     if (!my_tree.getChain("base_link", endlink, dummyChain)) {
       ROS_ERROR("Failed to construct kdl chain");
-      return false; 
+      return false;
     }
 
     int ns = dummyChain.getNrOfSegments();
@@ -92,7 +89,7 @@ namespace koko_controllers{
       KDL::Segment seg = dummyChain.segments[i];
 
       if (seg.getJoint().getType() != 8)
-      { 
+      {
         JointPD jointPD;
         std::string jointName = seg.getJoint().getName();
         joint_names.push_back(jointName);
@@ -144,12 +141,12 @@ namespace koko_controllers{
       ROS_ERROR("No root_name given (namespace: %s)", n.getNamespace().c_str());
       return false;
     }
-    subVisual = node.subscribe("/basic_controls/feedback", 1000, &CartesianPoseController::visualCallback, this);
-    subController = node.subscribe("/right_controller_pose", 1000, &CartesianPoseController::controllerPoseCallback, this);
-    subCommand = node.subscribe("/command_label", 1000, &CartesianPoseController::commandCallback, this);
 
-    sub_grav = node.subscribe( "/koko_hardware/gravity", 1000, &CartesianPoseController::gravCallback, this);
-    sub_joint = node.subscribe("/" + root_name  + "/joint_states", 1000, &CartesianPoseController::jointCallback, this);
+    subController = n.subscribe("target_pose", 1, &CartesianPoseController::controllerPoseCallback, this);
+    subCommand = n.subscribe("command_label", 1, &CartesianPoseController::commandCallback, this);
+
+    sub_grav = n.subscribe( "/koko_hardware/gravity", 1, &CartesianPoseController::gravCallback, this);
+    sub_joint = n.subscribe("/" + root_name  + "/joint_states", 1, &CartesianPoseController::jointCallback, this);
 
     ROS_INFO("nj %d", chain.getNrOfJoints());
 
@@ -162,23 +159,23 @@ namespace koko_controllers{
     commandPub = node.advertise<std_msgs::Float64MultiArray>("/commandPub", 1000);
     deltaPub = node.advertise<std_msgs::Float64MultiArray>("/deltaPub", 1000);
     inverseDynamicsPub = node.advertise<std_msgs::Float64MultiArray>("/inverseDynamicsPub", 1000);
-    
+
     for (int i = 0; i < 6; i++) {
-      std::vector<double> err_dot_history; 
+      std::vector<double> err_dot_history;
       err_dot_histories.push_back(err_dot_history);
     }
 
     return true;
   }
 
-  void CartesianPoseController::starting(const ros::Time& time)  
+  void CartesianPoseController::starting(const ros::Time& time)
   {
-    unsigned int nj = chain.getNrOfJoints();    
+    unsigned int nj = chain.getNrOfJoints();
 
     KDL::ChainFkSolverPos_recursive fksolver1(chain);
     KDL::Frame cartpos;
 
-    KDL::JntArray jnt_pos_ = KDL::JntArray(nj); 
+    KDL::JntArray jnt_pos_ = KDL::JntArray(nj);
     for (int i = 0; i <nj; i++) {
       jnt_pos_(i) = joint_vector[i].joint.getPosition();
     }
@@ -196,25 +193,10 @@ namespace koko_controllers{
     command_label = msg.data;
   }
 
-
-  void CartesianPoseController::visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg) {
-    ROS_ERROR("in_pose_callback_before strcmp");
-    //if (strcmp(msg.marker_name.c_str(), visualizer.c_str()) == 0 && target_mode == "rviz") {
-    if (!target_mode.compare("rviz")) {
-      ROS_ERROR("in_pose_callback_after_strcmp");
-      commandPose = msg.pose;
-      commandPose.position.z = commandPose.position.z;// + z_offset_controller;
-      //commandPose = enforceJointLimits(commandPose);
-    }
-  }
-
   void CartesianPoseController::controllerPoseCallback(const geometry_msgs::PoseStamped msg) 
   {
-    //if (command_label == 25 && !target_mode.compare("vive")) {
     if (command_label == 25) {
       commandPose = msg.pose;
-      //commandPose.position.z = commandPose.position.z;// + z_offset_controller;
-      //commandPose = enforceJointLimits(commandPose);
     }
   }
 
@@ -253,7 +235,7 @@ namespace koko_controllers{
   void CartesianPoseController::update(const ros::Time& time, const ros::Duration& period)
   { 
 
-    unsigned int nj = chain.getNrOfJoints();    
+    unsigned int nj = chain.getNrOfJoints();
     std::vector<double> commands(nj);
 
     KDL::Vector desired_position(commandPose.position.x, commandPose.position.y, commandPose.position.z);
@@ -263,7 +245,7 @@ namespace koko_controllers{
 
     KDL::Frame pose_desired = KDL::Frame(desired_rotation, desired_position);
 
-    KDL::JntArray jnt_pos_ = KDL::JntArray(nj); 
+    KDL::JntArray jnt_pos_ = KDL::JntArray(nj);
     KDL::JntArray jnt_vel_ = KDL::JntArray(nj);
     for (int i = 0; i <nj; i++) {
       jnt_pos_(i) = joint_vector[i].joint.getPosition();
@@ -280,26 +262,23 @@ namespace koko_controllers{
       twist_error.vel.Normalize() * 1.0;
     } */
 
-    publishDeltaMsg(twist_error);   
+    publishDeltaMsg(twist_error);
     KDL::Wrench wrench_desi;
     for (unsigned int i=0; i<6; i++)
       wrench_desi(i) = computeCommand(twist_error(i), period, i);
-
-
-    
 
     KDL::Jacobian jacobian(nj);
     KDL::ChainJntToJacSolver jacSolver(chain);
     jacSolver.JntToJac(jnt_pos_, jacobian, -1);
     for (unsigned int i = 0; i < nj; i++){
       commands[i] = 0;
-      for (unsigned int j=0; j<6; j++) { 
+      for (unsigned int j=0; j<6; j++) {
         commands[i] += (jacobian(j,i) * wrench_desi(j));
       }
 
     }
-    ROS_INFO( "Jac col 5 %f, %f, %f, %f, %f, %f", jacobian(0,5), jacobian(1,5), jacobian(2,5), jacobian(3,5), jacobian(4,5), jacobian(5,5));
-    ROS_INFO( "Jac col 6 %f, %f, %f, %f, %f, %f", jacobian(0,6), jacobian(1,6), jacobian(2,6), jacobian(3,6), jacobian(4,6), jacobian(5,6));
+    // ROS_INFO_THROTTLE(3, "Jac col 5 %f, %f, %f, %f, %f, %f", jacobian(0,5), jacobian(1,5), jacobian(2,5), jacobian(3,5), jacobian(4,5), jacobian(5,5));
+    // ROS_INFO_THROTTLE(3, "Jac col 6 %f, %f, %f, %f, %f, %f", jacobian(0,6), jacobian(1,6), jacobian(2,6), jacobian(3,6), jacobian(4,6), jacobian(5,6));
     // d gain joint portion
     for(int i = 0; i < nj; i++) {
       commands[i] += -joint_vector[i].d_gain * jnt_vel_(i);
@@ -309,7 +288,7 @@ namespace koko_controllers{
     for(int i = 0; i < nj; i++) {
       commands[i] += joint_vector[i].id_gain * id_torques(i);
     }
-    
+
     // null space posture control
     if (posture_control) {
       Eigen::Matrix<double, Eigen::Dynamic, 1>  posture_error(nj,1);
@@ -374,14 +353,14 @@ namespace koko_controllers{
     }
   }
 
-  double CartesianPoseController::computeCommand(double error, ros::Duration dt, int index) 
+  double CartesianPoseController::computeCommand(double error, ros::Duration dt, int index)
   {
     if (dt == ros::Duration(0.0) || std::isnan(error) || std::isinf(error))
       return 0.0;
     double error_dot = d_error[index];
     if (dt.toSec() > 0.0)  {
       error_dot = (error - p_error_last[index]) /dt.toSec();
-      p_error_last[index] = error; 
+      p_error_last[index] = error;
     }
     if (std::isnan(error_dot) || std::isinf(error_dot))
       return 0.0;
@@ -397,10 +376,10 @@ namespace koko_controllers{
 
     double err_dot_average = std::accumulate(err_dot_histories[index].begin(), err_dot_histories[index].end(),
                               0.0) / err_dot_histories[index].size();
-    p_term = p_gains[index] * error; 
-    d_term = d_gains[index] * err_dot_average;  
+    p_term = p_gains[index] * error;
+    d_term = d_gains[index] * err_dot_average;
 
-    return p_term + d_term; 
+    return p_term + d_term;
   }
 
   void CartesianPoseController::gravCallback(const geometry_msgs::Vector3ConstPtr& grav) {
@@ -548,7 +527,7 @@ namespace koko_controllers{
     geometry_msgs::Pose confined_pose;
     confined_pose.position = point;
     confined_pose.orientation = rot;
-    ROS_ERROR("commandPose after %f %f %f", confined_pose.position.x, confined_pose.position.y, confined_pose.position.z);
+    // ROS_ERROR("commandPose after %f %f %f", confined_pose.position.x, confined_pose.position.y, confined_pose.position.z);
 
     return confined_pose;
   }
