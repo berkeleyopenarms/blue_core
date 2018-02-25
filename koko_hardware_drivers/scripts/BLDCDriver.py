@@ -17,11 +17,10 @@ from koko_hardware_drivers.msg import MotorState
 from comms import *
 
 class BLDCDriverNode:
-    ENCODER_ANGLE_PERIOD = 1 << 14
     MAX_CURRENT = 1.5
     MAX_TEMP_WARN = 55 # degrees C
     MAX_TEMP_MOTORS_OFF = 75
-    CONTROL_LOOP_FREQ = 1000
+    CONTROL_LOOP_FREQ = 200
 
     def __init__(self):
         rospy.init_node('jointInterface', anonymous=True)
