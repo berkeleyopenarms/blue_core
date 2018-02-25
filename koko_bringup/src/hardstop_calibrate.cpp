@@ -27,9 +27,6 @@
 #include <tf2/LinearMath/Transform.h>
 #include <koko_hardware_drivers/MotorState.h>
 
-KDL::Tree my_tree;
-KDL::Chain chain;
-std::vector<KDL::Chain> chains;
 unsigned int nj;
 std::vector<double> hardstop_start_angles;
 std::vector<std::string> joint_names;
@@ -42,21 +39,6 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "joint_state_tracker");
   ros::NodeHandle node;
-  std::string robot_desc_string;
-  node.getParam("robot_description", robot_desc_string);
-
-  if(!kdl_parser::treeFromString(robot_desc_string, my_tree)){
-    ROS_ERROR("Failed to contruct kdl tree");
-    return false;
-  }
-
-  std::string ee_tracker;
-  if (!node.getParam("/koko_hardware/ee_tracker",  ee_tracker)) {
-    ROS_ERROR("No /koko_hardware/koko_hardware loaded in rosparam");
-  }
-
-  bool exit_value = my_tree.getChain("base_tracker_link", ee_tracker, chain);
-  ros::Duration(2.0).sleep();
 
   // publisher and subscriber setup
   pub = node.advertise<sensor_msgs::JointState>("/joint_state_tracker", 1000);
