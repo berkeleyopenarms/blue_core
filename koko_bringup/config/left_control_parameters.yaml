@@ -3,7 +3,7 @@ koko_controllers:
     type: joint_state_controller/JointStateController
     publish_rate: 500
   # Position Controllers ---------------------------------------
-  joint_position_controller:
+  joint_positions_controller:
     # TODO: resolve redundant constraint
     paired_constraints: [1, 2, 3, 4, 5, 6]
     endlink: 'wrist_roll_link'

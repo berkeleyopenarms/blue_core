@@ -142,7 +142,7 @@ namespace koko_controllers{
       return false;
     }
 
-    subController = n.subscribe("target_pose", 1, &CartesianPoseController::controllerPoseCallback, this);
+    subController = n.subscribe("command", 1, &CartesianPoseController::controllerPoseCallback, this);
     subCommand = n.subscribe("command_label", 1, &CartesianPoseController::commandCallback, this);
 
     sub_grav = n.subscribe( "/koko_hardware/gravity", 1, &CartesianPoseController::gravCallback, this);

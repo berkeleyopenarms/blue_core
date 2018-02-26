@@ -181,7 +181,7 @@ int main(int argc, char** argv)
   menu_handler.insert(sub_menu_handle, "First Entry", &processFeedback);
   menu_handler.insert(sub_menu_handle, "Second Entry", &processFeedback);
 
-  pose_pub = n.advertise<geometry_msgs::PoseStamped>("/koko_controllers/cartesian_pose_controller/target_pose", 1);
+  pose_pub = n.advertise<geometry_msgs::PoseStamped>("/koko_controllers/cartesian_pose_controller/command", 1);
 
   tf::TransformListener listener(n);
   ros::Duration(5).sleep();

@@ -9,6 +9,7 @@
 #include <math.h>
 #include <numeric>
 #include <geometry_msgs/Vector3.h>
+
 namespace koko_controllers{
 
   InverseDynamicsController::~InverseDynamicsController() {
