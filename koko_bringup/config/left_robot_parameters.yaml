@@ -3,18 +3,21 @@ koko_hardware:
     motor_names: ['base_roll_motor', 'right_motor1', 'left_motor1', 'right_motor2', 'left_motor2', 'right_motor3', 'left_motor3']
     motor_ids: [15, 14, 16, 10, 17, 20, 18]
     gear_ratio: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412] # 8.24448529412 results from 7.1875 * (39 / 34) from the output gear
-    current_slope: [-0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0] # 1.0 is decent approx for small motors
+    current_slope: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0] # 1.0 is decent approx for small motors
     current_offset: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0]
     hardstop_start_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0] # angles that you the robot is in for hardstop calibration
     directions:        [-1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0]
     torque_directions: [1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0]
-    joint_torque_directions: [-1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    min_angles: [-2.2, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6]
+    max_angles: [3.3, 0.5, 2.6, .5, 2.6, 0.5, 2.6]
     calibration_encoder: [4.4834423477927574, 4.4834423477927574, 3.5856800916826863, 4.4834423477927574, 3.5856800916826863, 4.4834423477927574, 3.5856800916826863] # deprecated
     calibration_joint_vive: [-0.2689415593931021, -0.2689415593931021, 0.085327798760949689, -0.2689415593931021, 0.085327798760949689, -0.2689415593931021, 0.085327798760949689] #deprecated
     paired_constraints: [1, 2, 3, 4, 5, 6]
     #vive or rviz
     target_mode: "vive"
-    hardstop_torque_limit: 0.1
+    softstop_tolerance: 0.4
+    hardstop_torque_limit: 35.0
     forearm_tracker: 'forearm_tracker_link'
     ee_tracker: 'ee_tracker_link'

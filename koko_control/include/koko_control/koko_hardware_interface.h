@@ -35,12 +35,6 @@ public:
     if (!nh.getParam("koko_hardware/gear_ratio", gear_ratios)) {
       ROS_INFO("No koko_hardware/gear_ratio given (namespace: %s)", nh.getNamespace().c_str());
     }
-    if (!nh.getParam("koko_hardware/directions", directions)) {
-      ROS_INFO("No koko_hardware/directions given (namespace: %s)", nh.getNamespace().c_str());
-    }
-    if (!nh.getParam("koko_hardware/torque_directions", torque_directions)) {
-      ROS_INFO("No koko_hardware/torque_directions given (namespace: %s)", nh.getNamespace().c_str());
-    }
     if (!nh.getParam("koko_hardware/joint_torque_directions", joint_torque_directions)) {
       ROS_INFO("No koko_hardware/joint_torque_directions given (namespace: %s)", nh.getNamespace().c_str());
     }
@@ -60,6 +54,22 @@ public:
       ROS_INFO("No koko_hardware/hardstop_torque_limit given (namespace: %s)", nh.getNamespace().c_str());
     }
 
+    if (!nh.getParam("koko_hardware/min_angles", min_angles)) {
+      ROS_INFO("No koko_hardware/min_angles given (namespace: %s)", nh.getNamespace().c_str());
+    }
+
+    if (!nh.getParam("koko_hardware/max_angles", max_angles)) {
+      ROS_INFO("No koko_hardware/max_angles given (namespace: %s)", nh.getNamespace().c_str());
+    }
+    if (!nh.getParam("koko_hardware/softstop_tolerance", hardstop_eps)) {
+      ROS_INFO("No koko_hardware/softstop_tolerance given (namespace: %s)", nh.getNamespace().c_str());
+    }
+
+    std::string robot_desc_string;
+    if (!nh.getParam("robot_dyn_description", robot_desc_string)) {
+      ROS_ERROR("No robot_dyn_description given, %s", nh.getNamespace().c_str());
+    }
+
     num_joints = joint_names.size();
     motor_pos.resize(num_joints, 0.0);
     motor_vel.resize(num_joints, 0.0);
@@ -70,7 +80,7 @@ public:
     joint_state_initial.resize(num_joints, 0.0);
     angle_after_calibration.resize(num_joints, 0.0);
 
-    jnt_cmd_publishers.resize(num_joints);
+    motor_cmd_publishers.resize(num_joints);
 
 
 
@@ -102,7 +112,13 @@ public:
     // max_angles.resize(num_joints);
     // min_angles.resize(num_joints);
 
-    // boost::shared_ptr<urdf::ModelInterface> koko_urdf;
+    // urdf::Model model;
+    // if (!model.initFile(robot_desc_string)){
+    //   ROS_ERROR("Failed to parse urdf file");
+    // }
+    // ROS_INFO("Successfully parsed urdf file");
+
+    // boost::shared_ptr<urdf::ModelInterface> koko_urdf = rdf_loader.getURDF();
     // joint_limits_interface::JointLimits limits;
     // ROS_ERROR("getting joint limits");
     // for (int j; j< num_joints; j ++){
@@ -144,7 +160,7 @@ public:
     motor_state_subscriber = nh.subscribe("koko_hardware/motor_states", 1000, &KokoHW::UpdateMotorState, this);
 
     for (int i = 0; i < motor_names.size(); i++) {
-      jnt_cmd_publishers[i] = nh.advertise<std_msgs::Float64>("koko_hardware/" + motor_names[i] + "_cmd", 1000);
+      motor_cmd_publishers[i] = nh.advertise<std_msgs::Float64>("koko_hardware/" + motor_names[i] + "_cmd", 1000);
       ROS_INFO("Publishers %s", motor_names[i].c_str());
     }
     debug_adv = nh.advertise<std_msgs::Float64>("koko_hardware/joints_pos_update", 1000);
@@ -230,15 +246,6 @@ public:
     }
     // ...once the raw data has been wrapped, the rest is straightforward ///
 
-
-
-
-
-
-
-
-
-
     // Register transmissions to each interface
     simple_idx = 0;
     differential_idx = 0;
@@ -270,8 +277,6 @@ public:
         simple_idx ++;
       }
     }
-
-
   }
 
   void UpdateMotorState(const koko_hardware_drivers::MotorState::ConstPtr& msg) {
@@ -370,23 +375,28 @@ public:
     if (is_calibrated) {
       std::vector<double> pre(num_joints);
       std::vector<double> cmd_oriented(num_joints);
-      // ********************************************************************* //
       // added for using transmission interface
       for (int i = 0; i < num_joints; i++){
         j_cmd_eff_vect[i] = cmd[i];
+        // checking joint limits and publish counter torque if near
+        if(pos[i] > max_angles[i] - hardstop_eps){
+          double del = pos[i] - max_angles[i] + hardstop_eps;
+          j_cmd_eff_vect[i] += -1.0 * hardstop_torque_limit * del * del;
+        } else if (pos[i] < min_angles[i] + hardstop_eps){
+          double del = min_angles[i] + hardstop_eps - pos[i];
+          j_cmd_eff_vect[i] += hardstop_torque_limit * del * del;
+        }
       }
       //propagate through transmission
       jnt_to_act_eff.propagate();
       for (int i = 0; i < num_joints; i++) {
-        //trying to fix torque directions
         a_cmd_eff_vect[i] = joint_torque_directions[i] * a_cmd_eff_vect[i];
-
         double motor_torque = a_cmd_eff_vect[i];
         double motor_current = convertMotorTorqueToCurrent(motor_torque, i);
         std_msgs::Float64 commandMsg;
+
         commandMsg.data =  motor_current;
-        //TODO add back in after verfitying that this workss
-        jnt_cmd_publishers[i].publish(commandMsg);
+        motor_cmd_publishers[i].publish(commandMsg);
       }
     }
   }
@@ -400,7 +410,7 @@ private:
   hardware_interface::EffortJointInterface jnt_effort_interface;
 
   ros::Subscriber motor_state_subscriber;
-  std::vector<ros::Publisher> jnt_cmd_publishers;
+  std::vector<ros::Publisher> motor_cmd_publishers;
   ros::Publisher debug_adv;
   ros::Subscriber jnt_state_tracker_subscriber;
 
@@ -413,8 +423,6 @@ private:
   std::vector<double> pos;
   std::vector<double> vel;
   std::vector<double> eff;
-  // std::vector<double> min_angles;
-  // std::vector<double> max_angles;
 
 
   std::vector<double> current_slope;
@@ -427,8 +435,6 @@ private:
   int position_read;
   int calibrated;
   std::vector<double> joint_state_initial;
-  std::vector<double> directions;
-  std::vector<double> torque_directions;
   std::vector<double> joint_torque_directions;
   double hardstop_torque_limit;
   double i_to_T_slope;
@@ -437,7 +443,7 @@ private:
   std::vector<double> angle_after_calibration;
   int is_calibrated;
   int prev_is_calibrated;
-
+  double hardstop_eps;
   int num_joints;
 
   // adding transmissions
