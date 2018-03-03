@@ -72,8 +72,11 @@ class BLDCDriverNode:
                     self.bldc.setInvertPhases(id, calibrations['inv'])
                     self.bldc.setERevsPerMRev(id, calibrations['epm'])
                     self.bldc.writeRegisters(id, 0x1022, 1, struct.pack('<f', calibrations['torque']))
+                    print calibrations
+                    self.bldc.writeRegisters(id, 0x1015, 1, struct.pack('<f', calibrations['zero']))
 
-                    self.starting_angles[id] = self.bldc.getRotorPosition(id)
+                    print "After" 
+                    self.starting_angles[id] = 0.0
                     rospy.loginfo("Motor %d ready: supply voltage=%fV", id, self.bldc.getVoltage(id))
                     success = True
                     break
@@ -107,7 +110,6 @@ class BLDCDriverNode:
 
                     angle, velocity, direct_current, quadrature_current, \
                             supply_voltage, temperature, accel_x, accel_y, accel_z = state
-                    angle -= self.starting_angles[motor_id]
 
                     stateMsg.name.append(self.motor_names[motor_id])
                     stateMsg.position.append(angle)

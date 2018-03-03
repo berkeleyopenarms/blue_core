@@ -33,7 +33,7 @@
     type="spawner"
     respawn="false"
     output="screen"
-    args="koko_controllers/joint_state_controller koko_controllers/joint_position_controller" />
+    args="koko_controllers/joint_state_controller koko_controllers/joint_positions_controller" />
 
   <!-- Publish a gravity vector -->
   <node
