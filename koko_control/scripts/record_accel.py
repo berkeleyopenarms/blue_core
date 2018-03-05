@@ -93,7 +93,6 @@ def main():
         #print 'z_accum: {}'.format(z_accum)
 
         # right
-
         raw = np.array([[x_accum[0]],[y_accum[0]],[z_accum[0]]])
         grav_msg = Vector3()
         grav_msg.x = raw[0]

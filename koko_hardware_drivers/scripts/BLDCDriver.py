@@ -73,7 +73,7 @@ class BLDCDriverNode:
                     self.bldc.setERevsPerMRev(id, calibrations['epm'])
                     self.bldc.writeRegisters(id, 0x1022, 1, struct.pack('<f', calibrations['torque']))
                     print calibrations
-                    self.bldc.writeRegisters(id, 0x1015, 1, struct.pack('<f', calibrations['zero']))
+                    self.bldc.writeRegisters(id, 0x1023, 1, struct.pack('<f', calibrations['zero']))
 
                     print "After" 
                     self.starting_angles[id] = 0.0

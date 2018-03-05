@@ -10,6 +10,6 @@
     output="screen"
    />
 
-  <rosparam file="$(find koko_bringup)/config/left_robot_parameters.yaml" command="load"/>
+  <rosparam file="$(find koko_hardware_drivers)/config/link_parameters.yaml" command="load"/>
 
 </launch>
