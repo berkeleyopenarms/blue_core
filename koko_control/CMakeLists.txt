@@ -5,7 +5,6 @@ find_package(catkin REQUIRED COMPONENTS
   koko_hardware_drivers
   controller_interface
   controller_manager
-  joint_limits_interface
   hardware_interface
   transmission_interface
   geometry_msgs
@@ -21,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES koko_control
-  CATKIN_DEPENDS controller_interface controller_manager geometry_msgs geometry_msgs koko_hardware_drivers kdl_parser orocos_kdl roscpp sensor_msgs std_msgs tf urdf visualization_msgs joint_limits_interface
+  CATKIN_DEPENDS controller_interface controller_manager geometry_msgs geometry_msgs koko_hardware_drivers kdl_parser orocos_kdl roscpp sensor_msgs std_msgs tf urdf visualization_msgs 
 #  DEPENDS system_lib
 )
 
