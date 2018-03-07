@@ -75,7 +75,7 @@ class BLDCDriverNode:
                     print calibrations
                     self.bldc.writeRegisters(id, 0x1023, 1, struct.pack('<f', calibrations['zero']))
 
-                    print "After" 
+                    print "After"
                     self.starting_angles[id] = 0.0
                     rospy.loginfo("Motor %d ready: supply voltage=%fV", id, self.bldc.getVoltage(id))
                     success = True

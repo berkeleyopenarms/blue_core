@@ -8,7 +8,7 @@ from koko_hardware_drivers.msg import MotorState
 
 class Link:
     def __init__(self):
-        self.lift_offset = 0.605
+        self.lift_offset = 0.470
         p_constants = [15.0, 15.0]
         d_constants = [1.0, 1.0]
 
@@ -75,9 +75,9 @@ class Link:
         return (max_pos + min_pos) / 2.0, max_pos, min_pos
 
     def find_end(self, j, direction):
-        eps = 0.3 # joint position erro in radians
+        eps = 0.4 # joint position erro in radians
         curr_error = 0
-        delta = 0.03
+        delta = 0.05
         command_pos = self.pos[:]
         while curr_error < eps and not rospy.is_shutdown():
             # rospy.logerr("{}".format(curr_error))
@@ -85,7 +85,7 @@ class Link:
             self.set_pos(command_pos)
             curr_error = np.abs(command_pos[j] - self.pos[j])
             # rospy.logerr("{}".format(curr_error))
-            rospy.sleep(0.095)
+            rospy.sleep(0.055)
 
         rospy.sleep(1)
         rospy.loginfo('done finding the end')
@@ -97,20 +97,20 @@ if __name__ == '__main__':
     rospy.loginfo('Link setup complete')
     # set to start up position
     link.set_pos([0.0, 0.0])
-    rospy.sleep(0.5)
+    rospy.sleep(0.3)
     rospy.loginfo('Set to zero')
-    rospy.sleep(0.5)
+    rospy.sleep(0.3)
     # centering roll link first
     center_roll, max_roll, min_roll = link.center_joint(1, _iter=iterations)
     link.set_pos([0.0, center_roll])
 
-    rospy.sleep(2)
+    rospy.sleep(1)
     p_constants = [70.0, 70.0]
     d_constants = [1.0, 1.0]
     link.set_pd(p_constants, d_constants)
-    rospy.sleep(1)
+    rospy.sleep(0.5)
     link.set_pos([0.0, center_roll])
-    rospy.sleep(1)
+    rospy.sleep(0.5)
     rospy.loginfo('Script Complete')
 
     p_constants = [10.0, 10.0]
@@ -137,10 +137,10 @@ if __name__ == '__main__':
 
     print("Motor Position right")
     print(link.motor_pos[0])
-    print(link.motor_pos[0]%np.pi)
+    print(link.motor_pos[0]%(2*np.pi))
     print("Motor Position left")
     print(link.motor_pos[1])
-    print(link.motor_pos[1]%np.pi)
+    print(link.motor_pos[1]%(2*np.pi))
     p_constants = [0.0, 0.0]
     d_constants = [0.0, 0.0]
     link.set_pd(p_constants, d_constants)

@@ -1,7 +1,7 @@
 koko_hardware:
     joint_names: ['base_roll_joint']
     motor_names: ['base_roll_motor']
-    motor_ids: [15]
+    motor_ids: [1]
     gear_ratio: [7.1875] # 8.24448529412 results from 7.1875 * (39 / 34) from the output gear
     current_slope: [0.626] # 1.0 is decent approx for small motors
     current_offset: [0.0]
@@ -17,5 +17,6 @@ koko_hardware:
     paired_constraints: []
     #vive or rviz
     target_mode: "vive"
-    hardstop_torque_limit: 0.0
+    softstop_torque_limit: 0.0
     softstop_tolerance: 0.0
+    endlink: "shoulder_link"

@@ -105,7 +105,7 @@ class Base:
         return self.pos[j]
 if __name__ == '__main__':
     link = Base()
-    iterations = 18
+    iterations = 5
     link = Base()
     rospy.loginfo('Link setup complete')
     # set to start up position
@@ -142,6 +142,4 @@ if __name__ == '__main__':
     print("Motor Position")
     print(link.motor_pos[0])
     print(link.motor_pos[0])
-    print(link.motor_pos[0])
-    print(link.motor_pos[0])
-    print(link.motor_pos[0])
+    print(link.motor_pos[0]%(2*np.pi))
