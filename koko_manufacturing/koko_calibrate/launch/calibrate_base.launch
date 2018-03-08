@@ -25,7 +25,7 @@
   <!-- Start the control stack -->
   <node
     name="koko_controller_manager"
-    pkg="koko_control"
+    pkg="koko_controller_manager"
     type="koko_controller_manager"
     output="screen" />
   <node name="controller_spawner"

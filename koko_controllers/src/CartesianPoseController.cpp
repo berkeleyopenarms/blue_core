@@ -14,7 +14,7 @@
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <numeric>
 
-#include <koko_misc/pseudoinverse.h>
+#include <koko_controllers/pseudoinverse.h>
 
 
 namespace koko_controllers{

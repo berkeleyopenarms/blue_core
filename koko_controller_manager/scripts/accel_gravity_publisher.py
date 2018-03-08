@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+### TODO: to be moved into hardware interface
+
 import rospy
 from geometry_msgs.msg import Vector3
 from koko_hardware_drivers.msg import MotorState

@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   controller_manager
   geometry_msgs
   visualization_msgs
-  koko_misc
 )
 
 find_package(

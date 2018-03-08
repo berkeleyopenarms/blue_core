@@ -1,4 +1,5 @@
 <launch>
+
   <!-- Load configuration -->
   <rosparam file="$(find koko_bringup)/config/left_robot_parameters.yaml" command="load"/>
   <rosparam file="$(find koko_bringup)/config/left_control_parameters.yaml" command="load"/>
@@ -25,15 +26,21 @@
   <!-- Start the control stack -->
   <node
     name="koko_controller_manager"
-    pkg="koko_control"
+    pkg="koko_controller_manager"
     type="koko_controller_manager"
     output="screen" />
+
+  <node name="joint_state_controller_spawner"
+    pkg="controller_manager"
+    type="spawner"
+    output="screen"
+    args="koko_controllers/joint_state_controller" />
+
   <node name="controller_spawner"
     pkg="controller_manager"
     type="spawner"
-    respawn="false"
     output="screen"
-    args="koko_controllers/joint_state_controller koko_controllers/cartesian_pose_controller" />
+    args="--stopped koko_controllers/cartesian_pose_controller koko_controllers/joint_positions_controller" />
 
   <!-- Publish a gravity vector -->
   <node
@@ -60,16 +67,13 @@
     name="transformer"
     pkg="tf"
     type="static_transform_publisher"
-    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100" />
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>
 
   <!-- Accept connections from our Python API via rosbridge -->
   <include
     file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+  <node name="tf2_web_republisher"
+    pkg="tf2_web_republisher"
+    type="tf2_web_republisher" />
 
-  <!-- Add a visual marker for teleoperation -->
-  <node
-    name="visual_controller"
-    pkg="koko_misc"
-    type="visual_controller"
-    output="screen" />
 </launch>
