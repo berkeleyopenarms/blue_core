@@ -363,7 +363,6 @@ void KokoHW::gravityVectorCallback(const geometry_msgs::Vector3ConstPtr& grav) {
 
 void KokoHW::buildDynamicChain(KDL::Chain &chain){
   int ns = chain.getNrOfSegments();
-  ROS_ERROR
   for(int i = 0; i < ns; i++){
     KDL::Segment seg = chain.segments[i];
 
