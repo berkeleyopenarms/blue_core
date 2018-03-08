@@ -37,22 +37,15 @@ private:
   void computeInverseDynamics();
   void buildDynamicChain(KDL::Chain &chain);
 
-  // TODO: is this fully utilized? - brent
   struct JointParams
   {
     std::string joint_name;
     hardware_interface::JointHandle joint;
     double id_gain;
-    double d_error;
-    double p_error_last;
     double max_torque;
     double min_torque;
     double max_angle;
     double min_angle;
-    double cmd;
-    std::vector<double> err_dot_history;
-    int err_dot_filter_length;
-    int current_err_filter_insert;
   };
 
   bool read_from_motors_;

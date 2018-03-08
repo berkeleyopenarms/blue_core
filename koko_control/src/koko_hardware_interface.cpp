@@ -353,11 +353,13 @@ void KokoHW::write() {
   }
 }
 
+
 void KokoHW::gravityVectorCallback(const geometry_msgs::Vector3ConstPtr& grav) {
   gravity_vector_[0] = grav->x;
   gravity_vector_[1] = grav->y;
   gravity_vector_[2] = grav->z;
 }
+
 
 void KokoHW::buildDynamicChain(KDL::Chain &chain){
   int ns = chain.getNrOfSegments();
@@ -400,12 +402,6 @@ void KokoHW::computeInverseDynamics()
   int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques);
   // ROS_INFO("status: %d", statusID);
   // ROS_INFO("pos vel =  %f, %f", pos[0], vel[0]);
-
-  //std_msgs::Float64MultiArray inverseDynamicsMsg;
-  //for (int i = 0; i < joint_params_.size(); i++) {
-  //  inverseDynamicsMsg.data.push_back(id_torques(i));
-  //}
-  //inverseDynamicsPub.publish(inverseDynamicsMsg);
 }
 
 void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPtr& msg) {
@@ -426,8 +422,6 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
     if (is_calibrated_ != 1) {
       actuator_pos_initial_[index] = msg->position[i];
     } else if (is_calibrated_ == 1){
-      /////////////////////////////////////////////////////////////////////////
-      // added for using transmission interface
       actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index];
       actuator_vel_[index] = msg->velocity[i];
       //actuator_eff[index] = msg->effort[i];

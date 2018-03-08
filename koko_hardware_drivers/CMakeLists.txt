@@ -37,6 +37,7 @@ add_library(${PROJECT_NAME}
   src/BLDCControllerClient.cpp
   src/BLDCDriver.cpp
 )
+
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(BLDCDriver_node src/BLDCDriver_node.cpp)

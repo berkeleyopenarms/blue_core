@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   controller_manager
   geometry_msgs
   visualization_msgs
-  koko_misc
 )
 
 find_package(
@@ -30,7 +29,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME} src/InverseDynamicsController.cpp src/CartesianPoseController.cpp src/GripperController.cpp)
+add_library(${PROJECT_NAME} src/InverseDynamicsController.cpp src/CartesianPoseController.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
