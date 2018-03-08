@@ -1,3 +1,6 @@
+#ifndef KOKO_HARDWARE_INTERFACE_H
+#define KOKO_HARDWARE_INTERFACE_H
+
 #include <ros/ros.h>
 #include <vector>
 #include <string>
@@ -10,97 +13,112 @@
 #include <sensor_msgs/JointState.h>
 #include <koko_hardware_drivers/MotorState.h>
 
-using namespace transmission_interface;
+#include <geometry_msgs/Vector3.h>
+#include <kdl/chainidsolver_recursive_newton_euler.hpp>
+#include <kdl_parser/kdl_parser.hpp>
+#include <kdl/segment.hpp>
+
+namespace ti = transmission_interface;
 
 class KokoHW: public hardware_interface::RobotHW
 {
 
 public:
   KokoHW(ros::NodeHandle &nh);
-
-  void UpdateMotorState(const koko_hardware_drivers::MotorState::ConstPtr& msg);
-  void CalibrateJointState(const sensor_msgs::JointState::ConstPtr& msg);
-  double convertMotorTorqueToCurrent(double motor_torque, int index);
-  ros::Time get_time();
-  ros::Duration get_period();
   void read();
   void write();
-  void PublishJointCommand();
-  const int getPositionRead();
 
 private:
-  hardware_interface::JointStateInterface jnt_state_interface;
-  hardware_interface::EffortJointInterface jnt_effort_interface;
 
-  ros::Subscriber motor_state_subscriber;
-  std::vector<ros::Publisher> motor_cmd_publishers;
-  ros::Publisher debug_adv;
-  ros::Subscriber jnt_state_tracker_subscriber;
+  void motorStateCallback(const koko_hardware_drivers::MotorState::ConstPtr& msg);
+  void calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
+  void gravityVectorCallback(const geometry_msgs::Vector3ConstPtr& grav);
+  void accelerometerCalibrate(int num_diff_actuators);
+  void computeInverseDynamics();
+  void buildDynamicChain(KDL::Chain &chain);
 
-  ros::Time last_time;
-  std::vector<std::string> joint_names;
-  std::vector<std::string> motor_names;
+  // TODO: is this fully utilized? - brent
+  struct JointParams
+  {
+    std::string joint_name;
+    hardware_interface::JointHandle joint;
+    double id_gain;
+    double d_error;
+    double p_error_last;
+    double max_torque;
+    double min_torque;
+    double max_angle;
+    double min_angle;
+    double cmd;
+    std::vector<double> err_dot_history;
+    int err_dot_filter_length;
+    int current_err_filter_insert;
+  };
 
-  std::vector<double> gear_ratios;
+  bool read_from_motors_;
+
+  // ROS control hardware interfaces
+  hardware_interface::JointStateInterface joint_state_interface_;
+  hardware_interface::EffortJointInterface joint_effort_interface_;
+
+  // Publishers and subscribers
+  ros::Subscriber motor_state_sub_;
+  std::vector<ros::Publisher> motor_cmd_publishers_;
+  ros::Subscriber joint_state_tracker_sub;
+  ros::Subscriber gravity_vector_sub_;
+
+  // Parameters read in from configuration
+  std::vector<std::string> joint_names_;
+  std::vector<std::string> motor_names_;
+  std::vector<double> gear_ratios_;
+  std::vector<double> current_slope_;
+  std::vector<int> paired_constraints_;
+  std::vector<double> min_angles_;
+  std::vector<double> max_angles_;
+  std::vector<double> joint_torque_directions_;
+  double softstop_torque_limit_;
+  double softstop_tolerance_;
+
+  // Calibration
+  int calibration_counter_;
+  bool is_calibrated_;
+  std::vector<double> joint_pos_initial_;
+  std::vector<double> actuator_pos_initial_;
+  int num_joints_;
+
+  // Transmission interfaces
+  ti::ActuatorToJointStateInterface actuator_to_joint_interface_;
+  ti::JointToActuatorEffortInterface joint_to_actuator_interface_;
+  std::vector<ti::SimpleTransmission *> simple_transmissions_;
+  std::vector<ti::DifferentialTransmission *> differential_transmissions_;
+
+  // Actuator and joint space data
+  std::vector<ti::ActuatorData> actuator_states_;
+  std::vector<ti::ActuatorData> actuator_commands_;
+  std::vector<ti::JointData> joint_states_;
+  std::vector<ti::JointData> joint_commands_;
+
+  // Owned by our ActuatorData and JointData objects
+  std::vector<double> actuator_pos_;
+  std::vector<double> actuator_vel_;
+  std::vector<double> actuator_eff_;
+  std::vector<double> actuator_cmd_;
+  std::vector<double> joint_pos_;
+  std::vector<double> joint_vel_;
+  std::vector<double> joint_eff_;
+  std::vector<double> joint_cmd_;
+
+  // TODO: are these redundant? - brent
   std::vector<double> cmd;
   std::vector<double> pos;
   std::vector<double> vel;
   std::vector<double> eff;
 
-  std::vector<double> current_slope;
-  std::vector<double> current_offset;
-  std::vector<int> paired_constraints;
-
-  std::vector<double> motor_pos;
-  std::vector<double> motor_vel;
-
-  int position_read;
-  int calibrated;
-  std::vector<double> joint_state_initial;
-  std::vector<double> joint_torque_directions;
-  double hardstop_torque_limit;
-  double i_to_T_slope;
-  double i_to_T_intercept;
-  int calibration_num;
-  std::vector<double> angle_after_calibration;
-  int is_calibrated;
-  int prev_is_calibrated;
-  double hardstop_eps;
-  int num_joints;
-
-  // adding transmissions
-  // Transmission interfaces
-  ActuatorToJointStateInterface act_to_jnt_state; // For motor to joint state
-  JointToActuatorEffortInterface jnt_to_act_eff; // For joint eff to actuator
-
-  //For arbitrary length
-  std::vector<SimpleTransmission*> simple_transmissions;
-  std::vector<DifferentialTransmission*> differential_transmissions;
-
-  // Transmissions
-  SimpleTransmission *base_trans;
-  DifferentialTransmission *shoulder_trans;
-  DifferentialTransmission *upper_arm_trans;
-  DifferentialTransmission *wrist_trans;
-
-  //Actuator and joint space variables
-  std::vector<ActuatorData> a_state_data_vect;
-  std::vector<ActuatorData> a_cmd_data_vect;
-
-  std::vector<JointData> j_state_data_vect;
-  std::vector<JointData> j_cmd_data_vect;
-
-  // Actuator and joint variables
-  std::vector<double> a_curr_pos_vect;
-  std::vector<double> a_curr_vel_vect;
-  std::vector<double> a_curr_eff_vect;
-  std::vector<double> a_cmd_eff_vect;
-
-  std::vector<double> j_curr_pos_vect;
-  std::vector<double> j_curr_vel_vect;
-  std::vector<double> j_curr_eff_vect;
-  std::vector<double> j_cmd_eff_vect;
-
-  std::vector<double> min_angles;
-  std::vector<double> max_angles;
+  // Gravity Compensation
+  KDL::Vector gravity_vector_;
+  KDL::Chain kdl_chain_;
+  KDL::JntArray id_torques;
+  std::vector<JointParams*> joint_params_;
 };
+
+#endif // KOKO_HARDWARE_INTERFACE
