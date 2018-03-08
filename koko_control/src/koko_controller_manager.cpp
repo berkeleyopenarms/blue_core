@@ -24,14 +24,20 @@ int main(int argc, char** argv)
 
   ros::Rate loop_rate(200);
 
-  ros::AsyncSpinner spinner(2);
+  ros::AsyncSpinner spinner(4);
   spinner.start();
 
+  ros::Time prev_time = ros::Time::now();
   while (ros::ok())
   {
     robot.read();
-    cm.update(robot.get_time(), robot.get_period());
+
+    ros::Time current_time = ros::Time::now();
+    cm.update(current_time, current_time - prev_time);
+    prev_time = current_time;
+
     robot.write();
+
     loop_rate.sleep();
   }
 }
