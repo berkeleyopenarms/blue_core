@@ -26,21 +26,18 @@ public:
   void setCommand(const std_msgs::Float64MultiArrayConstPtr& pos_commands);
   double computeCommand(double error, ros::Duration dt, int index, double vel);
   void starting(const ros::Time& time);
-  void jointCallback(const sensor_msgs::JointState msg);
   void pCallback(const std_msgs::Float64MultiArrayConstPtr& p_terms);
   void dCallback(const std_msgs::Float64MultiArrayConstPtr& d_terms);
-  void gravCallback(const geometry_msgs::Vector3ConstPtr& grav);
   ~InverseDynamicsController();
 
 
 private:
   struct JointPD
   {
-    std::string joint_name; 
+    std::string joint_name;
     hardware_interface::JointHandle joint;
     double p_gain;
     double d_gain;
-    double id_gain;
     double d_error;
     double p_error_last;
     double max_torque;
@@ -48,29 +45,20 @@ private:
     double max_angle;
     double min_angle;
     double cmd;
-    std::vector<double> err_dot_history;
-    int err_dot_filter_length;
-    int current_err_filter_insert;
   };
   KDL::Vector gravity;
   std::vector<std::string> joint_names;
   std::vector<JointPD*> joint_vector;
   std::vector<int> paired_constraints;
   ros::Subscriber sub_command;
-  ros::Subscriber sub_joint;
   ros::Subscriber sub_p;
   ros::Subscriber sub_d;
-  ros::Subscriber sub_grav;
   KDL::Chain chain;
-  KDL::JntArray id_torques;
-  std::vector<double> error_filter;
   double error_filter_size;
   ros::Publisher commandPub;
   ros::Publisher deltaPub;
-  ros::Publisher inverseDynamicsPub;
-  bool zero_g_mode;
 
 
 };
 }
- 
+

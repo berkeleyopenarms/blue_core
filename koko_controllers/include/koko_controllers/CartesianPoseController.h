@@ -29,14 +29,11 @@ public:
   void setCommand(const std_msgs::Float64MultiArrayConstPtr& pos_commands);
   double computeCommand(double error, ros::Duration dt, int index);
   void starting(const ros::Time& time);
-  void jointCallback(const sensor_msgs::JointState msg);
   void visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg);
   void controllerPoseCallback(const geometry_msgs::PoseStamped msg);
   void commandCallback(const std_msgs::Int32 msg);
   void publishCommandMsg(KDL::Vector desired_position, KDL::Rotation desired_rotation);
   void publishDeltaMsg(KDL::Twist twist_error);
-  void publishInverseDynamicsMsg();
-  void gravCallback(const geometry_msgs::Vector3ConstPtr& grav);
   geometry_msgs::Pose enforceJointLimits(geometry_msgs::Pose commandPose);
 
 private:
@@ -45,19 +42,16 @@ private:
     std::string joint_name;
     hardware_interface::JointHandle joint;
     double d_gain;
-    double id_gain;
     double max_torque;
     double min_torque;
     double max_angle;
     double min_angle;
   };
-  KDL::Vector gravity;
   std::vector<std::string> joint_names;
   std::vector<JointPD> joint_vector;
   std::vector<int> paired_constraints;
   ros::Subscriber sub_joint;
   KDL::Chain chain;
-  KDL::JntArray id_torques;
 
 
   std::string visualizer;

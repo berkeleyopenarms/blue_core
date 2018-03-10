@@ -100,7 +100,6 @@ namespace koko_controllers{
         double min_torque;
         double min_angle;
         double max_angle;
-        double id_gain;
         double d_gain;
 
         if (!n.getParam(jointName + "/max_torque", max_torque)) {
@@ -119,16 +118,11 @@ namespace koko_controllers{
           ROS_ERROR("No %s/max_angle given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
           return false;
         }
-        if (!n.getParam(jointName + "/id", id_gain)) {
-          ROS_ERROR("No %s/id gain given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
-          return false;
-        }
 
         jointPD.max_torque = max_torque;
         jointPD.min_torque = min_torque;
         jointPD.max_angle = max_angle;
         jointPD.min_angle = min_angle;
-        jointPD.id_gain = id_gain;
         jointPD.d_gain = d_gain;
         jointPD.joint_name = jointName;
         joint_vector.push_back(jointPD);
@@ -145,12 +139,9 @@ namespace koko_controllers{
     subController = n.subscribe("command", 1, &CartesianPoseController::controllerPoseCallback, this);
     subCommand = n.subscribe("command_label", 1, &CartesianPoseController::commandCallback, this);
 
-    sub_grav = n.subscribe( "/koko_hardware/gravity", 1, &CartesianPoseController::gravCallback, this);
-    sub_joint = n.subscribe("/" + root_name  + "/joint_states", 1, &CartesianPoseController::jointCallback, this);
 
     ROS_INFO("nj %d", chain.getNrOfJoints());
 
-    id_torques = KDL::JntArray(chain.getNrOfJoints());
     p_error_last.resize(6);
     d_error.resize(6);
     visualizer = "simple_6dof_MOVE_ROTATE_3D";
@@ -224,13 +215,6 @@ namespace koko_controllers{
     deltaPub.publish(deltaMsg);
   }
 
-  void CartesianPoseController::publishInverseDynamicsMsg() {
-    std_msgs::Float64MultiArray inverseDynamicsMsg;
-    for (int i = 0; i < joint_vector.size(); i++) {
-      inverseDynamicsMsg.data.push_back(id_torques(i));
-    }
-    //inverseDynamicsPub.publish(inverseDynamicsMsg);
-  }
 
   void CartesianPoseController::update(const ros::Time& time, const ros::Duration& period)
   { 
@@ -284,10 +268,6 @@ namespace koko_controllers{
       commands[i] += -joint_vector[i].d_gain * jnt_vel_(i);
     }
 
-    // id portion
-    for(int i = 0; i < nj; i++) {
-      commands[i] += joint_vector[i].id_gain * id_torques(i);
-    }
 
     // null space posture control
     if (posture_control) {
@@ -380,49 +360,6 @@ namespace koko_controllers{
     d_term = d_gains[index] * err_dot_average;
 
     return p_term + d_term;
-  }
-
-  void CartesianPoseController::gravCallback(const geometry_msgs::Vector3ConstPtr& grav) {
-    gravity[0] = grav->x;
-    gravity[1] = grav->y;
-    gravity[2] = grav->z;
-  }
-
-  void CartesianPoseController::jointCallback(const sensor_msgs::JointState msg)
-  {
-    unsigned int nj = chain.getNrOfJoints();
-    KDL::JntArray jointPositions(nj);
-    KDL::JntArray jointVelocities(nj);
-    KDL::JntArray jointAccelerations(nj);
-    KDL::Wrenches f_ext;
-    for (int i = 0; i < nj; i++) {
-      for (int index = 0; index < nj; index++) {
-        if (msg.name[i].compare(joint_names[index]) == 0) {
-          jointPositions(index) = msg.position[i];
-          jointVelocities(index) = msg.velocity[i];
-          jointAccelerations(index) = 0.0;
-          f_ext.push_back(KDL::Wrench());
-
-          break;
-        } else if (index == nj - 1){ 
-           ROS_ERROR("No joint %s for controller", msg.name[i].c_str());
-        }
-      }
-    }
-
-    KDL::ChainIdSolver_RNE chainIdSolver(chain, gravity);
-    int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques); 
-    //ROS_INFO("status: %d", statusID);
-    //ROS_INFO("pos vel =  %f, %f", msg.position[0], msg.velocity[0]); 
-
-    publishInverseDynamicsMsg();
-    //ROS_INFO("nr_segments = %d", ns);
-    /**for(int i = 0; i < ns; i++){
-      KDL::Segment seg = chain.segments[i];
-      ROS_INFO("seg %d name: %s", i, seg.getName().c_str()); 
-      ROS_INFO("joint name: %s type: %d", seg.getJoint().getName().c_str(), seg.getJoint().getType()); 
-    } **/
-    //ROS_INFO("id torques =  %f", id_torques(0)); 
   }
 
   geometry_msgs::Pose CartesianPoseController::enforceJointLimits(geometry_msgs::Pose commandPose)
