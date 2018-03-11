@@ -1,7 +1,7 @@
 <launch>
   <!-- Load configuration -->
-  <rosparam file="$(find koko_hardware_drivers)/config/link_parameters.yaml" command="load"/>
-  <rosparam file="$(find koko_hardware_drivers)/config/link_control_parameters.yaml" command="load"/>
+  <rosparam file="$(find koko_calibrate)/config/link_parameters.yaml" command="load"/>
+  <rosparam file="$(find koko_calibrate)/config/link_control_parameters.yaml" command="load"/>
 
   <!-- Load URDFs -->
   <param

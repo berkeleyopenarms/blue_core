@@ -2,7 +2,7 @@
 
   <!-- Load configuration -->
   <rosparam file="$(find koko_bringup)/config/left_robot_parameters.yaml" command="load"/>
-  <rosparam file="$(find koko_bringup)/config/left_control_parameters.yaml" command="load"/>
+  <rosparam file="$(find koko_bringup)/config/controllers.yaml" command="load"/>
 
   <!-- Load URDFs -->
   <param
@@ -40,7 +40,11 @@
     pkg="controller_manager"
     type="spawner"
     output="screen"
-    args="--stopped koko_controllers/cartesian_pose_controller koko_controllers/joint_positions_controller" />
+    args="--stopped
+    koko_controllers/gripper_action_controller
+    koko_controllers/cartesian_pose_controller
+    koko_controllers/joint_positions_controller
+    koko_controllers/joint_torques_controller" />
 
   <!-- Publish a gravity vector -->
   <node
