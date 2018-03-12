@@ -1,8 +1,12 @@
 <launch>
 
   <!-- Load configuration -->
-  <rosparam file="$(find koko_bringup)/config/left_robot_parameters.yaml" command="load"/>
-  <rosparam file="$(find koko_bringup)/config/controllers.yaml" command="load"/>
+  <rosparam
+    file="$(find koko_bringup)/config/left_robot_parameters.yaml"
+    command="load" />
+  <rosparam
+    file="$(find koko_bringup)/config/controllers.yaml"
+    command="load" />
 
   <!-- Load URDFs -->
   <param
@@ -12,16 +16,17 @@
     name="robot_dyn_description"
     textfile="$(find koko_description_sevendof_dyn)/robots/koko_description_sevendof_dyn.urdf" />
 
-  <!-- Start rviz for visualization/debugging -->
-  <node
-    name="rviz"
-    pkg="rviz"
-    type="rviz"
-    args="-d $(find koko_description_sevendof_kin)/urdf.rviz" />
-
-  <!-- Start the hardware drivers -->
+  <!-- Start communication with the motor drivers -->
   <include
     file="$(find koko_hardware_drivers)/launch/left_motor_drivers.launch" />
+
+  <!-- Read the motor state information to publish some gravity vectors -->
+  <!-- These will be used for both calibration and generating gravity feedforwards -->
+  <node
+    name="accel_grav_publisher"
+    pkg="koko_control"
+    type="accel_gravity_publisher.py"
+    output="screen" />
 
   <!-- Start the control stack -->
   <node
@@ -29,36 +34,28 @@
     pkg="koko_controller_manager"
     type="koko_controller_manager"
     output="screen" />
-
   <node name="joint_state_controller_spawner"
     pkg="controller_manager"
     type="spawner"
     output="screen"
     args="koko_controllers/joint_state_controller" />
-
   <node name="controller_spawner"
     pkg="controller_manager"
     type="spawner"
     output="screen"
     args="--stopped
-    koko_controllers/gripper_action_controller
-    koko_controllers/cartesian_pose_controller
-    koko_controllers/joint_positions_controller
-    koko_controllers/joint_torques_controller" />
-
-  <!-- Publish a gravity vector -->
-  <node
-    name="accel_grav_publisher"
-    pkg="koko_control"
-    type="accel_gravity_publisher.py"
-    output="screen"/>
+          koko_controllers/gripper_action_controller
+          koko_controllers/cartesian_pose_controller
+          koko_controllers/joint_position_controller
+          koko_controllers/joint_torque_controller" />
 
   <!-- Joint calibration -->
+  <!-- TODO: this is temporary, and can is being moved to the hardware interface initialization -->
   <node
     name="hardstop_calibrator"
     pkg="koko_bringup"
     type="hardstop_calibrate"
-    output="screen"/>
+    output="screen" />
 
   <!-- Broadcast our joint states as TFs -->
   <node
@@ -66,12 +63,12 @@
     pkg="robot_state_publisher"
     type="state_publisher" />
 
-  <!-- Position the robot in the world-->
+  <!-- Position the robot in the world -->
   <node
     name="transformer"
     pkg="tf"
     type="static_transform_publisher"
-    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100"/>
+    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100" />
 
   <!-- Accept connections from our Python API via rosbridge -->
   <include

@@ -23,7 +23,7 @@ class BLDCDriverNode:
     CONTROL_LOOP_FREQ = 200
 
     def __init__(self):
-        rospy.init_node('jointInterface', anonymous=True)
+        rospy.init_node('bldc_driver', anonymous=True)
 
         motor_ids = rospy.get_param('motor_ids')
         motor_names = rospy.get_param('motor_names')
@@ -71,11 +71,8 @@ class BLDCDriverNode:
                     self.bldc.setCurrentControlMode(id)
                     self.bldc.setInvertPhases(id, calibrations['inv'])
                     self.bldc.setERevsPerMRev(id, calibrations['epm'])
-                    self.bldc.writeRegisters(id, 0x1022, 1, struct.pack('<f', calibrations['torque']))
-                    print calibrations
+                    self.bldc.setTorqueConstant(id, calibrations['torque'])
                     # self.bldc.writeRegisters(id, 0x1023, 1, struct.pack('<f', calibrations['zero']))
-
-                    print "After"
                     self.starting_angles[id] = 0.0
                     rospy.loginfo("Motor %d ready: supply voltage=%fV", id, self.bldc.getVoltage(id))
                     success = True

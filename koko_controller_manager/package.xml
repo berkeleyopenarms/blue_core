@@ -3,7 +3,7 @@
   <name>koko_controller_manager</name>
   <version>0.0.0</version>
   <description>
-    The koko_controller_manager package provides a controller manager and an accompanying hardware
+    The koko_controller_manager package provides a controller manager and its supporting hardware
     interface for running a Koko robot using the ros_control software framework.
   </description>
 

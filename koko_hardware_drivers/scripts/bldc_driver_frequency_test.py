@@ -68,7 +68,5 @@ def main():
         freq_pub.publish(msg)
         last_time = current_time
 
-
-
 if __name__ == '__main__':
     main()

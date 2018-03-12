@@ -64,10 +64,10 @@ private:
   std::vector<std::string> joint_names_;
   std::vector<std::string> motor_names_;
   std::vector<double> gear_ratios_;
-  std::vector<double> current_slope_;
-  std::vector<int> paired_constraints_;
-  std::vector<double> min_angles_;
-  std::vector<double> max_angles_;
+  std::vector<double> current_to_torque_ratios_;
+  std::vector<int> differential_pairs_;
+  std::vector<double> softstop_min_angles_;
+  std::vector<double> softstop_max_angles_;
   std::vector<double> joint_torque_directions_;
   double softstop_torque_limit_;
   double softstop_tolerance_;
@@ -101,7 +101,7 @@ private:
   std::vector<double> joint_eff_;
   std::vector<double> joint_cmd_;
 
-  // TODO: are these redundant? - brent
+  // TODO: these are redundant and should be removed
   std::vector<double> cmd;
   std::vector<double> pos;
   std::vector<double> vel;
@@ -110,7 +110,7 @@ private:
   // Gravity Compensation
   KDL::Vector gravity_vector_;
   KDL::Chain kdl_chain_;
-  KDL::JntArray id_torques;
+  KDL::JntArray id_torques_;
   std::vector<JointParams*> joint_params_;
 };
 

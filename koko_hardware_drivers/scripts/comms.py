@@ -119,6 +119,9 @@ class BLDCControllerClient:
     def setERevsPerMRev(self, server_id, value):
         return self.writeRegisters(server_id, 0x1001, 1, struct.pack('<B', value))
 
+    def setTorqueConstant(self, server_id, value):
+        return self.writeRegisters(server_id, 0x1022, 1, struct.pack('<f', value))
+
     def setCurrentControlMode(self, server_id):
         return self.writeRegisters(server_id, 0x2000, 1, struct.pack('<B', 0))
 

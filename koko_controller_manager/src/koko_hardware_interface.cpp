@@ -13,29 +13,29 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   if (!nh.getParam("koko_hardware/motor_names", motor_names_)) {
     ROS_ERROR("No koko_hardware/motor_names given (namespace: %s)", nh.getNamespace().c_str());
   }
-  if (!nh.getParam("koko_hardware/gear_ratio", gear_ratios_)) {
-    ROS_ERROR("No koko_hardware/gear_ratio given (namespace: %s)", nh.getNamespace().c_str());
+  if (!nh.getParam("koko_hardware/gear_ratios", gear_ratios_)) {
+    ROS_ERROR("No koko_hardware/gear_ratios given (namespace: %s)", nh.getNamespace().c_str());
   }
   if (!nh.getParam("koko_hardware/joint_torque_directions", joint_torque_directions_)) {
     ROS_ERROR("No koko_hardware/joint_torque_directions given (namespace: %s)", nh.getNamespace().c_str());
   }
-  if (!nh.getParam("koko_hardware/current_slope", current_slope_)) {
-    ROS_ERROR("No koko_hardware/current_slope given (namespace: %s)", nh.getNamespace().c_str());
+  if (!nh.getParam("koko_hardware/current_to_torque_ratios", current_to_torque_ratios_)) {
+    ROS_ERROR("No koko_hardware/current_to_torque_ratios given (namespace: %s)", nh.getNamespace().c_str());
   }
-  if (!nh.getParam("koko_hardware/paired_constraints", paired_constraints_)) {
-    ROS_ERROR("No koko_hardware/paired_constraints given (namespace: %s", nh.getNamespace().c_str());
+  if (!nh.getParam("koko_hardware/differential_pairs", differential_pairs_)) {
+    ROS_ERROR("No koko_hardware/differential_pairs given (namespace: %s", nh.getNamespace().c_str());
   }
-  if (paired_constraints_.size() % 2 != 0) {
+  if (differential_pairs_.size() % 2 != 0) {
     ROS_ERROR("Paired_constraints length must be even");
   }
   if (!nh.getParam("koko_hardware/softstop_torque_limit", softstop_torque_limit_)) {
     ROS_ERROR("No koko_hardware/softstop_torque_limit given (namespace: %s)", nh.getNamespace().c_str());
   }
-  if (!nh.getParam("koko_hardware/min_angles", min_angles_)) {
-    ROS_ERROR("No koko_hardware/min_angles given (namespace: %s)", nh.getNamespace().c_str());
+  if (!nh.getParam("koko_hardware/softstop_min_angles", softstop_min_angles_)) {
+    ROS_ERROR("No koko_hardware/softstop_min_angles given (namespace: %s)", nh.getNamespace().c_str());
   }
-  if (!nh.getParam("koko_hardware/max_angles", max_angles_)) {
-    ROS_ERROR("No koko_hardware/max_angles given (namespace: %s)", nh.getNamespace().c_str());
+  if (!nh.getParam("koko_hardware/softstop_max_angles", softstop_max_angles_)) {
+    ROS_ERROR("No koko_hardware/softstop_max_angles given (namespace: %s)", nh.getNamespace().c_str());
   }
   if (!nh.getParam("koko_hardware/softstop_tolerance", softstop_tolerance_)) {
     ROS_ERROR("No koko_hardware/softstop_tolerance given (namespace: %s)", nh.getNamespace().c_str());
@@ -61,11 +61,12 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
     ROS_ERROR("Failed to construct kdl chain");
   }
   buildDynamicChain(chain);
-  id_torques = KDL::JntArray(chain.getNrOfJoints());
+  id_torques_ = KDL::JntArray(chain.getNrOfJoints());
 
   num_joints_ = joint_names_.size();
   read_from_motors_ = false;
 
+  // TODO: eliminate need for cmd, pos, vel, and eff variables (redundant)
   cmd.resize(num_joints_, 0.0);
   pos.resize(num_joints_, 0.0);
   vel.resize(num_joints_, 0.0);
@@ -75,8 +76,8 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
 
   motor_cmd_publishers_.resize(num_joints_);
 
-  int num_simple_actuators = num_joints_ - paired_constraints_.size();
-  int num_differential_actuators = paired_constraints_.size() / 2;
+  int num_simple_actuators = num_joints_ - differential_pairs_.size();
+  int num_differential_actuators = differential_pairs_.size() / 2;
   int num_actuators = num_simple_actuators + num_differential_actuators;
 
   actuator_states_.resize(num_actuators);
@@ -123,7 +124,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   gravity_vector_.data[1] = 0;
   gravity_vector_.data[2] = -9.81;
 
-  gravity_vector_sub_ = nh.subscribe( "/koko_hardware/gravity_vector_", 1, &KokoHW::gravityVectorCallback, this);
+  gravity_vector_sub_ = nh.subscribe( "/koko_hardware/gravity_vector", 1, &KokoHW::gravityVectorCallback, this);
   joint_state_tracker_sub = nh.subscribe("joint_state_tracker", 1, &KokoHW::calibrationStateCallback, this);
   motor_state_sub_ = nh.subscribe("koko_hardware/motor_states", 1, &KokoHW::motorStateCallback, this);
 
@@ -134,7 +135,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   int simple_idx = 0;
   int differential_idx = 0;
   for(int j_idx = 0; j_idx < num_joints_; j_idx += 0){
-    if(std::find(paired_constraints_.begin(), paired_constraints_.end(), j_idx) != paired_constraints_.end()){
+    if(std::find(differential_pairs_.begin(), differential_pairs_.end(), j_idx) != differential_pairs_.end()){
       // a differential transmission if in paired constraints
       std::vector<double> gear_ratios_temp(2, 1.0);
       std::vector<double> actuator_ratios(2, 1.0);
@@ -160,7 +161,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   differential_idx = 0;
   int actuator_idx = 0;
   for(int j_idx = 0; j_idx < num_joints_; j_idx += 0){
-    if(std::find(paired_constraints_.begin(), paired_constraints_.end(), j_idx) != paired_constraints_.end()){
+    if(std::find(differential_pairs_.begin(), differential_pairs_.end(), j_idx) != differential_pairs_.end()){
       // a differential transmission if in paired constraints
       // Wrap differential transmission raw data - current state
 
@@ -207,7 +208,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
     }
     actuator_idx++;
   }
-  // ...once the raw data has been wrapped, the rest is straightforward ///
+  // ...once the raw data has been wrapped, the rest is straightforward
 
   // Register transmissions to each interface
   simple_idx = 0;
@@ -215,7 +216,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   for(int a_idx = 0; a_idx < num_actuators; a_idx += 1){
     std::ostringstream oss;
     oss << a_idx;
-    if(std::find(paired_constraints_.begin(), paired_constraints_.end(), a_idx) != paired_constraints_.end()){
+    if(std::find(differential_pairs_.begin(), differential_pairs_.end(), a_idx) != differential_pairs_.end()){
       // a differential transmission if in paired constraints
 
       actuator_to_joint_interface_.registerHandle(ti::ActuatorToJointStateHandle("differential_trans" + oss.str(),
@@ -329,13 +330,13 @@ void KokoHW::write() {
     // added for using transmission interface
     for (int i = 0; i < num_joints_; i++){
       // TODO
-      joint_cmd_[i] = cmd[i] + id_torques(i) * joint_params_[i]->id_gain;
+      joint_cmd_[i] = cmd[i] + id_torques_(i) * joint_params_[i]->id_gain;
       // checking joint limits and publish counter torque if near
-      if(pos[i] > max_angles_[i] - softstop_tolerance_){
-        double del = pos[i] - max_angles_[i] + softstop_tolerance_;
+      if(pos[i] > softstop_max_angles_[i] - softstop_tolerance_){
+        double del = pos[i] - softstop_max_angles_[i] + softstop_tolerance_;
         joint_cmd_[i] += -1.0 * softstop_torque_limit_ * del * del;
-      } else if (pos[i] < min_angles_[i] + softstop_tolerance_){
-        double del = min_angles_[i] + softstop_tolerance_ - pos[i];
+      } else if (pos[i] < softstop_min_angles_[i] + softstop_tolerance_){
+        double del = softstop_min_angles_[i] + softstop_tolerance_ - pos[i];
         joint_cmd_[i] += softstop_torque_limit_ * del * del;
       }
     }
@@ -344,7 +345,7 @@ void KokoHW::write() {
     for (int i = 0; i < num_joints_; i++) {
       actuator_cmd_[i] = joint_torque_directions_[i] * actuator_cmd_[i];
       double motor_torque = actuator_cmd_[i];
-      double motor_current = current_slope_[i] * motor_torque;
+      double motor_current = current_to_torque_ratios_[i] * motor_torque;
       std_msgs::Float64 commandMsg;
 
       commandMsg.data =  motor_current;
@@ -379,7 +380,7 @@ void KokoHW::buildDynamicChain(KDL::Chain &chain){
       ROS_INFO("Joint %s, has inverse dynamics gain of: %f", jointName.c_str(), id_gain);
     }
   }
-  ROS_INFO("Finished Constructing Chain");
+  ROS_INFO("Finished constructing chain");
 }
 
 void KokoHW::computeInverseDynamics()
@@ -398,9 +399,7 @@ void KokoHW::computeInverseDynamics()
   }
 
   KDL::ChainIdSolver_RNE chainIdSolver(kdl_chain_, gravity_vector_);
-  int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques);
-  // ROS_INFO("status: %d", statusID);
-  // ROS_INFO("pos vel =  %f, %f", pos[0], vel[0]);
+  int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques_);
 }
 
 void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPtr& msg) {
@@ -415,7 +414,7 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
     }
 
     if (index == -1){
-      ROS_ERROR("Some Joint koko_hwi error, msg name %s, with %d joints", msg->name[i].c_str(), num_joints_);
+      ROS_ERROR("Motor callback error, msg name %s, with %d joints", msg->name[i].c_str(), num_joints_);
     }
 
     if (is_calibrated_ != 1) {
@@ -423,11 +422,11 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
     } else if (is_calibrated_ == 1){
       actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index];
       actuator_vel_[index] = msg->velocity[i];
-      //actuator_eff[index] = msg->effort[i];
-      // update state of all motors
+      //actuator_eff_[index] = msg->effort[i];
     }
   }
-  // propgates actuator information to joint information
+
+  // Propagate actuator information to joint information
   actuator_to_joint_interface_.propagate();
   for(int i = 0; i < num_joints_; i++) {
     pos[i] = joint_pos_[i] + joint_pos_initial_[i];
@@ -439,6 +438,7 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
 void KokoHW::calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg) {
   if (is_calibrated_)
     return;
+
   if (calibration_counter_ >= 10) {
     for (int i = 0; i < joint_pos_initial_.size(); i++) {
       joint_pos_initial_[i] = msg->position[i];

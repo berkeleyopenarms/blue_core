@@ -33,8 +33,6 @@ std::vector<std::string> joint_names;
 KDL::JntArray jointCur;
 ros::Publisher pub;
 
-
-
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "joint_state_tracker");
@@ -71,7 +69,7 @@ int main(int argc, char** argv)
     joint_state_msg.effort.push_back(0.0);
   }
 
-  ros::Rate  loop_rate(500);
+  ros::Rate loop_rate(500);
 
   while(ros::ok()){
     ros::spinOnce();
