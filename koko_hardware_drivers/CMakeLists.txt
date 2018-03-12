@@ -70,3 +70,13 @@ install(TARGETS BLDCDriver_node
 install(DIRECTORY include/koko_hardware_drivers
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
+
+## Mark Python scripts for installation
+install(PROGRAMS scripts/comms.py scripts/bldc_driver.py scripts/bldc_driver_frequency_test.py scripts/accel_gravity_publisher.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+## Mark launch files for installation
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)

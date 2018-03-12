@@ -1,8 +1,6 @@
 #include <controller_manager/controller_manager.h>
-#include <vector>
 #include <ros/console.h>
-#include <pthread.h>
-#include "koko_control/koko_hardware_interface.h"
+#include "koko_controller_manager/koko_hardware_interface.h"
 
 int main(int argc, char** argv)
 {
