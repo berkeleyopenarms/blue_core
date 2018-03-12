@@ -2,11 +2,18 @@
 This repository provides the core software used to run a Koko robot arm with ROS.
 
 The software stack is set up as a ROS metapackage, which organizes our codebase into five individual packages:
-- **koko_bringup**: launch and configuration files used to start up the processes needed for our robot to run
-- **koko_controller_manager**: higher level control code, built off the [ros_control framework](http://wiki.ros.org/ros_control)
-- **koko_controllers**: source code for our custom controller plugins (such as cartesian pose control), which can be dynamically started and stopped by the controller manager
-- **koko_descriptions**: physical descriptions of our robot, in the form of URDF files and associated 3D models
-- **koko_hardware_drivers**: lower-level code for communicating with hardware (ie motor drivers) and providing a ROS interface to them
+- **koko_bringup**
+  - Launch and configuration files used to start up the processes needed for our robot to run
+- **koko_controller_manager**
+  - Higher level control code, built off the [ros_control framework](http://wiki.ros.org/ros_control)
+  - Contains our controller manager, which provides infrastructure for dynamically starting and stopping different types of controllers: end effector pose control, joint position control, velocity control, etc.
+  - Also contains the controller manager's hardware interface, which acts as an abstraction barrier between our joint and motor messages
+- **koko_controllers**
+  - Source code for our custom controller plugins
+- **koko_hardware_drivers**
+  - Lower-level code for communicating with hardware (ie motor drivers) and providing a ROS interface to them
+- **koko_descriptions**
+  - Physical descriptions of our robot, in the form of URDF files and associated 3D models
 
 -----
 
