@@ -1,7 +1,11 @@
-# koko
-The Koko stack provides all the basic software for running and using a Koko
+# Koko
+The Koko stack provides the core software for running and using a Koko robot arm with ROS.
 
-Development environment setup (Ubuntu 16.0.4 w/ ROS Kinetic):
+The software stack is set 
+
+---
+
+Basic development environment setup (Ubuntu 16.0.4 w/ ROS Kinetic):
 
 ```bash
 mkdir -p ~/koko_ws/src && cd "$_"

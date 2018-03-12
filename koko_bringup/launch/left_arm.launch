@@ -50,7 +50,7 @@
           koko_controllers/joint_torque_controller" />
 
   <!-- Joint calibration -->
-  <!-- TODO: this is temporary, and can is being moved to the hardware interface initialization -->
+  <!-- TODO: this is temporary, and is being moved to the hardware interface initialization -->
   <node
     name="hardstop_calibrator"
     pkg="koko_bringup"

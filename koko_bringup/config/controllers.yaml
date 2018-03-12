@@ -30,76 +30,24 @@ koko_controllers:
       - wrist_lift_joint
       - wrist_roll_joint
 
-  position_controller:
-    # TODO: replace with off-the-shelf controller
-    paired_constraints: [1, 2, 3, 4, 5, 6]
-    endlink: 'wrist_roll_link'
-    filter_length: 20
-    type: koko_controllers/InverseDynamicsController
-    root_name: koko
-    zero_g_mode: false
-    base_roll_joint:
-      p: 0.0
-      d: 0.0
-      id: 1.0
-      max_torque: 30
-      min_torque: -30
-      max_angle: 3.3
-      min_angle: -2.2
-    shoulder_lift_joint:
-      #p: 100
-      p: 0.0
-      d: 0.0
-      id: 1.0
-      max_torque: 30
-      min_torque: -30
-      max_angle: 0.5
-      min_angle: -2.2
-    shoulder_roll_joint:
-      #p: 100
-      p: 0.0
-      d: 0.0
-      id: 1.0
-      max_torque: 30
-      min_torque: -30
-      max_angle: 2.6
-      min_angle: -2.6
-    elbow_lift_joint:
-      # p: 80
-      p: 0.0
-      d: 0.0
-      id: 1.0
-      max_torque: 30
-      min_torque: -30
-      max_angle: 0.5
-      min_angle: -2.2
-    elbow_roll_joint:
-      #p: 50
-      p: 0.0
-      d: 0.0
-      id: 1.0
-      max_torque: 30
-      min_torque: -30
-      max_angle: 2.6
-      min_angle: -2.6
-    wrist_lift_joint:
-      #p: 50.0
-      p: 0.0
-      d: 0.0
-      id: 1.0
-      max_torque: 15
-      min_torque: -15
-      max_angle: 0.5
-      min_angle: -2.2
-    wrist_roll_joint:
-      #p: 30.0
-      p: 0.0
-      d: 0.0
-      id: 1.0
-      max_torque: 15
-      min_torque: -15
-      max_angle: 2.6
-      min_angle: -2.6
+  joint_position_controller:
+    type: effort_controllers/JointGroupPositionController
+    joints:
+      - base_roll_joint
+      - shoulder_lift_joint
+      - shoulder_roll_joint
+      - elbow_lift_joint
+      - elbow_roll_joint
+      - wrist_lift_joint
+      - wrist_roll_joint
+    gains:
+      base_roll_joint:     {p: 25, i: 0, d: 3, i_clamp: 0}
+      shoulder_lift_joint: {p: 25, i: 0, d: 4, i_clamp: 0}
+      shoulder_roll_joint: {p: 15, i: 0, d: 3, i_clamp: 0}
+      elbow_lift_joint:    {p: 15, i: 0, d: 2, i_clamp: 0}
+      elbow_roll_joint:    {p: 10, i: 0, d: 2, i_clamp: 0}
+      wrist_lift_joint:    {p:  5, i: 0, d: 1, i_clamp: 0}
+      wrist_roll_joint:    {p:  5, i: 0, d: 1, i_clamp: 0}
 
   cartesian_pose_controller:
     endlink: 'wrist_roll_link'
