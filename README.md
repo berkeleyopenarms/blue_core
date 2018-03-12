@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Koko Core Software
 This repository provides the core software needed to run a Koko robot arm with ROS.
 
