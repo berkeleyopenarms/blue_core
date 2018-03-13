@@ -97,10 +97,7 @@ private:
   std::vector<double> actuator_vel_;
   std::vector<double> actuator_eff_;
   std::vector<double> actuator_cmd_;
-  std::array<double, 3> actuator_accel_base_;
-  std::vector<std::array<double, 3>> actuator_accel_right_;
-  std::vector<std::array<double, 3>> actuator_accel_left_;
-  std::array<double, 3> actuator_accel_grip_;
+  std::vector<KDL::Vector> actuator_accel_;
   std::vector<KDL::Vector> read_gravity_vector;
   std::vector<double> joint_pos_;
   std::vector<double> joint_vel_;

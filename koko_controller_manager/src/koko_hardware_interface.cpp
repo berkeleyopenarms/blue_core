@@ -93,16 +93,14 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   actuator_eff_.resize(num_joints_);
   actuator_cmd_.resize(num_joints_);
 
-  actuator_accel_right_.resize(num_differential_actuators);
-  actuator_accel_left_.resize(num_differential_actuators);
-  for (int i = 0 < num_differential_actuators; i++) {
-    double accel_arr_left[3] = {0.0};
-    actuator_accel_left_.push_back(accel_arr_left);
-    double accel_arr_right[3] = {0.0};
-    actuator_accel_right_.push_back(accel_arr_right);
+  actuator_accel_.resize(num_joints_);
+  for (int i = 0 < actuator_accel_.size(); i++) {
+    KDL::Vector accel_vect;
+    accel_vect.data[0] = 0.0;
+    accel_vect.data[1] = 0.0;
+    accel_vect.data[2] = 0.0;
+    actuator_accel_.push_back(accel_vect);
   }
-  actuator_accel_base_ = {0.0, 0.0, 0.0};
-  actuator_accel_grip_ = {0.0, 0.0, 0.0};
   read_gravity_vector.resize(num_differential_actuators + 1);  // TODO: +1 if ros_param -> gripper
 
   joint_pos_.resize(num_joints_);
@@ -276,9 +274,9 @@ void KokoHW::setReadGravityVector() {
   gravity_base.data[2] = -corrected[2] / norm_val;
   read_gravity_vector.push_back(gravity_base);
 
-  for (int i = 1; i < num_differential_actuators + 1; i++) {
-    raw_right = actuator_accel_right_.at(i-1);
-    raw_left = actuator_accel_left_.at(i-1);
+  for (int i = 1; i < num_differential_actuators + 1; i+=2) {
+    raw_right = actuator_accel_.at(i);  // KDL Vector
+    raw_left = actuator_accel_.at(i+1);  // KDL Vector
     // TODO: Figure out which lin alg library to use -> perform rotations and transforms
     // axis = [0.0, 0.0, 1.0]
     // theta = np.pi
@@ -311,7 +309,7 @@ void KokoHW::setReadGravityVector() {
 void KokoHW::accelerometerCalibrate(int num_diff_actuators) {
   KDL::ChainFkSolverPos_recursive fksolver(chain);
 
-  setReadGravityVector();
+  // setReadGravityVector();
 
   // calibrate base
   KDL::Frame base_frame;
@@ -467,10 +465,6 @@ void KokoHW::computeInverseDynamics() {
 
 void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPtr& msg) {
   read_from_motors_ = true;
-  std::string left ("left");  // TODO: Move to header (if this is the best way to do this)
-  std::string right ("right");
-  std::string base ("base");
-  std::string grip ("grip");
   for (int i = 0; i < msg->name.size(); i++) {
     int index = -1;
 
@@ -486,20 +480,11 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
 
     if (is_calibrated_ != 1) {
       actuator_pos_initial_[index] = msg->position[i];
-      double accel_arr[3];
-      accel_arr[0] = msg->accel[i]->x;
-      accel_arr[1] = msg->accel[i]->y;
-      accel_arr[2] = msg->accel[i]->z;
-      if (motor_names_[i].find(right) != std::string::npos) {
-        actuator_accel_right_.at(index) = (accel_arr);
-      } else if (motor_names_[i].find(left) != std::string::npos) {
-        actuator_accel_left_.at(index) = (accel_arr);
-      } else if (motor_names_[i].find(base) != std::string::npos) {
-        actuator_accel_base_ = accel_arr;
-      } else if (motor_names_[i].find(grip) != std::string::npos) {
-        actuator_accel_grip_ = accel_arr;
-      }
-
+      KDL::Vector accel_vect;
+      accel_vect.data[0] = msg->accel[i]->x;
+      accel_vect.data[1] = msg->accel[i]->y;
+      accel_vect.data[2] = msg->accel[i]->z;
+      actuator_accel_.at(index) = accel_vect;
     } else if (is_calibrated_ == 1){
       actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index];
       actuator_vel_[index] = msg->velocity[i];
