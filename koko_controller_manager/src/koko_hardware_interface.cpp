@@ -252,49 +252,59 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
 }
 
 void KokoHW::setReadGravityVector() {
+  // Apply base gravity transform
+  KDL::Rotation base_rot_z;
+  double theta = 4.301 - M_PI;
+  base_rot_z.setRotZ(theta);
 
-  // TODO: Figure out which lin alg library to use -> perform rotations and transforms
-  // // Apply base gravity transform
-  // double axis = [0.0, 0.0, 1.0]
-  // // correction z rotation
-  // double theta = 4.301 - np.pi
-  // best_z = transformations.rotation_matrix(-theta, axis)[:3,:3]
-  // corrected = best_z.dot(actuator_accel_base_);
-  // norm_val = np.linalg.norm(corrected) / 9.81
+  KDL::Vector corrected_base;
+  corrected_base = base_rot_z * actuator_accel_[0];
+  corrected_base.Normalize() / 9.81;
 
   KDL::Vector gravity_base;
-  gravity_base.data[0] = corrected[0] / norm_val;
-  gravity_base.data[1] = corrected[1] / norm_val;
-  gravity_base.data[2] = -corrected[2] / norm_val;
+  gravity_base.data[0] = corrected_base.data[0];
+  gravity_base.data[1] = corrected_base.data[1];
+  gravity_base.data[2] = -corrected_base.data[2];
   read_gravity_vector.push_back(gravity_base);
 
-  for (int i = 1; i < num_differential_actuators + 1; i+=2) {
+  for (int i = 1; i < num_differential_actuators + 1; i+=2) {   // TODO: Check the difference between num_differential_actuators and num_joints_
     raw_right = actuator_accel_.at(i);  // KDL Vector
     raw_left = actuator_accel_.at(i+1);  // KDL Vector
-    // TODO: Figure out which lin alg library to use -> perform rotations and transforms
-    // axis = [0.0, 0.0, 1.0]
-    // theta = np.pi
-    // correction_transform = transformations.rotation_matrix(theta, axis)[:3,:3]
-    // raw_left = correction_transform.dot(raw_left)
+    // Rotate Left accel vector into Right accel Frame
+    KDL::Rotation left_rot_z;
+    double theta = M_PI;
+    left_rot_z.setRotZ(theta);
+    raw_left = left_rot_z * raw_left;
 
-    // axis = [1.0, 0.0, 0.0]
-    // theta = np.pi
-    // correction_transform = transformations.rotation_matrix(theta, axis)[:3,:3]
-    // raw_left = correction_transform.dot(raw_left)
+    KDL::Rotation left_rot_x;
+    double theta = M_PI;
+    left_rot_x.setRotX(theta);
+    raw_left = left_rot_x * raw_left;
 
-    // raw = (raw_right + raw_left.T[0]) / 2.0
+    raw = (raw_right + raw_left) / 2.0;  // Average the KDL Vector accelerations
 
-    // // Correct expected transform
-    // transform = np.array([[ 0.26860026, -0.96283056, -0.02848168], [ 0.96299097,  0.2690981,  -0.01531682], [ 0.02241186, -0.0233135,   0.99947696]])
-    // transform = transformations.rotation_matrix(np.pi/2, np.array([1, 0, 0]))[:3,:3].dot(transform)
-    // transform = transformations.rotation_matrix(np.pi, np.array([0, 0, 1]))[:3,:3].dot(transform)
+    // Apply found Link transform
+    KDL::Vector x_vect( 0.26860026, -0.96283056, -0.02848168);
+    KDL::Vector y_vect(0.96299097,  0.2690981,  -0.01531682);
+    KDL::Vector z_vect(0.02241186, -0.0233135,   0.99947696);
+    KDL::Rotation transform;
+    transform.Rotation(x_vect, y_vect, z_vect);
+    raw = transform * raw
+
+    KDL::Rotation raw_rot_x;
+    double theta = M_PI / 2;
+    raw_rot_x.setRotX(theta);
+    raw = raw_rot_x * raw;
+
+    KDL::Rotation raw_rot_z;
+    double theta = M_PI;
+    raw_rot_z.setRotZ(theta);
+    raw = raw_rot_z * raw;
     
-    // g = transform.dot(raw)
-
     KDL::Vector link_gravity_vect;
-    link_gravity_vect.data[0] = g[0] * 9.81/1000.0
-    link_gravity_vect.data[1] = g[1] * 9.81/1000.0
-    link_gravity_vect.data[2] = -g[2] * 9.81/1000.0
+    link_gravity_vect.data[0] = raw.data[0] * 9.81/1000.0;
+    link_gravity_vect.data[1] = raw.data[1] * 9.81/1000.0;
+    link_gravity_vect.data[2] = raw.data[2] * 9.81/1000.0;
     read_gravity_vector.push_back(link_gravity_vect);
   }
   // TODO: Calibrate Gripper link
@@ -303,7 +313,7 @@ void KokoHW::setReadGravityVector() {
 void KokoHW::accelerometerCalibrate(int num_diff_actuators) {
   KDL::ChainFkSolverPos_recursive fksolver(chain);
 
-  // setReadGravityVector();
+  setReadGravityVector();
 
   // calibrate base
   KDL::Frame base_frame;
