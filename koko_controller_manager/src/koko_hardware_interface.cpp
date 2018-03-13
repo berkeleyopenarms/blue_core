@@ -93,14 +93,8 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   actuator_eff_.resize(num_joints_);
   actuator_cmd_.resize(num_joints_);
 
-  actuator_accel_.resize(num_joints_);
-  for (int i = 0 < actuator_accel_.size(); i++) {
-    KDL::Vector accel_vect;
-    accel_vect.data[0] = 0.0;
-    accel_vect.data[1] = 0.0;
-    accel_vect.data[2] = 0.0;
-    actuator_accel_.push_back(accel_vect);
-  }
+  KDL::Vector zero_vect(0.0, 0.0, 0.0);
+  actuator_accel_.resize(num_joints_, zero_vect);
   read_gravity_vector.resize(num_differential_actuators + 1);  // TODO: +1 if ros_param -> gripper
 
   joint_pos_.resize(num_joints_);
