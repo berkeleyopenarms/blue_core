@@ -248,73 +248,73 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
 
 
 void KokoHW::accelerometerCalibrate(int num_diff_actuators) {
-  //unsigned int nj = kdl_chain_.getNrOfJoints();
-  //KDL::ChainFkSolverPos_recursive fksolver(chain);
+  unsigned int nj = kdl_chain_.getNrOfJoints();
+  KDL::ChainFkSolverPos_recursive fksolver(chain);
 
-  //// calibrate base
-  //KDL::Frame base_frame;
-  //KDL::JntArray jointPositions = KDL::JntArray(nj);
-  //std::vector<double> error_base(8, 0.0);
+  // calibrate base
+  KDL::Frame base_frame;
+  KDL::JntArray jointPositions = KDL::JntArray(nj);
+  std::vector<double> error_base(8, 0.0);
 
-  //KDL::Vector gravity_base;
-  //gravity_base.data[0] = gravity_vector_[0];
-  //gravity_base.data[1] = gravity_vector_[1];
-  //gravity_base.data[2] = gravity_vector_[2];
-  //for(int k = 0; k < 8; k ++){
-  //  actuator_pos_[0] = actuator_pos_initial_[0] + 2.0 * M_PI * k;
-  //  // add 2kpi to motor position
-  //  // propogate to joints
-  //  actuator_to_joint_interface_.propagate();
-  //  for (int j = 0; j < nj; i++) {
-  //    jointPositions(j) = joint_pos_[j];
-  //  }
+  KDL::Vector gravity_base;
+  gravity_base.data[0] = gravity_vector_[0];
+  gravity_base.data[1] = gravity_vector_[1];
+  gravity_base.data[2] = gravity_vector_[2];
+  for(int k = 0; k < 8; k ++){
+    actuator_pos_[0] = actuator_pos_initial_[0] + 2.0 * M_PI * k;
+    // add 2kpi to motor position
+    // propogate to joints
+    actuator_to_joint_interface_.propagate();
+    for (int j = 0; j < nj; i++) {
+      jointPositions(j) = joint_pos_[j];
+    }
 
-  //  int status = fksolver.JntToCart(jointPositions, base_frame, 1);
-  //  KDL::Vector expected_gravity_vect = base_frame * gravity_base;
+    int status = fksolver.JntToCart(jointPositions, base_frame, 1);
+    KDL::Vector expected_gravity_vect = base_frame * gravity_base;
 
-  //  // gravity vector measured minus gravity vector in this joint position
-  //  // TODO read gravity vector from link
-  //  //error_base[k] = expect_gravity_vect[0] -
+    // gravity vector measured minus gravity vector in this joint position
+    // TODO read gravity vector from link
+    //error_base[k] = expect_gravity_vect[0] -
 
-  //  // error will be appended to a list of errors
+    // error will be appended to a list of errors
 
-  //}
-  //// choose the k with minimum error
-  //int arg_min = std::min_element( error_base.begin(), error_base.end() );
-  //actuator_pos_[0] = actuator_pos_initial_[0] + 2.0 * M_PI * arg_min;
+  }
+  // choose the k with minimum error
+  int arg_min = std::min_element( error_base.begin(), error_base.end() );
+  actuator_pos_[0] = actuator_pos_initial_[0] + 2.0 * M_PI * arg_min;
 
-  //std::vector<double> error_link(8*8, 0.0);
-  //for(int i = 1; i< num_diff_actuators+1; i++ ){
+  std::vector<double> error_link(8*8, 0.0);
+  for(int i = 1; i< num_diff_actuators+1; i++ ){
 
-  //  for(int m1 = 0; m1 < 8; m1 ++){
-  //    for(int m2 = 0; m2 < 8 ; m2 ++){
-  //      actuator_pos_[i*2 - 1] = actuator_pos_initial_[i*2 - 1] + 2.0 * M_PI * (double) m1;
-  //      actuator_pos_[i*2] = actuator_pos_initial_[i*2] + 2.0 * M_PI * (double) m2;
-  //      // add 2kpi to motor position
-  //      // propogate to joints
-  //      actuator_to_joint_interface_.propagate();
-  //      for (int i = 0; i < nj; i++) {
-  //        jointPositions(i) = joint_pos_[i];
-  //      }
+    for(int m1 = 0; m1 < 8; m1 ++){
+      for(int m2 = 0; m2 < 8 ; m2 ++){
+        actuator_pos_[i*2 - 1] = actuator_pos_initial_[i*2 - 1] + 2.0 * M_PI * (double) m1;
+        actuator_pos_[i*2] = actuator_pos_initial_[i*2] + 2.0 * M_PI * (double) m2;
+        // add 2kpi to motor position
+        // propogate to joints
+        actuator_to_joint_interface_.propagate();
+        for (int i = 0; i < nj; i++) {
+          jointPositions(i) = joint_pos_[i];
+        }
 
-  //      int status = fksolver.JntToCart(jointPositions, base_frame, 2*i+1);
-  //      KDL::Vector expected_gravity_vect = base_frame * gravity_base;
+        int status = fksolver.JntToCart(jointPositions, base_frame, 2*i+1);
+        KDL::Vector expected_gravity_vect = base_frame * gravity_base;
 
-  //      // gravity vector measured minus gravity vector in this joint position
-  //      // TODO read gravity vector from link
-  //      //error_link[m1 + m2*8] = expect_gravity_vect[0] -
-  //      // error will be appended to a list of errors
-  //    }
-  //  }
-  //  // choose the k with minimum error
-  //  min_ele = std::min_element( error_link.begin(), error_link.end() );
-  //  int argmin_m1 = min_ele%8;
-  //  actuator_pos_[i*2 - 1] = actuator_pos_initial_[i*2 - 1] + 2.0 * M_PI * (double) argmin_m1;
-  //  int argmin_m2 = min_ele / 8;
-  //  actuator_pos_[i*2] = actuator_pos_initial_[i*2] + 2.0 * M_PI * (double) argmin_m2;
+        // gravity vector measured minus gravity vector in this joint position
+        // TODO read gravity vector from link
+        //error_link[m1 + m2*8] = expect_gravity_vect[0] -
+        // error will be appended to a list of errors
+      }
+    }
+    // choose the k with minimum error
+    min_ele = std::min_element( error_link.begin(), error_link.end() );
+    int argmin_m1 = min_ele%8;
+    actuator_pos_[i*2 - 1] = actuator_pos_initial_[i*2 - 1] + 2.0 * M_PI * (double) argmin_m1;
+    int argmin_m2 = min_ele / 8;
+    actuator_pos_[i*2] = actuator_pos_initial_[i*2] + 2.0 * M_PI * (double) argmin_m2;
 
-  //}
-  //is_calibrated_ = true;
+  }
+  is_calibrated_ = true;
 
 }
 
