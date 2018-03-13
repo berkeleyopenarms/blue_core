@@ -244,11 +244,11 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   }
   ROS_INFO("Finished setting up transmissions");
 
-  //accelerometerCalibrate(num_differential_actuators);
+  //accelerometerCalibrate(num_simple_actuators, num_differential_actuators);
 }
 
 
-void KokoHW::accelerometerCalibrate(int num_diff_actuators) {
+void KokoHW::accelerometerCalibrate(int num_simple_actuators, int num_diff_actuators) {
   KDL::ChainFkSolverPos_recursive fksolver(chain);
 
   // calibrate base
