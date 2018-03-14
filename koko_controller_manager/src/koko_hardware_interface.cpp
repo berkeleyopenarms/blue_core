@@ -288,7 +288,6 @@ void KokoHW::setReadGravityVector() {
     // transform = np.array([[ 0.26860026, -0.96283056, -0.02848168], [ 0.96299097,  0.2690981,  -0.01531682], [ 0.02241186, -0.0233135,   0.99947696]])
     // transform = transformations.rotation_matrix(np.pi/2, np.array([1, 0, 0]))[:3,:3].dot(transform)
     // transform = transformations.rotation_matrix(np.pi, np.array([0, 0, 1]))[:3,:3].dot(transform)
-    
     // g = transform.dot(raw)
 
     KDL::Vector link_gravity_vect;
@@ -300,39 +299,47 @@ void KokoHW::setReadGravityVector() {
   // TODO: Calibrate Gripper link
 }
 
-void KokoHW::accelerometerCalibrate(int num_diff_actuators) {
+void KokoHW::accelerometerCalibrate(int num_diff_actuators, int num_simple_actuators) {
   KDL::ChainFkSolverPos_recursive fksolver(chain);
 
   // setReadGravityVector();
-
   // calibrate base
-  KDL::Frame base_frame;
-  KDL::JntArray jointPositions = KDL::JntArray(num_joints_);
-  std::vector<double> error_base(8, 0.0);
+  // Account for base link (assumes that there is only one base link and one gripper link)
+  int index = 0;
+  if (num_simple_actuators >= 2){
 
-  KDL::Vector gravity_base;
-  gravity_base.data[0] = gravity_vector_[0];
-  gravity_base.data[1] = gravity_vector_[1];
-  gravity_base.data[2] = gravity_vector_[2];
-  for(int k = 0; k < 8; k ++){
-    actuator_pos_[0] = actuator_pos_initial_[0] + 2.0 * M_PI * k;
-    // add 2kpi to motor position
-    // propogate to joints
-    actuator_to_joint_interface_.propagate();
-    for (int j = 0; j < num_joints_; i++) {
-      jointPositions(j) = joint_pos_[j];
+    KDL::Frame base_frame;
+    KDL::JntArray jointPositions = KDL::JntArray(num_joints_);
+    std::vector<double> error_base(8, 0.0);
+
+    KDL::Vector gravity_base;
+    gravity_base.data[0] = gravity_vector_[0];
+    gravity_base.data[1] = gravity_vector_[1];
+    gravity_base.data[2] = gravity_vector_[2];
+    for(int k = 0; k < 8; k ++){
+      actuator_pos_[index] = actuator_pos_initial_[index] + 2.0 * M_PI * k;
+      // add 2kpi to motor position
+      // propogate to joints
+      actuator_to_joint_interface_.propagate();
+      for (int j = 0; j < num_joints_; i++) {
+        jointPositions(j) = joint_pos_[j];
+      }
+
+      int status = fksolver.JntToCart(jointPositions, base_frame, index + 1);
+      KDL::Vector expected_gravity_vect = base_frame * gravity_base;
+
+      // gravity vector measured minus gravity vector in this joint position
+      // TODO read gravity vector from link
+      error_base[k] = expect_gravity_vect - read_gravity_vector[0];
+
+      // error will be appended to a list of errors
+
     }
 
-    int status = fksolver.JntToCart(jointPositions, base_frame, 1);
-    KDL::Vector expected_gravity_vect = base_frame * gravity_base;
-
-    // gravity vector measured minus gravity vector in this joint position
-    // TODO read gravity vector from link
-    error_base[k] = expect_gravity_vect - read_gravity_vector[0]
-
-    // error will be appended to a list of errors
-
   }
+
+
+
   // choose the k with minimum error
   int arg_min = std::min_element( error_base.begin(), error_base.end() );
   actuator_pos_[0] = actuator_pos_initial_[0] + 2.0 * M_PI * arg_min;
@@ -367,7 +374,6 @@ void KokoHW::accelerometerCalibrate(int num_diff_actuators) {
     actuator_pos_[i*2 - 1] = actuator_pos_initial_[i*2 - 1] + 2.0 * M_PI * (double) argmin_m1;
     int argmin_m2 = min_ele / 8;
     actuator_pos_[i*2] = actuator_pos_initial_[i*2] + 2.0 * M_PI * (double) argmin_m2;
-
     actuator_revolution_constant_[i*2-1] = argmin_m1;
     actuator_revolution_constant_[i*2] = argmin_m2;
 
