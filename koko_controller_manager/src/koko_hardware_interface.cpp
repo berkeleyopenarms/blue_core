@@ -254,58 +254,46 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
 void KokoHW::setReadGravityVector() {
   // Apply base gravity transform
   KDL::Rotation base_rot_z;
-  double theta = 4.301 - M_PI;
-  base_rot_z.setRotZ(theta);
-
+  base_rot_z.setRotZ(4.301 - M_PI);
   KDL::Vector corrected_base;
-  corrected_base = base_rot_z * actuator_accel_[0];
-  corrected_base.Normalize() / 9.81;
-
-  KDL::Vector gravity_base;
-  gravity_base.data[0] = corrected_base.data[0];
-  gravity_base.data[1] = corrected_base.data[1];
-  gravity_base.data[2] = -corrected_base.data[2];
-  read_gravity_vector.push_back(gravity_base);
+  corrected_base = base_rot_z * actuator_accel_[0] / actuator_accel_[0].Norm() * 9.81;
+  corrected_base.data[2] = -corrected_base.data[2];
+  read_gravity_vector.push_back(corrected_base);
 
   for (int i = 1; i < num_differential_actuators + 1; i+=2) {   // TODO: Check the difference between num_differential_actuators and num_joints_
+    KDL::Vector raw_right;
+    KDL::Vector raw_left;
+    KDL::Vector raw;
     raw_right = actuator_accel_.at(i);  // KDL Vector
     raw_left = actuator_accel_.at(i+1);  // KDL Vector
     // Rotate Left accel vector into Right accel Frame
     KDL::Rotation left_rot_z;
-    double theta = M_PI;
-    left_rot_z.setRotZ(theta);
+    left_rot_z.setRotZ(M_PI);
     raw_left = left_rot_z * raw_left;
 
     KDL::Rotation left_rot_x;
-    double theta = M_PI;
-    left_rot_x.setRotX(theta);
+    left_rot_x.setRotX(M_PI);
     raw_left = left_rot_x * raw_left;
 
     raw = (raw_right + raw_left) / 2.0;  // Average the KDL Vector accelerations
 
     // Apply found Link transform
-    KDL::Vector x_vect( 0.26860026, -0.96283056, -0.02848168);
+    KDL::Vector x_vect(0.26860026, -0.96283056, -0.02848168);
     KDL::Vector y_vect(0.96299097,  0.2690981,  -0.01531682);
     KDL::Vector z_vect(0.02241186, -0.0233135,   0.99947696);
-    KDL::Rotation transform;
-    transform.Rotation(x_vect, y_vect, z_vect);
-    raw = transform * raw
+    KDL::Rotation transform(x_vect, y_vect, z_vect);
+    raw = transform * raw;
 
     KDL::Rotation raw_rot_x;
-    double theta = M_PI / 2;
-    raw_rot_x.setRotX(theta);
+    raw_rot_x.setRotX(M_PI / 2);
     raw = raw_rot_x * raw;
 
     KDL::Rotation raw_rot_z;
-    double theta = M_PI;
-    raw_rot_z.setRotZ(theta);
+    raw_rot_z.setRotZ(M_PI);
     raw = raw_rot_z * raw;
-    
-    KDL::Vector link_gravity_vect;
-    link_gravity_vect.data[0] = raw.data[0] * 9.81/1000.0;
-    link_gravity_vect.data[1] = raw.data[1] * 9.81/1000.0;
-    link_gravity_vect.data[2] = raw.data[2] * 9.81/1000.0;
-    read_gravity_vector.push_back(link_gravity_vect);
+
+    raw.data[2] = -raw.data[2];
+    read_gravity_vector.push_back(raw * 9.81/1000.0);
   }
   // TODO: Calibrate Gripper link
 }
