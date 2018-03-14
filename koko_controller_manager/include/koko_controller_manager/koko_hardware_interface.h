@@ -33,7 +33,7 @@ private:
   void motorStateCallback(const koko_hardware_drivers::MotorState::ConstPtr& msg);
   void calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
   void gravityVectorCallback(const geometry_msgs::Vector3ConstPtr& grav);
-  void setReadGravityVector();
+  void setReadGravityVector(bool is_base);
   void accelerometerCalibrate(int num_diff_actuators);
   void computeInverseDynamics();
   void buildDynamicChain(KDL::Chain &chain);
