@@ -283,7 +283,6 @@ class BLDCControllerClient:
         return FlashSectorMap(sector_count, sector_starts, sector_sizes)
 
     def doTransaction(self, server_id, func_code, data):
-        self._ser.flushInput()
         self.writeRequest(server_id, func_code, data)
         return self.readResponse(server_id, func_code)
 
@@ -298,12 +297,12 @@ class BLDCControllerClient:
         sync = self._ser.read()
         if len(sync) != 1 and sync != "\xff":
             # Reached maximum number of tries
-            self._ser.flushInput()
+            # self._ser.flushInput()
             return False, None
 
         version = self._ser.read()
         if len(version) != 1 or version != "\xff":
-            self._ser.flushInput()
+            # self._ser.flushInput()
             return False, None
 
         length = self._ser.read(2)
@@ -314,13 +313,13 @@ class BLDCControllerClient:
         message = self._ser.read(message_len)
 
         if len(message) < message_len:
-            self._ser.flushInput()
+            # self._ser.flushInput()
             return False, None
 
         crc_bytes = self._ser.read(2)
 
         if len(crc_bytes) < 2:
-            self._ser.flushInput()
+            # self._ser.flushInput()
             return False, None
 
         message_server_id, message_func_code, errors = struct.unpack('<BBH', message[:4])
