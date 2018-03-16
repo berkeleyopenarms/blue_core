@@ -15,6 +15,7 @@
 
 #include <geometry_msgs/Vector3.h>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
+#include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/segment.hpp>
 
@@ -58,7 +59,7 @@ private:
   // Publishers and subscribers
   ros::Subscriber motor_state_sub_;
   std::vector<ros::Publisher> motor_cmd_publishers_;
-  ros::Subscriber joint_state_tracker_sub;
+  ros::Subscriber joint_state_tracker_sub_;
   ros::Subscriber gravity_vector_sub_;
 
   // Parameters read in from configuration
@@ -100,17 +101,11 @@ private:
   std::vector<double> actuator_eff_;
   std::vector<double> actuator_cmd_;
   std::vector<KDL::Vector> actuator_accel_;
-  std::vector<KDL::Vector> read_gravity_vector;
+  std::vector<KDL::Vector> read_gravity_vector_;
   std::vector<double> joint_pos_;
   std::vector<double> joint_vel_;
   std::vector<double> joint_eff_;
   std::vector<double> joint_cmd_;
-
-  // TODO: these are redundant and should be removed
-  std::vector<double> cmd;
-  std::vector<double> pos;
-  std::vector<double> vel;
-  std::vector<double> eff;
 
   // Gravity Compensation
   KDL::Vector gravity_vector_;
