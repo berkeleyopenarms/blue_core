@@ -72,6 +72,7 @@ private:
   std::vector<double> softstop_max_angles_;
   std::vector<double> joint_torque_directions_;
   std::vector<double> actuator_revolution_constant_;
+  std::vector<double> id_gains_;
   double softstop_torque_limit_;
   double softstop_tolerance_;
 

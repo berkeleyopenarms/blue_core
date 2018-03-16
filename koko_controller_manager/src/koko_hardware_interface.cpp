@@ -40,6 +40,9 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   if (!nh.getParam("koko_hardware/softstop_tolerance", softstop_tolerance_)) {
     ROS_ERROR("No koko_hardware/softstop_tolerance given (namespace: %s)", nh.getNamespace().c_str());
   }
+  if (!nh.getParam("koko_hardware/id_torque_gains", id_gains_)) {
+    ROS_ERROR("No koko_hardware/id_torque_gains given (namespace: %s)", nh.getNamespace().c_str());
+  }
 
   std::string robot_desc_string;
   if (!nh.getParam("robot_dyn_description", robot_desc_string)) {
@@ -412,6 +415,7 @@ void KokoHW::write() {
     for (int i = 0; i < num_joints_; i++){
       // TODO
       joint_cmd_[i] = joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
+      ROS_ERROR("joint command: %f", joint_cmd_[i]);
       // checking joint limits and publish counter torque if near
       if(joint_pos_[i] > softstop_max_angles_[i] - softstop_tolerance_){
         double del = joint_pos_[i] - softstop_max_angles_[i] + softstop_tolerance_;
@@ -430,6 +434,7 @@ void KokoHW::write() {
       std_msgs::Float64 commandMsg;
 
       commandMsg.data =  motor_current;
+      ROS_ERROR("Writing motor_current: %f", motor_current);
       motor_cmd_publishers_[i].publish(commandMsg);
     }
   }
@@ -446,8 +451,8 @@ void KokoHW::buildDynamicChain(KDL::Chain &chain){
       JointParams* jointParam = new JointParams();
       std::string jointName = seg.getJoint().getName();
       kdl_chain_.addSegment(seg);
-      double id_gain;
-      jointParam->id_gain = 1.0;
+      double id_gain = id_gains_[i];
+      jointParam->id_gain = id_gains_[i];
       jointParam->joint_name = jointName;
       joint_params_.push_back(jointParam);
 
