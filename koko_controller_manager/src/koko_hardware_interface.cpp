@@ -415,7 +415,6 @@ void KokoHW::write() {
     for (int i = 0; i < num_joints_; i++){
       // TODO
       joint_cmd_[i] = joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
-      ROS_ERROR("joint command: %f", joint_cmd_[i]);
       // checking joint limits and publish counter torque if near
       if(joint_pos_[i] > softstop_max_angles_[i] - softstop_tolerance_){
         double del = joint_pos_[i] - softstop_max_angles_[i] + softstop_tolerance_;
@@ -434,7 +433,6 @@ void KokoHW::write() {
       std_msgs::Float64 commandMsg;
 
       commandMsg.data =  motor_current;
-      ROS_ERROR("Writing motor_current: %f", motor_current);
       motor_cmd_publishers_[i].publish(commandMsg);
     }
   }
