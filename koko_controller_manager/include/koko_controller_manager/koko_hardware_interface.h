@@ -33,7 +33,8 @@ private:
   void motorStateCallback(const koko_hardware_drivers::MotorState::ConstPtr& msg);
   void calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
   void gravityVectorCallback(const geometry_msgs::Vector3ConstPtr& grav);
-  void accelerometerCalibrate(int num_diff_actuators);
+  void setReadGravityVector(int num_diff_actuators, bool is_base);
+  void accelerometerCalibrate(int num_simple_actuators, int num_diff_actuators);
   void computeInverseDynamics();
   void buildDynamicChain(KDL::Chain &chain);
 
@@ -76,6 +77,7 @@ private:
   // Calibration
   int calibration_counter_;
   bool is_calibrated_;
+  double is_hardstop_calibrate_;
   std::vector<double> joint_pos_initial_;
   std::vector<double> actuator_pos_initial_;
   int num_joints_;
@@ -97,6 +99,8 @@ private:
   std::vector<double> actuator_vel_;
   std::vector<double> actuator_eff_;
   std::vector<double> actuator_cmd_;
+  std::vector<KDL::Vector> actuator_accel_;
+  std::vector<KDL::Vector> read_gravity_vector;
   std::vector<double> joint_pos_;
   std::vector<double> joint_vel_;
   std::vector<double> joint_eff_;
