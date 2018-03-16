@@ -8,7 +8,7 @@ from koko_hardware_drivers.msg import MotorState
 import numpy as np
 import tf.transformations as transformations
 
-UPDATE_FREQ = 20
+UPDATE_FREQ = 200
 EXP_CONST = 0.99
 
 global x_accum
@@ -18,7 +18,7 @@ global num
 
 x_accum = 0.0
 y_accum = 0.0
-z_accum = 0.0
+z_accum = 9.8
 num = 0
 
 def get_accel(msg):

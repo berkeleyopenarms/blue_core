@@ -34,8 +34,8 @@ private:
   void motorStateCallback(const koko_hardware_drivers::MotorState::ConstPtr& msg);
   void calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
   void gravityVectorCallback(const geometry_msgs::Vector3ConstPtr& grav);
-  void setReadGravityVector(int num_diff_actuators, bool is_base);
-  void accelerometerCalibrate(int num_simple_actuators, int num_diff_actuators);
+  void setReadGravityVector();
+  void accelerometerCalibrate(int num_simple_actuators);
   void computeInverseDynamics();
   void buildDynamicChain(KDL::Chain &chain);
 
@@ -89,6 +89,8 @@ private:
   ti::JointToActuatorEffortInterface joint_to_actuator_interface_;
   std::vector<ti::SimpleTransmission *> simple_transmissions_;
   std::vector<ti::DifferentialTransmission *> differential_transmissions_;
+  int num_diff_actuators_;
+  bool is_base_;
 
   // Actuator and joint space data
   std::vector<ti::ActuatorData> actuator_states_;

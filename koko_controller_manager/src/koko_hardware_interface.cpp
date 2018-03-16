@@ -77,15 +77,15 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   motor_cmd_publishers_.resize(num_joints_);
 
   int num_simple_actuators = num_joints_ - differential_pairs_.size();
-  int num_differential_actuators = differential_pairs_.size() / 2;
-  int num_actuators = num_simple_actuators + num_differential_actuators;
+  int num_diff_actuators_ = differential_pairs_.size() / 2;
+  int num_actuators = num_simple_actuators + num_diff_actuators_;
 
   actuator_states_.resize(num_actuators);
   actuator_commands_.resize(num_actuators);
   joint_states_.resize(num_actuators);
   joint_commands_.resize(num_actuators);
   simple_transmissions_.resize(num_simple_actuators);
-  differential_transmissions_.resize(num_differential_actuators);
+  differential_transmissions_.resize(num_diff_actuators_);
 
   actuator_pos_.resize(num_joints_);
   actuator_vel_.resize(num_joints_);
@@ -94,12 +94,15 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
 
   KDL::Vector zero_vect(0.0, 0.0, 0.0);
   actuator_accel_.resize(num_joints_, zero_vect);
-  if (num_simple_actuators== 2){
-    read_gravity_vector_.resize(num_differential_actuators + 2);
-  } else if (num_simple_actuators == 1){
-    read_gravity_vector_.resize(num_differential_actuators + 1);
+
+  read_gravity_vector_.resize(num_diff_actuators_ + num_simple_actuators);
+
+  is_base_ = false;
+  if (!(std::find(differential_pairs_.begin(), differential_pairs_.end(), 0) !=differential_pairs_.end())){
+    is_base_ = true;
+    ROS_INFO("Robot Configured with Base");
   } else {
-    ROS_ERROR("Unknown Robot Configuration");
+    ROS_INFO("Robot Configured with No Base");
   }
 
   joint_pos_.resize(num_joints_);
@@ -255,19 +258,21 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   //accelerometerCalibrate(num_simple_actuators, num_differential_actuators);
 }
 
-void KokoHW::setReadGravityVector(int num_differential_actuators, bool is_base) {
+void KokoHW::setReadGravityVector() {
   int start_ind = 0;
-  if (is_base == true) {
+  if (is_base_ == true) {
     // Apply base gravity transform
     KDL::Rotation base_rot_z;
-    base_rot_z.DoRotZ(4.301 - M_PI);
+    base_rot_z.DoRotZ(-4.301 + M_PI);
     KDL::Vector corrected_base;
     corrected_base = base_rot_z * actuator_accel_[0] / actuator_accel_[0].Norm() * 9.81;
     corrected_base.data[2] = -corrected_base.data[2];
     read_gravity_vector_.push_back(corrected_base);
+
+    ROS_ERROR("%f, %f, %f", corrected_base.data[0], corrected_base[1], corrected_base[2]);
     start_ind = 1;
   }
-  for (int i = 0; i < num_differential_actuators; i++) {
+  for (int i = 0; i < num_diff_actuators_; i++) {
     KDL::Vector raw_right;
     KDL::Vector raw_left;
     KDL::Vector raw;
@@ -306,7 +311,7 @@ void KokoHW::setReadGravityVector(int num_differential_actuators, bool is_base) 
   KDL::Rotation grip_rot_z;
   grip_rot_z.DoRotZ(2 * M_PI);
   KDL::Vector corrected_grip;
-  corrected_grip = grip_rot_z * actuator_accel_[start_ind + 2*num_differential_actuators] / actuator_accel_[start_ind + 2*num_differential_actuators].Norm() * 9.81;
+  corrected_grip = grip_rot_z * actuator_accel_[start_ind + 2*num_diff_actuators_] / actuator_accel_[start_ind + 2*num_diff_actuators_].Norm() * 9.81;
   corrected_grip.data[2] = -corrected_grip.data[2];
   read_gravity_vector_.push_back(corrected_grip);
 
@@ -315,16 +320,14 @@ void KokoHW::setReadGravityVector(int num_differential_actuators, bool is_base) 
   gravity_vector_[1] = a * gravity_vector_[1] - (1.0 - a) * read_gravity_vector_[0][1];
   gravity_vector_[2] = a * gravity_vector_[2] - (1.0 - a) * read_gravity_vector_[0][2];
 
+  ROS_ERROR("%f, %f, %f", gravity_vector_[0], gravity_vector_[1], gravity_vector_[2]);
+
 }
 
-void KokoHW::accelerometerCalibrate(int num_simple_actuators, int num_diff_actuators) {
+void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
   KDL::ChainFkSolverPos_recursive fksolver(kdl_chain_);
 
-  bool is_base = false;
-  if (num_simple_actuators >= 2) {
-    is_base = true;
-  }
-  setReadGravityVector(num_diff_actuators, is_base);
+  setReadGravityVector();
 
   // calibrate base
   // Account for base link (assumes that there is only one base link and one gripper link)
@@ -335,7 +338,7 @@ void KokoHW::accelerometerCalibrate(int num_simple_actuators, int num_diff_actua
   gravity_bot.data[2] = read_gravity_vector_[0][2];
   KDL::JntArray jointPositions = KDL::JntArray(num_joints_);
   KDL::Frame base_frame;
-  if (is_base) {
+  if (is_base_) {
 
     std::vector<double> error_base(8, 0.0);
 
@@ -368,7 +371,7 @@ void KokoHW::accelerometerCalibrate(int num_simple_actuators, int num_diff_actua
   }
 
   std::vector<double> error_link(8*8, 0.0);
-  for(int i = 0; i< num_diff_actuators; i++ ){
+  for(int i = 0; i< num_diff_actuators_; i++ ){
 
     for(int m1 = 0; m1 < 8; m1 ++){
       for(int m2 = 0; m2 < 8 ; m2 ++){
@@ -410,6 +413,7 @@ void KokoHW::write() {
     return;
 
   if (is_calibrated_) {
+    setReadGravityVector();
     computeInverseDynamics();
     // added for using transmission interface
     for (int i = 0; i < num_joints_; i++){
@@ -498,9 +502,16 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
       accel_vect.data[0] = msg->accel[i].x;
       accel_vect.data[1] = msg->accel[i].y;
       accel_vect.data[2] = msg->accel[i].z;
+      ROS_ERROR("gravity vector %f,  %f, %f", accel_vect.data[0], accel_vect.data[1], accel_vect.data[2]);
       actuator_accel_.at(index) = accel_vect;
     } else if (is_calibrated_ == 1){
       // actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index];
+      KDL::Vector accel_vect;
+      accel_vect.data[0] = msg->accel[i].x;
+      accel_vect.data[1] = msg->accel[i].y;
+      accel_vect.data[2] = msg->accel[i].z;
+      ROS_ERROR("gravity vector %f,  %f, %f", accel_vect.data[0], accel_vect.data[1], accel_vect.data[2]);
+      actuator_accel_.at(index) = accel_vect;
       actuator_pos_[index] = msg->position[i] - 2 * M_PI * actuator_revolution_constant_[index] - is_hardstop_calibrate_ * actuator_pos_initial_[index];
       actuator_vel_[index] = msg->velocity[i];
       //actuator_eff_[index] = msg->effort[i];
