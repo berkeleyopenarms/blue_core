@@ -49,7 +49,11 @@ class BLDCDriverNode:
         self.loop()
 
     def boot(self):
-        # assert self.low_latency_mode(self.serial.fd)
+        try:
+            assert self.low_latency_mode(self.serial.fd)
+        except Exception as e:
+             rospy.logwarn(str(e))
+
         # Initial hardware setup
         for id in self.motor_names:
             rospy.loginfo("Booting motor %d..." % id)
