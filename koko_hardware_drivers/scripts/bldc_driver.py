@@ -67,6 +67,7 @@ class BLDCDriverNode:
                 try:
                     rospy.loginfo("Calibrating motor %d..." % id)
                     calibrations = self.bldc.readCalibration(id)
+                    print(calibrations)
                     self.bldc.setZeroAngle(id, calibrations['angle'])
                     self.bldc.setCurrentControlMode(id)
                     self.bldc.setInvertPhases(id, calibrations['inv'])
@@ -83,7 +84,7 @@ class BLDCDriverNode:
                     self.serial.flush()
                     self.bldc.leaveBootloader(id)
                     rospy.sleep(0.2)
-                    self.serial.flush()
+                    self.serial.reset_input_buffer()
             if not success:
                 rospy.logerr("Could not calibrate motors")
                 rospy.signal_shutdown("Could not calibrate motors")
