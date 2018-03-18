@@ -268,8 +268,6 @@ void KokoHW::setReadGravityVector() {
     corrected_base = base_rot_z * actuator_accel_[0] / actuator_accel_[0].Norm() * 9.81;
     corrected_base.data[2] = -corrected_base.data[2];
     read_gravity_vector_.push_back(corrected_base);
-
-    ROS_ERROR("%f, %f, %f", corrected_base.data[0], corrected_base[1], corrected_base[2]);
     start_ind = 1;
   }
   for (int i = 0; i < num_diff_actuators_; i++) {
@@ -319,9 +317,6 @@ void KokoHW::setReadGravityVector() {
   gravity_vector_[0] = a * gravity_vector_[0] - (1.0 - a) * read_gravity_vector_[0][0];
   gravity_vector_[1] = a * gravity_vector_[1] - (1.0 - a) * read_gravity_vector_[0][1];
   gravity_vector_[2] = a * gravity_vector_[2] - (1.0 - a) * read_gravity_vector_[0][2];
-
-  ROS_ERROR("%f, %f, %f", gravity_vector_[0], gravity_vector_[1], gravity_vector_[2]);
-
 }
 
 void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
@@ -421,9 +416,11 @@ void KokoHW::write() {
       joint_cmd_[i] = joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
       // checking joint limits and publish counter torque if near
       if(joint_pos_[i] > softstop_max_angles_[i] - softstop_tolerance_){
+        ROS_ERROR("SoftStop");
         double del = joint_pos_[i] - softstop_max_angles_[i] + softstop_tolerance_;
         joint_cmd_[i] += -1.0 * softstop_torque_limit_ * del * del;
       } else if (joint_pos_[i] < softstop_min_angles_[i] + softstop_tolerance_){
+        ROS_ERROR("SoftStop");
         double del = softstop_min_angles_[i] + softstop_tolerance_ - joint_pos_[i];
         joint_cmd_[i] += softstop_torque_limit_ * del * del;
       }
@@ -502,7 +499,6 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
       accel_vect.data[0] = msg->accel[i].x;
       accel_vect.data[1] = msg->accel[i].y;
       accel_vect.data[2] = msg->accel[i].z;
-      ROS_ERROR("gravity vector %f,  %f, %f", accel_vect.data[0], accel_vect.data[1], accel_vect.data[2]);
       actuator_accel_.at(index) = accel_vect;
     } else if (is_calibrated_ == 1){
       // actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index];
@@ -510,7 +506,6 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
       accel_vect.data[0] = msg->accel[i].x;
       accel_vect.data[1] = msg->accel[i].y;
       accel_vect.data[2] = msg->accel[i].z;
-      ROS_ERROR("gravity vector %f,  %f, %f", accel_vect.data[0], accel_vect.data[1], accel_vect.data[2]);
       actuator_accel_.at(index) = accel_vect;
       actuator_pos_[index] = msg->position[i] - 2 * M_PI * actuator_revolution_constant_[index] - is_hardstop_calibrate_ * actuator_pos_initial_[index];
       actuator_vel_[index] = msg->velocity[i];
