@@ -40,6 +40,9 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   if (!nh.getParam("koko_hardware/softstop_tolerance", softstop_tolerance_)) {
     ROS_ERROR("No koko_hardware/softstop_tolerance given (namespace: %s)", nh.getNamespace().c_str());
   }
+  if (!nh.getParam("koko_hardware/motor_torque_limits", motor_torque_limits_)) {
+    ROS_ERROR("No koko_hardware/motor_torque_limits given (namespace: %s)", nh.getNamespace().c_str());
+  }
 
   std::string robot_desc_string;
   if (!nh.getParam("robot_dyn_description", robot_desc_string)) {
@@ -346,6 +349,15 @@ void KokoHW::write() {
       actuator_cmd_[i] = joint_torque_directions_[i] * actuator_cmd_[i];
       double motor_torque = actuator_cmd_[i];
       double motor_current = current_to_torque_ratios_[i] * motor_torque;
+
+      if (std::abs(motor_current) > motor_torque_limits_[i]){
+        if (motor_current > 0){
+          motor_current = motor_torque_limits_[i];
+        } else {
+          motor_current = -motor_torque_limits_[i];
+        }
+      }
+
       std_msgs::Float64 commandMsg;
 
       commandMsg.data =  motor_current;

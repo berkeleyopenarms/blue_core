@@ -71,6 +71,7 @@ private:
   std::vector<double> joint_torque_directions_;
   double softstop_torque_limit_;
   double softstop_tolerance_;
+  std::vector<double> motor_torque_limits_;
 
   // Calibration
   int calibration_counter_;
