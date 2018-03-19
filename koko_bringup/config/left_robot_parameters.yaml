@@ -8,6 +8,7 @@ koko_hardware:
         - elbow_roll_joint
         - wrist_lift_joint
         - wrist_roll_joint
+    endlink: wrist_roll_link
     differential_pairs: [1, 2, 3, 4, 5, 6]
     gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412]
     joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
@@ -26,6 +27,7 @@ koko_hardware:
         - right_motor3
         - left_motor3
     motor_ids: [15, 14, 16, 10, 17, 20, 18]
+    motor_torque_limits: [10.0, 10.0, 10.0, 10.0, 10.0, 5.0, 5.0]
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0]
 
     ### Calibration configuration

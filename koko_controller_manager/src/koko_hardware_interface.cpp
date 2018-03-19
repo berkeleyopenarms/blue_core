@@ -7,59 +7,43 @@ namespace ti = transmission_interface;
 
 KokoHW::KokoHW(ros::NodeHandle &nh)
 {
-  if (!nh.getParam("koko_hardware/joint_names", joint_names_)) {
-    ROS_ERROR("No koko_hardware/joint_names given (namespace: %s)", nh.getNamespace().c_str());
-  }
-  if (!nh.getParam("koko_hardware/motor_names", motor_names_)) {
-    ROS_ERROR("No koko_hardware/motor_names given (namespace: %s)", nh.getNamespace().c_str());
-  }
-  if (!nh.getParam("koko_hardware/gear_ratios", gear_ratios_)) {
-    ROS_ERROR("No koko_hardware/gear_ratios given (namespace: %s)", nh.getNamespace().c_str());
-  }
-  if (!nh.getParam("koko_hardware/joint_torque_directions", joint_torque_directions_)) {
-    ROS_ERROR("No koko_hardware/joint_torque_directions given (namespace: %s)", nh.getNamespace().c_str());
-  }
-  if (!nh.getParam("koko_hardware/current_to_torque_ratios", current_to_torque_ratios_)) {
-    ROS_ERROR("No koko_hardware/current_to_torque_ratios given (namespace: %s)", nh.getNamespace().c_str());
-  }
-  if (!nh.getParam("koko_hardware/differential_pairs", differential_pairs_)) {
-    ROS_ERROR("No koko_hardware/differential_pairs given (namespace: %s", nh.getNamespace().c_str());
-  }
-  if (differential_pairs_.size() % 2 != 0) {
-    ROS_ERROR("Paired_constraints length must be even");
-  }
-  if (!nh.getParam("koko_hardware/softstop_torque_limit", softstop_torque_limit_)) {
-    ROS_ERROR("No koko_hardware/softstop_torque_limit given (namespace: %s)", nh.getNamespace().c_str());
-  }
-  if (!nh.getParam("koko_hardware/softstop_min_angles", softstop_min_angles_)) {
-    ROS_ERROR("No koko_hardware/softstop_min_angles given (namespace: %s)", nh.getNamespace().c_str());
-  }
-  if (!nh.getParam("koko_hardware/softstop_max_angles", softstop_max_angles_)) {
-    ROS_ERROR("No koko_hardware/softstop_max_angles given (namespace: %s)", nh.getNamespace().c_str());
-  }
-  if (!nh.getParam("koko_hardware/softstop_tolerance", softstop_tolerance_)) {
-    ROS_ERROR("No koko_hardware/softstop_tolerance given (namespace: %s)", nh.getNamespace().c_str());
-  }
-
-  std::string robot_desc_string;
-  if (!nh.getParam("robot_dyn_description", robot_desc_string)) {
-    ROS_ERROR("No robot_dyn_description given, %s", nh.getNamespace().c_str());
-  }
-
   std::string endlink;
-  if (!nh.getParam("koko_hardware/endlink", endlink)) {
-    ROS_ERROR("No endlink given node namespace %s", nh.getNamespace().c_str());
-  }
+  std::string robot_desc_string;
+
+  getRequiredParam(nh, "robot_dyn_description", robot_desc_string);
+  getRequiredParam(nh, "koko_hardware/joint_names", joint_names_);
+  getRequiredParam(nh, "koko_hardware/motor_names", motor_names_);
+  getRequiredParam(nh, "koko_hardware/gear_ratios", gear_ratios_);
+  getRequiredParam(nh, "koko_hardware/joint_torque_directions", joint_torque_directions_);
+  getRequiredParam(nh, "koko_hardware/current_to_torque_ratios", current_to_torque_ratios_);
+  getRequiredParam(nh, "koko_hardware/differential_pairs", differential_pairs_);
+  getRequiredParam(nh, "koko_hardware/softstop_torque_limit", softstop_torque_limit_);
+  getRequiredParam(nh, "koko_hardware/softstop_min_angles", softstop_min_angles_);
+  getRequiredParam(nh, "koko_hardware/softstop_max_angles", softstop_max_angles_);
+  getRequiredParam(nh, "koko_hardware/softstop_tolerance", softstop_tolerance_);
+  getRequiredParam(nh, "koko_hardware/motor_torque_limits", motor_torque_limits_);
+  getRequiredParam(nh, "koko_hardware/endlink", endlink);
 
   KDL::Tree my_tree;
   if(!kdl_parser::treeFromString(robot_desc_string, my_tree)){
-    ROS_ERROR("Failed to contruct kdl tree");
+    ROS_FATAL("Failed to contruct kdl tree");
+    ros::shutdown();
+    exit(1);
   }
 
   KDL::Chain chain;
   if (!my_tree.getChain("base_link", endlink, chain)) {
-    ROS_ERROR("Failed to construct kdl chain");
+    ROS_FATAL("Failed to construct kdl chain");
+    ros::shutdown();
+    exit(1);
   }
+
+  if (differential_pairs_.size() % 2 != 0) {
+    ROS_FATAL("Paired_constraints length must be even");
+    ros::shutdown();
+    exit(1);
+  }
+
   buildDynamicChain(chain);
   id_torques_ = KDL::JntArray(chain.getNrOfJoints());
 
@@ -246,6 +230,14 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   //accelerometerCalibrate(num_differential_actuators);
 }
 
+template <typename TParam>
+void KokoHW::getRequiredParam(ros::NodeHandle &nh, const std::string name, TParam &dest) {
+  if(!nh.getParam(name, dest)) {
+    ROS_FATAL("Could not find %s parameter in namespace %s", name.c_str(), nh.getNamespace().c_str());
+    ros::shutdown();
+    exit(1);
+  }
+}
 
 void KokoHW::accelerometerCalibrate(int num_diff_actuators) {
   //unsigned int nj = kdl_chain_.getNrOfJoints();
@@ -346,6 +338,15 @@ void KokoHW::write() {
       actuator_cmd_[i] = joint_torque_directions_[i] * actuator_cmd_[i];
       double motor_torque = actuator_cmd_[i];
       double motor_current = current_to_torque_ratios_[i] * motor_torque;
+
+      if (std::abs(motor_current) > motor_torque_limits_[i]){
+        if (motor_current > 0){
+          motor_current = motor_torque_limits_[i];
+        } else {
+          motor_current = -motor_torque_limits_[i];
+        }
+      }
+
       std_msgs::Float64 commandMsg;
 
       commandMsg.data =  motor_current;
