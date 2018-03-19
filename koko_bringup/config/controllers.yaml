@@ -40,14 +40,20 @@ koko_controllers:
       - elbow_roll_joint
       - wrist_lift_joint
       - wrist_roll_joint
-    gains:
-      base_roll_joint:     {p: 25, i: 0, d: 3, i_clamp: 0}
-      shoulder_lift_joint: {p: 25, i: 0, d: 4, i_clamp: 0}
-      shoulder_roll_joint: {p: 15, i: 0, d: 3, i_clamp: 0}
-      elbow_lift_joint:    {p: 15, i: 0, d: 2, i_clamp: 0}
-      elbow_roll_joint:    {p: 10, i: 0, d: 2, i_clamp: 0}
-      wrist_lift_joint:    {p:  5, i: 0, d: 1, i_clamp: 0}
-      wrist_roll_joint:    {p:  5, i: 0, d: 1, i_clamp: 0}
+    base_roll_joint:
+      pid: {p: 25, i: 0, d: 3, i_clamp: 0}
+    shoulder_lift_joint:
+      pid: {p: 25, i: 0, d: 4, i_clamp: 0}
+    shoulder_roll_joint:
+      pid: {p: 15, i: 0, d: 3, i_clamp: 0}
+    elbow_lift_joint:
+      pid: {p: 15, i: 0, d: 2, i_clamp: 0}
+    elbow_roll_joint:
+      pid: {p: 10, i: 0, d: 2, i_clamp: 0}
+    wrist_lift_joint:
+      pid: {p:  5, i: 0, d: 1, i_clamp: 0}
+    wrist_roll_joint:
+      pid: {p:  5, i: 0, d: 1, i_clamp: 0}
 
   cartesian_pose_controller:
     endlink: 'wrist_roll_link'

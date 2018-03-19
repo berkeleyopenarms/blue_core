@@ -22,6 +22,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   getRequiredParam(nh, "koko_hardware/softstop_max_angles", softstop_max_angles_);
   getRequiredParam(nh, "koko_hardware/softstop_tolerance", softstop_tolerance_);
   getRequiredParam(nh, "koko_hardware/motor_torque_limits", motor_torque_limits_);
+  getRequiredParam(nh, "koko_hardware/id_torque_gains", id_gains_);
   getRequiredParam(nh, "koko_hardware/endlink", endlink);
 
   KDL::Tree my_tree;
@@ -30,7 +31,9 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
     ros::shutdown();
     exit(1);
   }
+  int er = 0;
 
+  ROS_ERROR("%d", er++);
   KDL::Chain chain;
   if (!my_tree.getChain("base_link", endlink, chain)) {
     ROS_FATAL("Failed to construct kdl chain");
@@ -38,22 +41,27 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
     exit(1);
   }
 
+  ROS_ERROR("%d", er++);
   if (differential_pairs_.size() % 2 != 0) {
     ROS_FATAL("Paired_constraints length must be even");
     ros::shutdown();
     exit(1);
   }
 
+  ROS_ERROR("%d", er++);
   buildDynamicChain(chain);
   id_torques_ = KDL::JntArray(chain.getNrOfJoints());
+  ROS_ERROR("%d", er++);
 
   num_joints_ = joint_names_.size();
   read_from_motors_ = false;
 
+  ROS_ERROR("%d", er++);
   joint_pos_initial_.resize(num_joints_, 0.0);
   actuator_pos_initial_.resize(num_joints_, 0.0);
   actuator_revolution_constant_.resize(num_joints_, 0.0);
   is_hardstop_calibrate_ = 0.0;
+  ROS_ERROR("%d", er++);
 
   motor_cmd_publishers_.resize(num_joints_);
 
@@ -73,6 +81,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   actuator_eff_.resize(num_joints_);
   actuator_cmd_.resize(num_joints_);
 
+  ROS_ERROR("%d", er++);
   KDL::Vector zero_vect(0.0, 0.0, 0.0);
   actuator_accel_.resize(num_joints_, zero_vect);
 
@@ -85,12 +94,13 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   } else {
     ROS_INFO("Robot Configured with No Base");
   }
-
+  ROS_ERROR("%d", er++);
   joint_pos_.resize(num_joints_);
   joint_vel_.resize(num_joints_);
   joint_eff_.resize(num_joints_);
   joint_cmd_.resize(num_joints_);
 
+  ROS_ERROR("%d", er++);
 
   for (int i = 0; i < num_joints_; i++) {
     joint_cmd_[i] = 0.0;
@@ -98,6 +108,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
     joint_state_interface_.registerHandle(state_handle_a);
   }
 
+  ROS_ERROR("%d", er++);
   registerInterface(&joint_state_interface_);
 
   for (int i = 0; i < num_joints_; i++) {
@@ -125,6 +136,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
     motor_cmd_publishers_[i] = nh.advertise<std_msgs::Float64>("koko_hardware/" + motor_names_[i] + "_cmd", 1);
   }
 
+  ROS_ERROR("%d", er++);
   int simple_idx = 0;
   int differential_idx = 0;
   for(int j_idx = 0; j_idx < num_joints_; j_idx += 0){
@@ -236,10 +248,13 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   }
   ROS_INFO("Finished setting up transmissions");
 
+  ROS_ERROR("%d", er++);
   //accelerometerCalibrate(num_simple_actuators, num_differential_actuators);
 }
 
 void KokoHW::setReadGravityVector() {
+
+  ROS_ERROR("setReadGrav");
   int start_ind = 0;
   if (is_base_ == true) {
     // Apply base gravity transform
@@ -251,6 +266,7 @@ void KokoHW::setReadGravityVector() {
     read_gravity_vector_.push_back(corrected_base);
     start_ind = 1;
   }
+  ROS_ERROR("setReadGrav2");
   for (int i = 0; i < num_diff_actuators_; i++) {
     KDL::Vector raw_right;
     KDL::Vector raw_left;
@@ -407,11 +423,11 @@ void KokoHW::write() {
       joint_cmd_[i] = joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
       // checking joint limits and publish counter torque if near
       if(joint_pos_[i] > softstop_max_angles_[i] - softstop_tolerance_){
-        ROS_ERROR("SoftStop");
+        ROS_ERROR("Going over soft stop");
         double del = joint_pos_[i] - softstop_max_angles_[i] + softstop_tolerance_;
         joint_cmd_[i] += -1.0 * softstop_torque_limit_ * del * del;
       } else if (joint_pos_[i] < softstop_min_angles_[i] + softstop_tolerance_){
-        ROS_ERROR("SoftStop");
+        ROS_ERROR("Going over soft stop");
         double del = softstop_min_angles_[i] + softstop_tolerance_ - joint_pos_[i];
         joint_cmd_[i] += softstop_torque_limit_ * del * del;
       }
@@ -443,15 +459,22 @@ void KokoHW::write() {
 void KokoHW::buildDynamicChain(KDL::Chain &chain){
   int ns = chain.getNrOfSegments();
   for(int i = 0; i < ns; i++){
+    ROS_ERROR("joint %d", i);
     KDL::Segment seg = chain.segments[i];
+    ROS_ERROR("seg %d", i);
 
     if (seg.getJoint().getType() != 8)
     {
       JointParams* jointParam = new JointParams();
+      ROS_ERROR("param %d", i);
       std::string jointName = seg.getJoint().getName();
+      ROS_ERROR("name%d", i);
       kdl_chain_.addSegment(seg);
+      ROS_ERROR("add_seg %d", i);
       double id_gain = id_gains_[i];
+      ROS_ERROR("i_gain%d", i);
       jointParam->id_gain = id_gains_[i];
+      ROS_ERROR("joint%d", i);
       jointParam->joint_name = jointName;
       joint_params_.push_back(jointParam);
 
