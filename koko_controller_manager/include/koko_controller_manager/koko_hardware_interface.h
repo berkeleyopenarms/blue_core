@@ -31,6 +31,8 @@ public:
 
 private:
 
+  template <typename TParam>
+  void getRequiredParam(ros::NodeHandle &nh, const std::string name, TParam &dest);
   void motorStateCallback(const koko_hardware_drivers::MotorState::ConstPtr& msg);
   void calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
   void gravityVectorCallback(const geometry_msgs::Vector3ConstPtr& grav);
@@ -75,6 +77,7 @@ private:
   std::vector<double> id_gains_;
   double softstop_torque_limit_;
   double softstop_tolerance_;
+  std::vector<double> motor_torque_limits_;
 
   // Calibration
   int calibration_counter_;

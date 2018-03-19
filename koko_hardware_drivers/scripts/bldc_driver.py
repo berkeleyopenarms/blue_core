@@ -49,7 +49,8 @@ class BLDCDriverNode:
         self.loop()
 
     def boot(self):
-        assert self.low_latency_mode(self.serial.fd)
+        self.low_latency_mode(self.serial.fd)
+
         # Initial hardware setup
         for id in self.motor_names:
             rospy.loginfo("Booting motor %d..." % id)
@@ -161,7 +162,7 @@ class BLDCDriverNode:
             fcntl.ioctl(fd, termios.TIOCSSERIAL, buf)
             return True
         except IOError as e:
-            raise Exception('Could not set low latency mode')
+             rospy.logwarn("Could not set low latency mode")
         return False
 
 if __name__ == '__main__':
