@@ -249,7 +249,7 @@ void KokoHW::setReadGravityVector() {
     KDL::Vector corrected_base;
     corrected_base = base_rot_z * actuator_accel_[0] / actuator_accel_[0].Norm() * 9.81;
     corrected_base.data[2] = -corrected_base.data[2];
-    read_gravity_vector_.push_back(corrected_base);
+    read_gravity_vector_[start_ind] = corrected_base;
     start_ind = 1;
   }
   for (int i = 0; i < num_diff_actuators_; i++) {
@@ -285,7 +285,7 @@ void KokoHW::setReadGravityVector() {
     raw = raw_rot_z * raw;
 
     raw.data[2] = -raw.data[2];
-    read_gravity_vector_.push_back(raw * 9.81 / 1000.0);
+    read_gravity_vector_[start_ind + i] = raw * 9.81 / raw.Norm();
   }
   // TODO: Calibrate Gripper link
   KDL::Rotation grip_rot_z;
@@ -504,6 +504,7 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
     } else if (is_calibrated_ == 1){
       actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index] * is_hardstop_calibrate_;
       KDL::Vector accel_vect;
+      ROS_ERROR("call_back: %f, %f, %f", msg->accel[i].x, msg->accel[i].y, msg->accel[i].z);
       accel_vect.data[0] = msg->accel[i].x;
       accel_vect.data[1] = msg->accel[i].y;
       accel_vect.data[2] = msg->accel[i].z;
@@ -512,7 +513,6 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
       //actuator_eff_[index] = msg->effort[i];
     }
   }
-
   setReadGravityVector();
   // Propagate actuator information to joint information
   actuator_to_joint_interface_.propagate();

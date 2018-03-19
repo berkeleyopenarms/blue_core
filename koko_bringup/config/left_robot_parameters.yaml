@@ -30,7 +30,7 @@ koko_hardware:
         - left_motor3
     motor_ids: [15, 20, 18, 12, 11, 19, 21]
     # motor_current_limits: [1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5]
-    motor_current_limits: [0.4, 0.4, 0.4, 0.0, 0.0, 0.0, 0.0]
+    motor_current_limits: [2.4, 2.4, 2.4, 2.0, 2.0, 1.5, 1.5]
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0]
 
     ### Calibration configuration
