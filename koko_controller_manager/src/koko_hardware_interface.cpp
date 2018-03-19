@@ -295,16 +295,17 @@ void KokoHW::setReadGravityVector() {
   corrected_grip.data[2] = -corrected_grip.data[2];
   read_gravity_vector_.push_back(corrected_grip);
 
-  double a = 0.99;
+  double a = 0.95;
   gravity_vector_[0] = a * gravity_vector_[0] - (1.0 - a) * read_gravity_vector_[0][0];
   gravity_vector_[1] = a * gravity_vector_[1] - (1.0 - a) * read_gravity_vector_[0][1];
   gravity_vector_[2] = a * gravity_vector_[2] - (1.0 - a) * read_gravity_vector_[0][2];
+  ROS_ERROR("acc: %f, %f, %f", gravity_vector_[0], gravity_vector_[1], gravity_vector_[2]);
+  ROS_ERROR("raw: %f, %f, %f", read_gravity_vector_[0][0], read_gravity_vector_[0][1], read_gravity_vector_[0][2]);
 }
 
 void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
   KDL::ChainFkSolverPos_recursive fksolver(kdl_chain_);
 
-  setReadGravityVector();
 
   // calibrate base
   // Account for base link (assumes that there is only one base link and one gripper link)
@@ -313,7 +314,6 @@ void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
   gravity_bot.data[0] = gravity_vector_[0];
   gravity_bot.data[1] = gravity_vector_[1];
   gravity_bot.data[2] = gravity_vector_[2];
-  ROS_ERROR("x: %f, y: %f, z: %f", gravity_vector_[0], gravity_vector_[1], gravity_vector_[2]);
   KDL::JntArray jointPositions = KDL::JntArray(num_joints_);
   KDL::Frame base_frame;
   if (is_base_) {
@@ -513,6 +513,7 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
     }
   }
 
+  setReadGravityVector();
   // Propagate actuator information to joint information
   actuator_to_joint_interface_.propagate();
   for(int i = 0; i < num_joints_; i++) {
