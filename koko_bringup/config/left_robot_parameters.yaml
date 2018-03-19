@@ -13,10 +13,10 @@ koko_hardware:
     gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412]
     joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     # id_torque_gains: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    id_torque_gains: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    id_torque_gains: [1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]
     softstop_min_angles: [-2.2, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6]
     softstop_max_angles: [3.3, 0.5, 2.6, .5, 2.6, 0.5, 2.6]
-    softstop_tolerance: 0.05
+    softstop_tolerance: 0.01
     softstop_torque_limit: 45.0
 
     ### Motor configuration
@@ -30,7 +30,7 @@ koko_hardware:
         - left_motor3
     motor_ids: [15, 20, 18, 12, 11, 19, 21]
     # motor_current_limits: [1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5]
-    motor_current_limits: [0.3, 0.3, 0.3, 0.3, 0.3, 0.1, 0.1]
+    motor_current_limits: [0.4, 0.4, 0.4, 0.0, 0.0, 0.0, 0.0]
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0]
 
     ### Calibration configuration

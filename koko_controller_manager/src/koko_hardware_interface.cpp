@@ -241,7 +241,6 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
 }
 
 void KokoHW::setReadGravityVector() {
-
   int start_ind = 0;
   if (is_base_ == true) {
     // Apply base gravity transform
@@ -311,9 +310,10 @@ void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
   // Account for base link (assumes that there is only one base link and one gripper link)
   int index = 0;
   KDL::Vector gravity_bot;
-  gravity_bot.data[0] = read_gravity_vector_[0][0];
-  gravity_bot.data[1] = read_gravity_vector_[0][1];
-  gravity_bot.data[2] = read_gravity_vector_[0][2];
+  gravity_bot.data[0] = gravity_vector_[0];
+  gravity_bot.data[1] = gravity_vector_[1];
+  gravity_bot.data[2] = gravity_vector_[2];
+  ROS_ERROR("x: %f, y: %f, z: %f", gravity_vector_[0], gravity_vector_[1], gravity_vector_[2]);
   KDL::JntArray jointPositions = KDL::JntArray(num_joints_);
   KDL::Frame base_frame;
   if (is_base_) {
@@ -495,7 +495,6 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
     }
 
     if (is_calibrated_ != 1 || !read_from_motors_) {
-      ROS_ERROR("Before Calibration");
       actuator_pos_initial_[index] = msg->position[i];
       KDL::Vector accel_vect;
       accel_vect.data[0] = msg->accel[i].x;
@@ -503,7 +502,7 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
       accel_vect.data[2] = msg->accel[i].z;
       actuator_accel_.at(index) = accel_vect;
     } else if (is_calibrated_ == 1){
-      actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index];
+      actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index] * is_hardstop_calibrate_;
       KDL::Vector accel_vect;
       accel_vect.data[0] = msg->accel[i].x;
       accel_vect.data[1] = msg->accel[i].y;
@@ -533,8 +532,8 @@ void KokoHW::calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& m
       ROS_INFO("Calibrated joint %d to state %f", i, joint_pos_initial_[i]);
     }
     calibration_counter_++;
-    is_calibrated_ = true;
     is_hardstop_calibrate_ = 1.0;
+    is_calibrated_ = true;
     ROS_INFO("Finished Calibrating Joint States, counter: %d", calibration_counter_);
   } else {
     for (int i = 0; i < joint_pos_initial_.size(); i++) {
