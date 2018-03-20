@@ -20,7 +20,7 @@ class BLDCDriverNode:
     MAX_CURRENT = 1.5
     MAX_TEMP_WARN = 55 # degrees C
     MAX_TEMP_MOTORS_OFF = 75
-    CONTROL_LOOP_FREQ = 200
+    CONTROL_LOOP_FREQ = 60
 
     def __init__(self):
         rospy.init_node('bldc_driver', anonymous=True)

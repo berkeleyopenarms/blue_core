@@ -248,7 +248,9 @@ void KokoHW::setReadGravityVector() {
     base_rot_z.DoRotZ(-4.301 + M_PI);
     KDL::Vector corrected_base;
     corrected_base = base_rot_z * actuator_accel_[0] / actuator_accel_[0].Norm() * 9.81;
-    corrected_base.data[2] = -corrected_base.data[2];
+    corrected_base.data[0] = -corrected_base.data[0];
+    corrected_base.data[1] = -corrected_base.data[1];
+    corrected_base.data[2] = corrected_base.data[2];
     read_gravity_vector_[start_ind] = corrected_base;
     start_ind = 1;
   }
@@ -295,12 +297,11 @@ void KokoHW::setReadGravityVector() {
   corrected_grip.data[2] = -corrected_grip.data[2];
   read_gravity_vector_.push_back(corrected_grip);
 
-  double a = 0.95;
+  double a = 0.992;
   gravity_vector_[0] = a * gravity_vector_[0] - (1.0 - a) * read_gravity_vector_[0][0];
   gravity_vector_[1] = a * gravity_vector_[1] - (1.0 - a) * read_gravity_vector_[0][1];
   gravity_vector_[2] = a * gravity_vector_[2] - (1.0 - a) * read_gravity_vector_[0][2];
-  ROS_ERROR("acc: %f, %f, %f", gravity_vector_[0], gravity_vector_[1], gravity_vector_[2]);
-  ROS_ERROR("raw: %f, %f, %f", read_gravity_vector_[0][0], read_gravity_vector_[0][1], read_gravity_vector_[0][2]);
+  ROS_ERROR("grav %f, %f, %f", gravity_vector_[0], gravity_vector_[1], gravity_vector_[2]);
 }
 
 void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
@@ -336,7 +337,6 @@ void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
       error_base[k] = (expected_gravity_vect - gravity_bot).Norm();
 
       //TODO Remove, currently for debugging purposes
-      ROS_ERROR("gravity vector %d error: %f", k, error_base[k]);
       // error will be appended to a list of errors
     }
 
@@ -368,7 +368,6 @@ void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
         error_link[m1 + m2*8] = (expected_gravity_vect - gravity_bot).Norm();
         // error will be appended to a list of errors
         //TODO Remove, currently for debugging purposes
-        ROS_ERROR("gravity vector %d error: %f", m1 + m2*8, error_link[m1 + m2*8]);
       }
     }
     // choose the k with minimum error
@@ -478,6 +477,8 @@ void KokoHW::computeInverseDynamics() {
 
   KDL::ChainIdSolver_RNE chainIdSolver(kdl_chain_, gravity_vector_);
   int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques_);
+  ROS_ERROR("exit ID: %d", statusID);
+  ROS_ERROR("id_torque base %f", id_torques_(0));
 }
 
 void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPtr& msg) {
@@ -504,7 +505,6 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
     } else if (is_calibrated_ == 1){
       actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index] * is_hardstop_calibrate_;
       KDL::Vector accel_vect;
-      ROS_ERROR("call_back: %f, %f, %f", msg->accel[i].x, msg->accel[i].y, msg->accel[i].z);
       accel_vect.data[0] = msg->accel[i].x;
       accel_vect.data[1] = msg->accel[i].y;
       accel_vect.data[2] = msg->accel[i].z;
