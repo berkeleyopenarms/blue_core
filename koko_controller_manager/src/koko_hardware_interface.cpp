@@ -404,9 +404,10 @@ void KokoHW::write() {
     computeInverseDynamics();
     // added for using transmission interface
     for (int i = 0; i < num_joints_; i++){
-      // TODO
+      ROS_ERROR("id torque_command base %f", id_torques_(0));
       joint_cmd_[i] = joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
-      // checking joint limits and publish counter torque if near
+      ROS_ERROR("joint_command base %f", joint_cmd_[0]);
+      // checking joint limits and publish counter torque if near the limit
       if(joint_pos_[i] > softstop_max_angles_[i] - softstop_tolerance_){
         ROS_ERROR("Going over soft stop");
         double del = joint_pos_[i] - softstop_max_angles_[i] + softstop_tolerance_;
