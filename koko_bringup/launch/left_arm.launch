@@ -44,11 +44,11 @@
     type="spawner"
     output="screen"
     args="--stopped
-          koko_controllers/gripper_action_controller
-          koko_controllers/cartesian_pose_controller
-          koko_controllers/joint_position_controller
-          koko_controllers/joint_torque_controller" />
+          koko_controllers/joint_position_controller" />
 
+          <!-- koko_controllers/gripper_action_controller -->
+          <!-- koko_controllers/cartesian_pose_controller -->
+          <!-- koko_controllers/joint_position_controller -->
   <!-- Joint calibration -->
   <!-- TODO: this is temporary, and is being moved to the hardware interface initialization -->
   <node

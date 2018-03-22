@@ -19,7 +19,7 @@ from comms import *
 class BLDCDriverNode:
     MAX_CURRENT = 1.5
     MAX_TEMP_WARN = 55 # degrees C
-    MAX_TEMP_MOTORS_OFF = 75
+    MAX_TEMP_MOTORS_OFF = 70
     CONTROL_LOOP_FREQ = 60
 
     def __init__(self):
@@ -128,7 +128,7 @@ class BLDCDriverNode:
                         rospy.logwarn_throttle(1, "Motor {} is overheating, currently at  {}C".format(motor_id, temperature))
                         if temperature > self.MAX_TEMP_MOTORS_OFF:
                             self.stop_motors = True
-                            rospy.logerr("Motor %d is too hot, setting motor currents to zero", motor_id)
+                            rospy.logerr("Motor %d is too hot, setting motor currents to zero, at %fC", motor_id, temperature)
 
                 except Exception as e:
                     rospy.logerr("Motor " + str(motor_id) +  " driver error: " + str(e))
