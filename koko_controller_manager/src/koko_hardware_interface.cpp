@@ -246,11 +246,11 @@ void KokoHW::setReadGravityVector() {
   if (is_base_ == true) {
     // Apply base gravity transform
     KDL::Rotation base_rot_z;
-    base_rot_z.DoRotZ(-4.301 + M_PI);
+    base_rot_z.DoRotZ(-4.301 - M_PI / 2.0);
     KDL::Vector corrected_base;
     corrected_base = base_rot_z * actuator_accel_[0] * 9.81 / actuator_accel_[0].Norm();
     corrected_base.data[0] = -corrected_base.data[0];
-    corrected_base.data[1] = corrected_base.data[1];
+    corrected_base.data[1] = -corrected_base.data[1];
     corrected_base.data[2] = corrected_base.data[2];
     ROS_ERROR("Error: %d", error_val++);
     read_gravity_vector_[start_ind] = corrected_base;
@@ -411,7 +411,9 @@ void KokoHW::write() {
     computeInverseDynamics();
     // added for using transmission interface
     for (int i = 0; i < num_joints_; i++){
+      // :joint_cmd_[i] = 0.0;
       ROS_ERROR("id torque_command base %f", id_torques_(0));
+      ROS_ERROR("joint_command base pre %f", joint_cmd_[0]);
       joint_cmd_[i] = joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
       ROS_ERROR("joint_command base %f", joint_cmd_[0]);
       // checking joint limits and publish counter torque if near the limit

@@ -123,7 +123,7 @@ class BLDCControllerClient:
         return self.writeRegisters(server_id, 0x1022, 1, struct.pack('<f', value))
 
     def setPositionOffset(self, server_id, value):
-        return self.bldc.writeRegisters(server_id, 0x1015, 1, struct.pack('<f', value))
+        return self.writeRegisters(server_id, 0x1015, 1, struct.pack('<f', value))
 
     def setCurrentControlMode(self, server_id):
         return self.writeRegisters(server_id, 0x2000, 1, struct.pack('<B', 0))
