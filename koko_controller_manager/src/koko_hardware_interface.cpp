@@ -24,6 +24,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   getRequiredParam(nh, "koko_hardware/motor_current_limits", motor_current_limits_);
   getRequiredParam(nh, "koko_hardware/id_torque_gains", id_gains_);
   getRequiredParam(nh, "koko_hardware/endlink", endlink);
+  getRequiredParam(nh, "koko_hardware/accelerometer_calibration", is_accel_calibrate);
 
   KDL::Tree my_tree;
   if(!kdl_parser::treeFromString(robot_desc_string, my_tree)){
@@ -236,8 +237,9 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
     }
   }
   ROS_INFO("Finished setting up transmissions");
-
-  //accelerometerCalibrate(num_simple_actuators, num_differential_actuators);
+  if( is_accel_calibrate ) {
+    accelerometerCalibrate(num_simple_actuators, num_differential_actuators);
+  }
 }
 
 void KokoHW::setReadGravityVector() {
@@ -252,7 +254,6 @@ void KokoHW::setReadGravityVector() {
     corrected_base.data[0] = -corrected_base.data[0];
     corrected_base.data[1] = -corrected_base.data[1];
     corrected_base.data[2] = corrected_base.data[2];
-    ROS_ERROR("Error: %d", error_val++);
     read_gravity_vector_[start_ind] = corrected_base;
     start_ind = 1;
   }
@@ -261,11 +262,8 @@ void KokoHW::setReadGravityVector() {
     KDL::Vector raw_left;
     KDL::Vector raw;
 
-    ROS_ERROR("Error: %d", error_val++);
     raw_right = actuator_accel_.at(start_ind + 2*i);  // KDL Vector
-    ROS_ERROR("Error: %lu", actuator_accel_.size());
     raw_left = actuator_accel_.at(start_ind + 2*i+1);  // KDL Vector
-    ROS_ERROR("Error: %d", error_val++);
     // Rotate Left accel vector into Right accel Frame
     KDL::Rotation left_rot_z;
     left_rot_z.DoRotZ(M_PI);
@@ -302,13 +300,11 @@ void KokoHW::setReadGravityVector() {
   corrected_grip = grip_rot_z * actuator_accel_[start_ind + 2*num_diff_actuators_] / actuator_accel_[start_ind + 2*num_diff_actuators_].Norm() * 9.81;
   corrected_grip.data[2] = -corrected_grip.data[2];
   read_gravity_vector_[start_ind + num_diff_actuators_] = corrected_grip;
-  ROS_ERROR("Error: %d", num_diff_actuators_);
 
   double a = 0.992;
   gravity_vector_[0] = a * gravity_vector_[0] - (1.0 - a) * read_gravity_vector_[0][0];
   gravity_vector_[1] = a * gravity_vector_[1] - (1.0 - a) * read_gravity_vector_[0][1];
   gravity_vector_[2] = a * gravity_vector_[2] - (1.0 - a) * read_gravity_vector_[0][2];
-  ROS_ERROR("grav %f, %f, %f", gravity_vector_[0], gravity_vector_[1], gravity_vector_[2]);
 }
 
 void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
@@ -342,9 +338,6 @@ void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
 
       // gravity vector measured minus gravity vector in this joint position
       error_base[k] = (expected_gravity_vect - gravity_bot).Norm();
-
-      //TODO Remove, currently for debugging purposes
-      // error will be appended to a list of errors
     }
 
     index++;
@@ -412,10 +405,7 @@ void KokoHW::write() {
     // added for using transmission interface
     for (int i = 0; i < num_joints_; i++){
       // :joint_cmd_[i] = 0.0;
-      ROS_ERROR("id torque_command base %f", id_torques_(0));
-      ROS_ERROR("joint_command base pre %f", joint_cmd_[0]);
       joint_cmd_[i] = joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
-      ROS_ERROR("joint_command base %f", joint_cmd_[0]);
       // checking joint limits and publish counter torque if near the limit
       if(joint_pos_[i] > softstop_max_angles_[i] - softstop_tolerance_){
         ROS_ERROR("Going over soft stop");
@@ -487,8 +477,6 @@ void KokoHW::computeInverseDynamics() {
 
   KDL::ChainIdSolver_RNE chainIdSolver(kdl_chain_, gravity_vector_);
   int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques_);
-  ROS_ERROR("exit ID: %d", statusID);
-  ROS_ERROR("id_torque base %f", id_torques_(0));
 }
 
 void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPtr& msg) {
@@ -513,7 +501,7 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
       accel_vect.data[2] = msg->accel[i].z;
       actuator_accel_.at(index) = accel_vect;
     } else if (is_calibrated_ == 1){
-      actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index] * is_hardstop_calibrate_;
+      actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index] * is_hardstop_calibrate_ + 2.0 * M_PI * actuator_revolution_constant_[index];
       KDL::Vector accel_vect;
       accel_vect.data[0] = msg->accel[i].x;
       accel_vect.data[1] = msg->accel[i].y;

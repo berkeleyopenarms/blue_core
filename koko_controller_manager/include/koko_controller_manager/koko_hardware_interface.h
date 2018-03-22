@@ -78,6 +78,7 @@ private:
   double softstop_torque_limit_;
   double softstop_tolerance_;
   std::vector<double> motor_current_limits_;
+  bool is_accel_calibrate;
 
   // Calibration
   int calibration_counter_;
