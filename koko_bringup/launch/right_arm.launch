@@ -2,7 +2,7 @@
 
   <!-- Load configuration -->
   <rosparam
-    file="$(find koko_bringup)/config/left_robot_parameters.yaml"
+    file="$(find koko_bringup)/config/right_robot_parameters.yaml"
     command="load" />
   <rosparam
     file="$(find koko_bringup)/config/controllers.yaml"

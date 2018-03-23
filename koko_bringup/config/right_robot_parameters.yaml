@@ -14,8 +14,8 @@ koko_hardware:
     joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     # id_torque_gains: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     id_torque_gains: [1.38, 1.27, 1.27, 1.27, 1.27, 1.0, 1.0]
-    softstop_min_angles: [-2.2, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6]
-    softstop_max_angles: [3.3, 0.5, 2.6, .5, 2.6, 0.5, 2.6]
+    softstop_min_angles: [-3.3, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6]
+    softstop_max_angles: [2.2, 0.5, 2.6, .5, 2.6, 0.5, 2.6]
     softstop_tolerance: 0.01
     softstop_torque_limit: 45.0
 
@@ -34,6 +34,6 @@ koko_hardware:
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0]
 
     ### Calibration configuration
-    hardstop_start_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0]
+    hardstop_start_angles: [0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0]
     calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0]
     accelerometer_calibration: true

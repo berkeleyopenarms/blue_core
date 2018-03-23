@@ -77,6 +77,7 @@ class BLDCDriverNode:
                     self.bldc.setPositionOffset(id, calibrations['zero'])
                     self.bldc.writeRegisters(id, 0x1015, 1, struct.pack('<f', calibrations['zero']))
                     self.starting_angles[id] = 0.0
+                    self.bldc.writeRegisters(id, 0x1030, 1, struct.pack('<H', 1000))
                     rospy.loginfo("Motor %d ready: supply voltage=%fV", id, self.bldc.getVoltage(id))
                     success = True
                     break
