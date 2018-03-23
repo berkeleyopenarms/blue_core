@@ -415,8 +415,7 @@ void KokoHW::write() {
     computeInverseDynamics();
     // added for using transmission interface
     for (int i = 0; i < num_joints_; i++){
-      ROS_ERROR("joint_cmd pre: %f", joint_cmd_[i]);
-      joint_cmd_[i] = 0.0;
+      ROS_ERROR("joint command: %f", joint_cmd_[i]);
       joint_cmd_[i] = joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
       // checking joint limits and publish counter torque if near the limit
       if(joint_pos_[i] > softstop_max_angles_[i] - softstop_tolerance_){
@@ -448,6 +447,7 @@ void KokoHW::write() {
 
       commandMsg.data =  motor_current;
       motor_cmd_publishers_[i].publish(commandMsg);
+      ROS_ERROR("motor command: %f", motor_current);
     }
   }
 }
@@ -533,8 +533,7 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
 }
 
 void KokoHW::calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg) {
-  return;
-  if (is_calibrated_)
+  if (is_calibrated_ || is_accel_calibrate)
     return;
 
   if (calibration_counter_ >= 10) {

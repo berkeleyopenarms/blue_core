@@ -29,11 +29,11 @@ koko_hardware:
         - right_motor3
         - left_motor3
     motor_ids: [1, 23, 22, 17, 10, 19, 21]
-    motor_current_limits: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    # motor_current_limits: [3.0, 2.5, 2.5, 2.5, 2.5, 1.5, 1.5]
+    # motor_current_limits: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    motor_current_limits: [3.0, 2.5, 2.5, 2.5, 2.5, 1.5, 1.5]
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0]
 
     ### Calibration configuration
     hardstop_start_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0]
     calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0]
-    accelerometer_calibration: true
+    accelerometer_calibration: false
