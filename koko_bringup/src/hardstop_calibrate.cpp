@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "joint_state_tracker");
   ros::NodeHandle node;
-  ros::Duration(4.44).sleep();
+  ros::Duration(0.0444).sleep();
   // publisher and subscriber setup
   pub = node.advertise<sensor_msgs::JointState>("/joint_state_tracker", 100);
 

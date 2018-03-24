@@ -105,6 +105,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   joint_pos_.resize(num_joints_);
   joint_vel_.resize(num_joints_);
   joint_eff_.resize(num_joints_);
+  raw_joint_cmd_.resize(num_joints_);
   joint_cmd_.resize(num_joints_);
 
 
@@ -116,7 +117,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   registerInterface(&joint_state_interface_);
 
   for (int i = 0; i < num_joints_; i++) {
-    hardware_interface::JointHandle effort_handle_a(joint_state_interface_.getHandle(joint_names_[i]), &joint_cmd_[i]);
+    hardware_interface::JointHandle effort_handle_a(joint_state_interface_.getHandle(joint_names_[i]), &raw_joint_cmd_[i]);
     joint_effort_interface_.registerHandle(effort_handle_a);
   }
   registerInterface(&joint_effort_interface_);
@@ -326,7 +327,6 @@ void KokoHW::setReadGravityVector() {
     corrected_grip.data[2] = -corrected_grip.data[2];
     read_gravity_vector_[start_ind + num_diff_actuators_] = corrected_grip;
   }
-
   double a = 0.992;
   gravity_vector_[0] = a * gravity_vector_[0] - (1.0 - a) * read_gravity_vector_[0][0];
   gravity_vector_[1] = a * gravity_vector_[1] - (1.0 - a) * read_gravity_vector_[0][1];
@@ -334,7 +334,6 @@ void KokoHW::setReadGravityVector() {
 }
 
 void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
-
   ROS_ERROR("in accel calibration");
   KDL::ChainFkSolverPos_recursive fksolver(kdl_chain_);
   // calibrate base
@@ -421,22 +420,24 @@ void KokoHW::getRequiredParam(ros::NodeHandle &nh, const std::string name, TPara
 }
 
 void KokoHW::read() {
+
 }
 
 void KokoHW::write() {
   if(!read_from_motors_)
     return;
-
   if (is_calibrated_) {
     computeInverseDynamics();
     // added for using transmission interface
-    for (int i = 0; i < num_joints_; i++){
-      // ROS_ERROR("joint command: %f", joint_cmd_[i]);
-      if ( !(is_gripper_ && i == num_joints_ - 1) ){
-        //joint_cmd_[i] = 0.0;
-        joint_cmd_[i] = joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
+    for (int i = 0; i < num_joints_; i++) {
+      if(i == 1){
+        ROS_ERROR("joint pre %d command: %f", i, raw_joint_cmd_[i]);
+      }
+      if ( !(is_gripper_ && i == num_joints_ - 1) ) {
+        joint_cmd_[i] = 0.0;
+        joint_cmd_[i] = raw_joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
       } else {
-        ROS_ERROR("joint gripper cmd %f", joint_cmd_[i]);
+        // ROS_ERROR("joint gripper cmd %f", joint_cmd_[i]);
       }
 
       // checking joint limits and publish counter torque if near the limit
@@ -457,7 +458,7 @@ void KokoHW::write() {
       double motor_torque = actuator_cmd_[i];
       double motor_current = current_to_torque_ratios_[i] * motor_torque;
       if(i == num_joints_ - 1){
-        ROS_ERROR("motor gripper cmd %f", motor_current);
+        // ROS_ERROR("motor gripper cmd %f", motor_current);
       }
 
       if (std::abs(motor_current) > motor_current_limits_[i]){
@@ -564,7 +565,6 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
 void KokoHW::calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg) {
   if (is_calibrated_ || is_accel_calibrate)
     return;
-
   if (calibration_counter_ >= 10) {
     for (int i = 0; i < joint_pos_initial_.size(); i++) {
       joint_pos_initial_[i] = msg->position[i];

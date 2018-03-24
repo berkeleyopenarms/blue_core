@@ -30,12 +30,7 @@
     pkg="controller_manager"
     type="spawner"
     output="screen"
-    args="koko_controllers/joint_state_controller" />
-  <node name="controller_spawner"
-    pkg="controller_manager"
-    type="spawner"
-    output="screen"
-    args="koko_controllers/joint_position_controller
+    args="koko_controllers/joint_state_controller koko_controllers/cartesian_pose_controller
           koko_controllers/gripper_controller" />
 
 

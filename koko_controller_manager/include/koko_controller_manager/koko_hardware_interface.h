@@ -114,6 +114,7 @@ private:
   std::vector<double> joint_vel_;
   std::vector<double> joint_eff_;
   std::vector<double> joint_cmd_;
+  std::vector<double> raw_joint_cmd_;
 
   // Gravity Compensation
   KDL::Vector gravity_vector_;
