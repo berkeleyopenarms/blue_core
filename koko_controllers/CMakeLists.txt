@@ -20,7 +20,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME} src/CartesianPoseController.cpp)
+add_library(${PROJECT_NAME} src/KokoGroupPositionController.cpp src/CartesianPoseController.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 

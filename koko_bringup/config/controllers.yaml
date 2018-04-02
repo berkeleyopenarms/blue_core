@@ -31,7 +31,7 @@ koko_controllers:
       - wrist_roll_joint
 
   joint_position_controller:
-    type: effort_controllers/JointGroupPositionController
+    type: koko_controllers/KokoJointGroupPositionController
     joints:
       - base_roll_joint
       - shoulder_lift_joint
