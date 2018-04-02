@@ -1,8 +1,8 @@
-#include <koko_controllers/KokoGroupPositionController.h>
+#include <koko_controllers/KokoJointGroupPositionController.h>
 #include <pluginlib/class_list_macros.h>
 #include <angles/angles.h>
 
-namespace koko_controllers 
+namespace koko_controllers
 {
 
   KokoJointGroupPositionController::KokoJointGroupPositionController() {}
@@ -18,6 +18,7 @@ namespace koko_controllers
       return false;
     }
     n_joints_ = joint_names_.size();
+    ROS_ERROR("num joints n_joints %d", n_joints_);
 
     if(n_joints_ == 0){
       ROS_ERROR_STREAM("List of joint names is empty.");
@@ -32,16 +33,19 @@ namespace koko_controllers
       return false;
     }
 
+    ROS_ERROR_STREAM("1 Starting Controller");
     pid_controllers_.resize(n_joints_);
-
+    ROS_ERROR_STREAM("2 Starting Controller");
     for(unsigned int i=0; i<n_joints_; i++)
     {
+      ROS_ERROR("Starting Controller %d", i);
       try
       {
-        joints_.push_back(hw->getHandle(joint_names_[i]));  
+        joints_.push_back(hw->getHandle(joint_names_[i]));
       }
       catch (const hardware_interface::HardwareInterfaceException& e)
       {
+        ROS_ERROR_STREAM("Starting Controller");
         ROS_ERROR_STREAM("Exception thrown: " << e.what());
         return false;
       }
@@ -65,6 +69,7 @@ namespace koko_controllers
     commands_buffer_.writeFromNonRT(std::vector<double>(n_joints_, 0.0));
 
     sub_command_ = n.subscribe<std_msgs::Float64MultiArray>("command", 1, &KokoJointGroupPositionController::commandCB, this);
+    ROS_ERROR_STREAM("Starting Controller");
     return true;
   }
 
@@ -104,7 +109,7 @@ namespace koko_controllers
 
         // Set the PID error and compute the PID command with nonuniform
         // time step size.
-        commanded_effort = pid_controllers_[i].computeCommand(error, period);
+        commanded_effort = pid_controllers_[i].computeCommand(error, -joints_[i].getVelocity(), period);
 
         joints_[i].setCommand(commanded_effort);
     }

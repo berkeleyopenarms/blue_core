@@ -111,6 +111,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
 
   for (int i = 0; i < num_joints_; i++) {
     joint_cmd_[i] = 0.0;
+    raw_joint_cmd_[i] = 0.0;
     hardware_interface::JointStateHandle state_handle_a(joint_names_[i], &joint_pos_[i], &joint_vel_[i], &joint_eff_[i]);
     joint_state_interface_.registerHandle(state_handle_a);
   }
@@ -431,7 +432,7 @@ void KokoHW::write() {
     // added for using transmission interface
     for (int i = 0; i < num_joints_; i++) {
       if(i == 1){
-        ROS_ERROR("joint pre %d command: %f", i, raw_joint_cmd_[i]);
+        // ROS_ERROR("joint pre %d command: %f", i, raw_joint_cmd_[i]);
       }
       if ( !(is_gripper_ && i == num_joints_ - 1) ) {
         joint_cmd_[i] = 0.0;

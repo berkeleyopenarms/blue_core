@@ -2,7 +2,7 @@
   <class name="koko_controllers/CartesianPoseController"
          type="koko_controllers::CartesianPoseController"
          base_class_type="controller_interface::ControllerBase"/>
-  <class name="koko_controllers/KokoGroupPositionController"
-         type="koko_controllers::KokoGroupPositionController"
+  <class name="koko_controllers/KokoJointGroupPositionController"
+         type="koko_controllers::KokoJointGroupPositionController"
          base_class_type="controller_interface::ControllerBase"/>
 </library>
