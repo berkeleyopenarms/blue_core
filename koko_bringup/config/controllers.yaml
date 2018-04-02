@@ -9,13 +9,13 @@ koko_controllers:
   ### Gripper controller
 
   gripper_controller:
-    type: "gripper_action_controller/GripperActionController"
-    joints: gripper_joint
+    type: effort_controllers/GripperActionController
+    joint:  gripper_joint
     goal_tolerance: 0.01
     stalled_velocity_threshold: 0.01
     stall_timeout: 0.2
     gains:
-      gripper_joint: {p: 20, i: 5, d: 1, i_clamp: 1}
+      gripper_joint: {p: 10, i: 2, d: 1.5, i_clamp: 1}
 
   ### Joint controllers
 
@@ -41,19 +41,19 @@ koko_controllers:
       - wrist_lift_joint
       - wrist_roll_joint
     base_roll_joint:
-      pid: {p: 30, i: 0, d: 5, i_clamp: 0}
+      pid: {p: 30, i: 0, d: 9, i_clamp: 0}
     shoulder_lift_joint:
-      pid: {p: 30, i: 0, d: 4, i_clamp: 0}
+      pid: {p: 30, i: 0, d: 9, i_clamp: 0}
     shoulder_roll_joint:
-      pid: {p: 25, i: 0, d: 3, i_clamp: 0}
+      pid: {p: 15, i: 0, d: 9, i_clamp: 0}
     elbow_lift_joint:
-      pid: {p: 25, i: 0, d: 2, i_clamp: 0}
+      pid: {p: 15, i: 0, d: 6, i_clamp: 0}
     elbow_roll_joint:
-      pid: {p: 20, i: 0, d: 2, i_clamp: 0}
+      pid: {p: 15, i: 0, d: 6, i_clamp: 0}
     wrist_lift_joint:
-      pid: {p:  5, i: 0, d: 0.6, i_clamp: 0}
+      pid: {p:  2, i: 0, d: 0.2, i_clamp: 0}
     wrist_roll_joint:
-      pid: {p:  4, i: 0, d: 0.3, i_clamp: 0}
+      pid: {p:  2, i: 0, d: 0.2, i_clamp: 0}
 
   cartesian_pose_controller:
     endlink: 'wrist_roll_link'

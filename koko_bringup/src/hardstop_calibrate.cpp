@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "joint_state_tracker");
   ros::NodeHandle node;
-
+  ros::Duration(0.0444).sleep();
   // publisher and subscriber setup
   pub = node.advertise<sensor_msgs::JointState>("/joint_state_tracker", 100);
 
@@ -50,7 +50,7 @@ int main(int argc, char** argv)
   if (!node.getParam("koko_hardware/hardstop_start_angles", hardstop_start_angles)) {
     ROS_ERROR("No hardstop_start_angles given (namespace: %s)", node.getNamespace().c_str());
   }
-  nj = hardstop_start_angles.size();
+  nj = joint_names.size();
   jointCur = KDL::JntArray(nj);
   for (int i = 0; i < nj; i++) {
     jointCur(i) = hardstop_start_angles[i];

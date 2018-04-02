@@ -11,9 +11,9 @@
     args="-d $(find koko_description_base)/urdf.rviz" />
 
   <!-- [> GUI <] -->
-  <!-- <node -->
-    <!-- name="gui_for_debugging" -->
-    <!-- pkg="rqt_gui" -->
-    <!-- type="rqt_gui" -->
-    <!-- output="screen"/> -->
+  <node
+    name="gui_for_debugging"
+    pkg="rqt_gui"
+    type="rqt_gui"
+    output="screen"/>
 </launch>

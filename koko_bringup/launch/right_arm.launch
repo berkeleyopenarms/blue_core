@@ -18,7 +18,7 @@
 
   <!-- Start communication with the motor drivers -->
   <include
-    file="$(find koko_hardware_drivers)/launch/left_motor_drivers.launch" />
+    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
 
   <!-- Start the control stack -->
   <node
@@ -30,16 +30,13 @@
     pkg="controller_manager"
     type="spawner"
     output="screen"
-    args="koko_controllers/joint_state_controller" />
-  <node name="controller_spawner"
-    pkg="controller_manager"
-    type="spawner"
-    output="screen"
-    args="koko_controllers/joint_position_controller" />
+    args="koko_controllers/joint_state_controller koko_controllers/cartesian_pose_controller
+          koko_controllers/gripper_controller" />
+
 
     <!-- args="-stopped -->
           <!-- koko_controllers/joint_position_controller" /> -->
-          <!-- koko_controllers/gripper_action_controller -->
+          <!-- koko_controllers/gripper_controller -->
           <!-- koko_controllers/cartesian_pose_controller -->
           <!-- koko_controllers/joint_position_controller -->
   <!-- Joint calibration -->
