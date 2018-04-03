@@ -443,11 +443,11 @@ void KokoHW::write() {
 
       // checking joint limits and publish counter torque if near the limit
       if(joint_pos_[i] > softstop_max_angles_[i] - softstop_tolerance_){
-        ROS_ERROR("Going over soft stop");
+        ROS_WARN_THROTTLE(1, "Going over soft stop");
         double del = joint_pos_[i] - softstop_max_angles_[i] + softstop_tolerance_;
         joint_cmd_[i] += -1.0 * softstop_torque_limit_ * del * del;
       } else if (joint_pos_[i] < softstop_min_angles_[i] + softstop_tolerance_){
-        ROS_ERROR("Going over soft stop");
+        ROS_WARN_THROTTLE(1, "Going over soft stop");
         double del = softstop_min_angles_[i] + softstop_tolerance_ - joint_pos_[i];
         joint_cmd_[i] += softstop_torque_limit_ * del * del;
       }

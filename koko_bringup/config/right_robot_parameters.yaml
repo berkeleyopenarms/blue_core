@@ -18,7 +18,7 @@ koko_hardware:
     softstop_min_angles: [-3.3, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -1.15]
     softstop_max_angles: [2.2, 0.5, 2.6, .5, 2.6, 0.5, 2.6, 1.15]
     softstop_tolerance: 0.01
-    softstop_torque_limit: 45.0
+    softstop_torque_limit: 15.0
 
     ### Motor configuration
     motor_names:

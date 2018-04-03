@@ -137,15 +137,12 @@ namespace koko_controllers{
     }
 
     subController = n.subscribe("command", 1, &CartesianPoseController::controllerPoseCallback, this);
-    subCommand = n.subscribe("command_label", 1, &CartesianPoseController::commandCallback, this);
-
 
     ROS_INFO("nj %d", chain.getNrOfJoints());
 
     p_error_last.resize(6);
     d_error.resize(6);
     visualizer = "simple_6dof_MOVE_ROTATE_3D";
-    command_label = 0;
 
     commandPub = node.advertise<std_msgs::Float64MultiArray>("/commandPub", 1000);
     deltaPub = node.advertise<std_msgs::Float64MultiArray>("/deltaPub", 1000);
@@ -179,16 +176,9 @@ namespace koko_controllers{
 
   }
 
-  void CartesianPoseController::commandCallback(const std_msgs::Int32 msg) 
-  {
-    command_label = msg.data;
-  }
-
   void CartesianPoseController::controllerPoseCallback(const geometry_msgs::PoseStamped msg) 
   {
-    if (command_label == 25) {
-      commandPose = msg.pose;
-    }
+    commandPose = msg.pose;
   }
 
   void CartesianPoseController::publishCommandMsg(KDL::Vector desired_position, KDL::Rotation desired_rotation) {

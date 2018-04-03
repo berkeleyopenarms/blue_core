@@ -118,9 +118,9 @@ namespace koko_controllers
   void KokoJointGroupPositionController::commandCB(const std_msgs::Float64MultiArrayConstPtr& msg)
   {
     if(msg->data.size()!=n_joints_)
-    { 
+    {
       ROS_ERROR_STREAM("Dimension of command (" << msg->data.size() << ") does not match number of joints (" << n_joints_ << ")! Not executing!");
-      return; 
+      return;
     }
     commands_buffer_.writeFromNonRT(msg->data);
   }

@@ -71,7 +71,6 @@ private:
   double posture_gain;
 
   double z_offset_controller;
-  int command_label;
   int filter_length;
   ros::Publisher commandPub;
   ros::Publisher deltaPub;
