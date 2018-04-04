@@ -93,8 +93,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-2.3412"
-      upper="3.3999"
+      lower="-3.3999"
+      upper="2.3412"
       effort="0"
       velocity="0" />
   </joint>
@@ -201,7 +201,7 @@
     type="revolute">
     <origin
       xyz="0 0.070147 -6.25E-05"
-      rpy="-1.5708 1.5673 -3.1416" />
+      rpy="-1.5708 -1.5673 -3.1416" />
     <parent
       link="shoulder_lift_link" />
     <child
@@ -317,7 +317,7 @@
     type="revolute">
     <origin
       xyz="0 0.070147 -6.25E-05"
-      rpy="1.5708 -1.5708 0" />
+      rpy="1.5708 1.5708 0" />
     <parent
       link="upper_arm_lift_link" />
     <child
