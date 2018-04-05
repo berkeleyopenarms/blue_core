@@ -37,6 +37,6 @@ koko_hardware:
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0, 1.0]
 
     ### Calibration configuration
-    hardstop_start_angles: [0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0, 0.0]
+    hardstop_start_angles: [0.785398, -2.19, 1.570796, 0.0, -1.570796, -0.23, 0.0, 0.0]
     calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0, 0.0] # for vive calibration
     accelerometer_calibration: false

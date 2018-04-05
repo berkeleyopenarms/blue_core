@@ -67,8 +67,11 @@
     pkg="tf2_web_republisher"
     type="tf2_web_republisher" />
 
-  <node name="cartesian_teleop"
-    pkg="koko_misc"
-    type="visual_controller" />
+  <node name="gripper_controller"
+    pkg="koko_vive"
+    type="gripper_repub.py" />
+  <!-- <node name="cartesian_teleop" -->
+    <!-- pkg="koko_misc" -->
+    <!-- type="visual_controller" /> -->
 
 </launch>
