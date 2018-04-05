@@ -1,7 +1,7 @@
 <launch>
 
   <!-- for teloperation with vive -->
-  <remap from="/right_controller_pose" to="/koko_controllers/cartesian_pose_controller/command"/>
+  <!-- <remap from="/right_controller_pose" to="/koko_controllers/cartesian_pose_controller/command"/> -->
 
   <include
     file="$(find koko_bringup)/launch/right_arm.launch" />

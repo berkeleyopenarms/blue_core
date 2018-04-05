@@ -10,6 +10,14 @@
     type="rviz"
     args="-d $(find koko_description_base)/urdf.rviz" />
 
+  <!-- <node name="cartesian_teleop" -->
+    <!-- pkg="koko_misc" -->
+    <!-- type="visual_controller" /> -->
+
+  <node name="viv_teleop"
+    pkg="koko_vive"
+    type="vive_teleop" />
+
   <!-- [> GUI <] -->
   <!-- <node -->
     <!-- name="gui_for_debugging" -->

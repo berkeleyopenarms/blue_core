@@ -438,16 +438,17 @@ void KokoHW::write() {
         joint_cmd_[i] = 0.0;
         joint_cmd_[i] = raw_joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
       } else {
+        joint_cmd_[i] = raw_joint_cmd_[i];
         // ROS_ERROR("joint gripper cmd %f", joint_cmd_[i]);
       }
 
       // checking joint limits and publish counter torque if near the limit
       if(joint_pos_[i] > softstop_max_angles_[i] - softstop_tolerance_){
-        ROS_WARN_THROTTLE(1, "Going over soft stop");
+        ROS_WARN_THROTTLE(1, "Going over soft stop max, %d", i);
         double del = joint_pos_[i] - softstop_max_angles_[i] + softstop_tolerance_;
         joint_cmd_[i] += -1.0 * softstop_torque_limit_ * del * del;
       } else if (joint_pos_[i] < softstop_min_angles_[i] + softstop_tolerance_){
-        ROS_WARN_THROTTLE(1, "Going over soft stop");
+        ROS_WARN_THROTTLE(1, "Going over soft stop min, %d",i);
         double del = softstop_min_angles_[i] + softstop_tolerance_ - joint_pos_[i];
         joint_cmd_[i] += softstop_torque_limit_ * del * del;
       }
