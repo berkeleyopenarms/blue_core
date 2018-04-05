@@ -60,52 +60,59 @@ koko_controllers:
     paired_constraints: [1, 2, 3, 4, 5, 6]
     filter_length: 20
     type: koko_controllers/CartesianPoseController
-    p_gains: [60, 60, 60, 2, 2, 2]
-    d_gains: [8.0, 8.0, 8.0, 0.8, 0.8, 0.8]
+    p_gains: [100, 100, 100, 4, 4, 4]
+    d_gains: [0.1, 0.1, 0.1, 0.001, 0.001, 0.001]
     posture_control: true
-    posture_gain: 8.0
+    posture_gain: 18.0
     # posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29]
-    posture_target: [0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    posture_target: [0.0, -1.57, 0.0, -1.57, -1.57,-1.0, 0.0]
     z_offset_controller: 0.0
     root_name: koko
     base_roll_joint:
       id: 0.0
+      d_gain: 3.0
       max_torque: 30
       min_torque: -30
       max_angle: 3.3
       min_angle: -2.2
     shoulder_lift_joint:
       id: 0.55
+      d_gain: 3.0
       max_torque: 30
       min_torque: -30
       max_angle: 0.5
       min_angle: -2.2
     shoulder_roll_joint:
       id: 0.5
+      d_gain: 2.0
       max_torque: 30
       min_torque: -30
       max_angle: 2.6
       min_angle: -2.6
     elbow_lift_joint:
       id: 0.7
+      d_gain: 2.0
       max_torque: 30
       min_torque: -30
       max_angle: 0.5
       min_angle: -2.2
     elbow_roll_joint:
       id: 0.0
+      d_gain: 2.0
       max_torque: 30
       min_torque: -30
       max_angle: 2.6
       min_angle: -2.6
     wrist_lift_joint:
       id: 0
+      d_gain: 1.0
       max_torque: 30
       min_torque: -30
       max_angle: 0.5
       min_angle: -2.2
     wrist_roll_joint:
       id: 0.0
+      d_gain: 1.0
       max_torque: 30
       min_torque: -30
       max_angle: 2.6

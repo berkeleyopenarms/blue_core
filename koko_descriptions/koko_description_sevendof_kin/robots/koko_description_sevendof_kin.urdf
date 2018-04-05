@@ -392,7 +392,7 @@
     name="wrist_roll_link">
     <inertial>
       <origin
-        xyz="-7.00549073777146E-05 2.51271935266528E-05 -0.0523671181891625"
+        xyz="-7.00549073777146E-05 2.51271935266528E-05 0.523671181891625"
         rpy="0 0 0" />
       <mass
         value="0.247109755986862" />
@@ -406,7 +406,7 @@
     </inertial>
     <visual>
       <origin
-        xyz="0 0 0"
+        xyz="0 0 0.1"
         rpy="0 0 0" />
       <geometry>
         <mesh
@@ -420,7 +420,7 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0 0 0.1"
         rpy="0 0 0" />
       <geometry>
         <mesh
@@ -432,7 +432,7 @@
     name="wrist_roll_joint"
     type="revolute">
     <origin
-      xyz="0 0.070147 -6.25E-05"
+      xyz="0 0.170147 -6.25E-05"
       rpy="-1.5708 -2.4803E-15 -3.1416" />
     <parent
       link="wrist_lift_link" />

@@ -14,9 +14,9 @@
     <!-- pkg="koko_misc" -->
     <!-- type="visual_controller" /> -->
 
-  <node name="viv_teleop"
-    pkg="koko_vive"
-    type="vive_teleop" />
+  <!-- <node name="vive_teleop" -->
+    <!-- pkg="koko_vive" -->
+    <!-- type="vive_teleop.py" /> -->
 
   <!-- [> GUI <] -->
   <!-- <node -->

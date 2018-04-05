@@ -119,6 +119,10 @@ namespace koko_controllers{
           return false;
         }
 
+        if (!n.getParam(jointName + "/d_gain", d_gain)) {
+          ROS_ERROR("No %s/d_gain given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
+          return false;
+        }
         jointPD.max_torque = max_torque;
         jointPD.min_torque = min_torque;
         jointPD.max_angle = max_angle;
@@ -247,7 +251,13 @@ namespace koko_controllers{
     for (unsigned int i = 0; i < nj; i++){
       commands[i] = 0;
       for (unsigned int j=0; j<6; j++) {
-        commands[i] += (jacobian(j,i) * wrench_desi(j));
+        if( i == 5 && ((j == 0) || (j == 1) || (j == 2) ) ){
+
+        } else if( i == 6 && ((j == 0) || (j == 1) || (j == 2) ) ){
+
+        } else{
+          commands[i] += (jacobian(j,i) * wrench_desi(j));
+        }
       }
 
     }
