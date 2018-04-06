@@ -296,7 +296,7 @@ class BLDCControllerClient:
 
         self._ser.write(datagram)
 
-    def readResponse(self, server_id, func_code, num_tries=10, try_interval=0.01):
+    def readResponse(self, server_id, func_code):
         sync = self._ser.read()
         if len(sync) != 1 and sync != "\xff":
             # Reached maximum number of tries
