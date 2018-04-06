@@ -100,6 +100,8 @@ namespace koko_controllers{
         double min_torque;
         double min_angle;
         double max_angle;
+        double pos_mult;
+        double rot_mult;
         double d_gain;
 
         if (!n.getParam(jointName + "/max_torque", max_torque)) {
@@ -118,11 +120,23 @@ namespace koko_controllers{
           ROS_ERROR("No %s/max_angle given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
           return false;
         }
-
         if (!n.getParam(jointName + "/d_gain", d_gain)) {
           ROS_ERROR("No %s/d_gain given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
           return false;
         }
+
+        if (!n.getParam(jointName + "/pos_mult", pos_mult)) {
+          ROS_ERROR("No %s/pos_mult given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
+          return false;
+        }
+        if (!n.getParam(jointName + "/rot_mult", rot_mult)) {
+          ROS_ERROR("No %s/rot_mult given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
+          return false;
+        }
+
+        jointPD.pos_mult = pos_mult;
+        jointPD.rot_mult = rot_mult;
+
         jointPD.max_torque = max_torque;
         jointPD.min_torque = min_torque;
         jointPD.max_angle = max_angle;
@@ -251,12 +265,13 @@ namespace koko_controllers{
     for (unsigned int i = 0; i < nj; i++){
       commands[i] = 0;
       for (unsigned int j=0; j<6; j++) {
-        if( i == 5 && ((j == 0) || (j == 1) || (j == 2) ) ){
 
-        } else if( i == 6 && ((j == 0) || (j == 1) || (j == 2) ) ){
-
-        } else{
-          commands[i] += (jacobian(j,i) * wrench_desi(j));
+        if( ((j == 0) || (j == 1) || (j == 2) ) ){
+          // position coordinates of jacobian
+          commands[i] += (jacobian(j,i) * wrench_desi(j)) * joint_vector[i].pos_mult;
+        } else {
+          // rotation coordinates of jacobian
+          commands[i] += (jacobian(j,i) * wrench_desi(j)) * joint_vector[i].rot_mult;
         }
       }
 

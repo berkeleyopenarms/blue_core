@@ -46,6 +46,8 @@ private:
     double min_torque;
     double max_angle;
     double min_angle;
+    double pos_mult;
+    double rot_mult;
   };
   std::vector<std::string> joint_names;
   std::vector<JointPD> joint_vector;
