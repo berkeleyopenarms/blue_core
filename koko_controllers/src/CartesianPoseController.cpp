@@ -254,14 +254,18 @@ namespace koko_controllers{
       twist_error.vel.Normalize() * 1.0;
     } */
 
+    KDL::Jacobian jacobian(nj);
+    KDL::ChainJntToJacSolver jacSolver(chain);
+    jacSolver.JntToJac(jnt_pos_, jacobian, -1);
+    
+    KDL::Twist twist_error
+
+
     publishDeltaMsg(twist_error);
     KDL::Wrench wrench_desi;
     for (unsigned int i=0; i<6; i++)
       wrench_desi(i) = computeCommand(twist_error(i), period, i);
 
-    KDL::Jacobian jacobian(nj);
-    KDL::ChainJntToJacSolver jacSolver(chain);
-    jacSolver.JntToJac(jnt_pos_, jacobian, -1);
     for (unsigned int i = 0; i < nj; i++){
       commands[i] = 0;
       for (unsigned int j=0; j<6; j++) {
