@@ -94,7 +94,7 @@ koko_controllers:
       min_angle: -2.6
     elbow_lift_joint:
       d_gain: 2.0
-      pos_mult: 1.0
+      pos_mult: 2.0
       rot_mult: 1.0
       max_torque: 30
       min_torque: -30
@@ -110,7 +110,7 @@ koko_controllers:
       min_angle: -2.6
     wrist_lift_joint:
       d_gain: 1.0
-      pos_mult: 1.0
+      pos_mult: 0.01
       rot_mult: 1.0
       max_torque: 30
       min_torque: -30
@@ -118,7 +118,7 @@ koko_controllers:
       min_angle: -2.2
     wrist_roll_joint:
       d_gain: 1.0
-      pos_mult: 1.0
+      pos_mult: 0.01
       rot_mult: 1.0
       max_torque: 30
       min_torque: -30
