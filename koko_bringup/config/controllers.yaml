@@ -19,7 +19,7 @@ koko_controllers:
 
   ### Joint controllers
 
-  torque_controller:
+  joint_torque_controller:
     type: effort_controllers/JointGroupEffortController
     joints:
       - base_roll_joint
