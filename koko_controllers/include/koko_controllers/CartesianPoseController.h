@@ -2,6 +2,7 @@
 #include <hardware_interface/joint_command_interface.h>
 #include <ros/node_handle.h>
 #include <std_msgs/Float64MultiArray.h>
+#include <control_toolbox/pid.h>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 #include <sensor_msgs/JointState.h>
@@ -27,7 +28,7 @@ public:
   bool init(hardware_interface::EffortJointInterface *robot, ros::NodeHandle &n);
   void update(const ros::Time& time, const ros::Duration& period);
   void setCommand(const std_msgs::Float64MultiArrayConstPtr& pos_commands);
-  double computeCommand(double error, ros::Duration dt, int index);
+  double computeCommand(double error, const ros::Duration& dt, int index);
   void starting(const ros::Time& time);
   void visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg);
   void controllerPoseCallback(const geometry_msgs::PoseStamped msg);
@@ -62,10 +63,11 @@ private:
   ros::Subscriber subVisual;
   ros::Subscriber subCommand;
   ros::Subscriber sub_grav;
-  std::vector<double> p_gains;
-  std::vector<double> d_gains;
+
+  std::vector<control_toolbox::Pid> pid_controllers_;
   std::vector<double> p_error_last;
   std::vector<double> d_error;
+
   std::vector<std::vector<double> > err_dot_histories;
 
   bool posture_control;
