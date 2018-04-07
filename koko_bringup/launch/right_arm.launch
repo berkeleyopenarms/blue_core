@@ -31,6 +31,7 @@
     type="spawner"
     output="screen"
     args="koko_controllers/joint_state_controller
+          koko_controllers/cartesian_pose_controller
           koko_controllers/gripper_controller" />
 
           <!-- koko_controllers/joint_position_controller -->
@@ -41,7 +42,6 @@
     type="spawner"
     output="screen"
     args="--stopped
-          koko_controllers/cartesian_pose_controller
           koko_controllers/joint_position_controller" />
   <!-- Joint calibration -->
   <!-- TODO: this is temporary, and is being moved to the hardware interface initialization -->
