@@ -60,8 +60,14 @@ koko_controllers:
     paired_constraints: [1, 2, 3, 4, 5, 6]
     filter_length: 20
     type: koko_controllers/CartesianPoseController
-    p_gains: [100, 100, 100, 8, 8, 8]
-    d_gains: [1, 1, 1, 0.01, 0.01, 0.01]
+
+    pid_x: {p: 100, i: 0, d: 1, i_clamp: 0}
+    pid_y: {p: 100, i: 0, d: 1, i_clamp: 0}
+    pid_z: {p: 100, i: 0, d: 1, i_clamp: 0}
+    pid_r: {p: 8, i: 0, d: 0.01, i_clamp: 0}
+    pid_p: {p: 8, i: 0, d: 0.01, i_clamp: 0}
+    pid_y: {p: 8, i: 0, d: 0.01, i_clamp: 0}
+
     posture_control: true
     posture_gain: 10.0
     # posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29]
