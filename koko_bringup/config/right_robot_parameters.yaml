@@ -1,0 +1,42 @@
+koko_hardware:
+    ### Joint configuration
+    joint_names:
+        - base_roll_joint
+        - shoulder_lift_joint
+        - shoulder_roll_joint
+        - elbow_lift_joint
+        - elbow_roll_joint
+        - wrist_lift_joint
+        - wrist_roll_joint
+        - gripper_joint
+    endlink: wrist_roll_link
+    differential_pairs: [1, 2, 3, 4, 5, 6]
+    gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 14.4]
+    joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    id_torque_gains: [1.08, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    # id_torque_gains: [1.38, 1.27, 1.27, 1.27, 1.27, 1.0, 1.0]
+    softstop_min_angles: [-3.3, -2.10, -2.6, -2.25, -2.6, -2.25, -2.6, -1.45]
+    softstop_max_angles: [2.2, 0.3, 2.6, .2, 2.6, 0.2, 2.6, 1.45]
+    softstop_tolerance: 0.19
+    softstop_torque_limit: 95.0
+
+    ### Motor configuration
+    motor_names:
+        - base_roll_motor
+        - right_motor1
+        - left_motor1
+        - right_motor2
+        - left_motor2
+        - right_motor3
+        - left_motor3
+        - gripper_motor
+    motor_ids: [1, 23, 22, 17, 10, 19, 21, 2]
+    # motor_current_limits: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0]
+    # motor_current_limits: [3.0, 2.5, 2.5, 2.5, 2.5, 1.5, 1.5]
+    current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0, 1.0]
+
+    ### Calibration configuration
+    hardstop_start_angles: [0.785398, -2.19, 1.570796, 0.0, -1.570796, -0.23, 0.0, 0.0]
+    calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0, 0.0] # for vive calibration
+    accelerometer_calibration: false

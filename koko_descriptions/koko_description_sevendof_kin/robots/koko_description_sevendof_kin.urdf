@@ -93,8 +93,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-2.3412"
-      upper="3.3999"
+      lower="-3.3999"
+      upper="2.3412"
       effort="0"
       velocity="0" />
   </joint>
@@ -201,7 +201,7 @@
     type="revolute">
     <origin
       xyz="0 0.070147 -6.25E-05"
-      rpy="-1.5708 1.5673 -3.1416" />
+      rpy="-1.5708 -1.5673 -3.1416" />
     <parent
       link="shoulder_lift_link" />
     <child
@@ -317,7 +317,7 @@
     type="revolute">
     <origin
       xyz="0 0.070147 -6.25E-05"
-      rpy="1.5708 -1.5708 0" />
+      rpy="1.5708 1.5708 0" />
     <parent
       link="upper_arm_lift_link" />
     <child
@@ -392,7 +392,7 @@
     name="wrist_roll_link">
     <inertial>
       <origin
-        xyz="-7.00549073777146E-05 2.51271935266528E-05 -0.0523671181891625"
+        xyz="-7.00549073777146E-05 2.51271935266528E-05 0.523671181891625"
         rpy="0 0 0" />
       <mass
         value="0.247109755986862" />
@@ -406,7 +406,7 @@
     </inertial>
     <visual>
       <origin
-        xyz="0 0 0"
+        xyz="0 0 0.1"
         rpy="0 0 0" />
       <geometry>
         <mesh
@@ -420,7 +420,7 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0 0 0.1"
         rpy="0 0 0" />
       <geometry>
         <mesh
@@ -432,7 +432,7 @@
     name="wrist_roll_joint"
     type="revolute">
     <origin
-      xyz="0 0.070147 -6.25E-05"
+      xyz="0 0.170147 -6.25E-05"
       rpy="-1.5708 -2.4803E-15 -3.1416" />
     <parent
       link="wrist_lift_link" />
@@ -657,5 +657,63 @@
       link="base_tracker_link" />
     <axis
       xyz="0 0 0" />
+  </joint>
+  <link
+    name="gripper_link">
+    <inertial>
+      <origin
+        xyz="-7.00549073506807E-05 2.51271935254316E-05 -0.052367118189184"
+        rpy="0 0 0" />
+      <mass
+        value="0.047109755986862" />
+      <inertia
+        ixx="0.000916887873826385"
+        ixy="-6.04547948818479E-08"
+        ixz="0.6796133363069E-06"
+        iyy="0.000877268801166351"
+        iyz="0.64172907801915E-07"
+        izz="0.000293333065172452" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/wrist_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/wrist_roll_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="gripper_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.070147 -6.25E-05"
+      rpy="-1.5708 -2.4803E-15 -3.1416" />
+    <parent
+      link="wrist_roll_link" />
+    <child
+      link="gripper_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2.6761"
+      upper="2.6761"
+      effort="0"
+      velocity="0" />
   </joint>
 </robot>

@@ -122,6 +122,9 @@ class BLDCControllerClient:
     def setTorqueConstant(self, server_id, value):
         return self.writeRegisters(server_id, 0x1022, 1, struct.pack('<f', value))
 
+    def setPositionOffset(self, server_id, value):
+        return self.writeRegisters(server_id, 0x1015, 1, struct.pack('<f', value))
+
     def setCurrentControlMode(self, server_id):
         return self.writeRegisters(server_id, 0x2000, 1, struct.pack('<B', 0))
 
@@ -293,7 +296,7 @@ class BLDCControllerClient:
 
         self._ser.write(datagram)
 
-    def readResponse(self, server_id, func_code, num_tries=10, try_interval=0.01):
+    def readResponse(self, server_id, func_code):
         sync = self._ser.read()
         if len(sync) != 1 and sync != "\xff":
             # Reached maximum number of tries

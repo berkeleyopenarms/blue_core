@@ -1,3 +1,4 @@
+
 #include <ros/ros.h>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/tree.hpp>
@@ -37,9 +38,9 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "joint_state_tracker");
   ros::NodeHandle node;
-
+  ros::Duration(0.0444).sleep();
   // publisher and subscriber setup
-  pub = node.advertise<sensor_msgs::JointState>("/joint_state_tracker", 1000);
+  pub = node.advertise<sensor_msgs::JointState>("/joint_state_tracker", 100);
 
   if (!node.getParam("koko_hardware/joint_names", joint_names)) {
     ROS_ERROR("No joint_names given (namespace: %s)", node.getNamespace().c_str());
@@ -49,7 +50,7 @@ int main(int argc, char** argv)
   if (!node.getParam("koko_hardware/hardstop_start_angles", hardstop_start_angles)) {
     ROS_ERROR("No hardstop_start_angles given (namespace: %s)", node.getNamespace().c_str());
   }
-  nj = hardstop_start_angles.size();
+  nj = joint_names.size();
   jointCur = KDL::JntArray(nj);
   for (int i = 0; i < nj; i++) {
     jointCur(i) = hardstop_start_angles[i];
@@ -69,7 +70,7 @@ int main(int argc, char** argv)
     joint_state_msg.effort.push_back(0.0);
   }
 
-  ros::Rate loop_rate(500);
+  ros::Rate loop_rate(50);
 
   while(ros::ok()){
     ros::spinOnce();

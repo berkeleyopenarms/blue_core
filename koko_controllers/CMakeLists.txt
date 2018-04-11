@@ -5,6 +5,10 @@ find_package(catkin REQUIRED COMPONENTS
   controller_interface
   urdf
   kdl_parser
+  control_toolbox
+  realtime_tools
+  hardware_interface
+  control_msgs
 )
 
 find_package(
@@ -20,7 +24,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME} src/CartesianPoseController.cpp)
+add_library(${PROJECT_NAME} src/KokoJointGroupPositionController.cpp src/CartesianPoseController.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 

@@ -26,25 +26,6 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   getRequiredParam(nh, "koko_hardware/endlink", endlink);
   getRequiredParam(nh, "koko_hardware/accelerometer_calibration", is_accel_calibrate);
 
-  num_joints_ = joint_names_.size();
-  ROS_INFO("Robot has %d joints", num_joints_);
-
-  is_base_ = false;
-  if (!(std::find(differential_pairs_.begin(), differential_pairs_.end(), 0) !=differential_pairs_.end())){
-    is_base_ = true;
-    ROS_INFO("Robot Configured with Base");
-  } else {
-    ROS_INFO("Robot Configured with No Base");
-  }
-
-  is_gripper_ = false;
-  if (!(std::find(differential_pairs_.begin(), differential_pairs_.end(), num_joints_ - 1) !=differential_pairs_.end())){
-    is_gripper_ = true;
-    ROS_INFO("Robot Configured with Gripper");
-  } else {
-    ROS_INFO("Robot Configured with No Gripper");
-  }
-
   KDL::Tree my_tree;
   if(!kdl_parser::treeFromString(robot_desc_string, my_tree)){
     ROS_FATAL("Failed to contruct kdl tree");
@@ -69,7 +50,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   buildDynamicChain(chain);
   id_torques_ = KDL::JntArray(chain.getNrOfJoints());
 
-
+  num_joints_ = joint_names_.size();
   read_from_motors_ = false;
 
   joint_pos_initial_.resize(num_joints_, 0.0);
@@ -80,9 +61,8 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   motor_cmd_publishers_.resize(num_joints_);
 
   int num_simple_actuators = num_joints_ - differential_pairs_.size();
-  num_diff_actuators_ = differential_pairs_.size() / 2;
+  int num_diff_actuators_ = differential_pairs_.size() / 2;
   int num_actuators = num_simple_actuators + num_diff_actuators_;
-  ROS_INFO("%d simple actuators and %d differential actuators", num_simple_actuators, num_diff_actuators_);
 
   actuator_states_.resize(num_actuators);
   actuator_commands_.resize(num_actuators);
@@ -101,28 +81,32 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
 
   read_gravity_vector_.resize(num_diff_actuators_ + num_simple_actuators);
 
-
+  is_base_ = false;
+  if (!(std::find(differential_pairs_.begin(), differential_pairs_.end(), 0) !=differential_pairs_.end())){
+    is_base_ = true;
+    ROS_INFO("Robot Configured with Base");
+  } else {
+    ROS_INFO("Robot Configured with No Base");
+  }
   joint_pos_.resize(num_joints_);
   joint_vel_.resize(num_joints_);
   joint_eff_.resize(num_joints_);
-  raw_joint_cmd_.resize(num_joints_);
   joint_cmd_.resize(num_joints_);
 
 
   for (int i = 0; i < num_joints_; i++) {
     joint_cmd_[i] = 0.0;
-    raw_joint_cmd_[i] = 0.0;
     hardware_interface::JointStateHandle state_handle_a(joint_names_[i], &joint_pos_[i], &joint_vel_[i], &joint_eff_[i]);
     joint_state_interface_.registerHandle(state_handle_a);
   }
+
   registerInterface(&joint_state_interface_);
 
   for (int i = 0; i < num_joints_; i++) {
-    hardware_interface::JointHandle effort_handle_a(joint_state_interface_.getHandle(joint_names_[i]), &raw_joint_cmd_[i]);
+    hardware_interface::JointHandle effort_handle_a(joint_state_interface_.getHandle(joint_names_[i]), &joint_cmd_[i]);
     joint_effort_interface_.registerHandle(effort_handle_a);
   }
   registerInterface(&joint_effort_interface_);
-  ROS_INFO("Set up effort interfaces");
 
   calibration_counter_ = 0;
   is_calibrated_ = false;
@@ -136,6 +120,12 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   gravity_vector_.data[1] = 0;
   gravity_vector_.data[2] = -9.81;
 
+  joint_state_tracker_sub_ = nh.subscribe("joint_state_tracker", 1, &KokoHW::calibrationStateCallback, this);
+  motor_state_sub_ = nh.subscribe("koko_hardware/motor_states", 1, &KokoHW::motorStateCallback, this);
+
+  for (int i = 0; i < motor_names_.size(); i++) {
+    motor_cmd_publishers_[i] = nh.advertise<std_msgs::Float64>("koko_hardware/" + motor_names_[i] + "_cmd", 1);
+  }
 
   int simple_idx = 0;
   int differential_idx = 0;
@@ -146,10 +136,8 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
       std::vector<double> actuator_ratios(2, 1.0);
       actuator_ratios[0] = -1.0;
 
-      ROS_INFO("Joint Index %d", j_idx);
       gear_ratios_temp[0] = -gear_ratios_[j_idx];
       j_idx++;
-      ROS_INFO("Joint Index %d", j_idx);
       gear_ratios_temp[1] = -gear_ratios_[j_idx];
       j_idx++;
 
@@ -158,7 +146,6 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
 
     } else {
       // a simple transmission because not in paired constraints
-      ROS_INFO("Joint Index %d", j_idx);
       simple_transmissions_[simple_idx] = new ti::SimpleTransmission(-gear_ratios_[j_idx], 0.0);
       simple_idx++;
       j_idx++;
@@ -173,7 +160,6 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
       // a differential transmission if in paired constraints
       // Wrap differential transmission raw data - current state
 
-      ROS_INFO("Joint Index %d", j_idx);
       actuator_states_[actuator_idx].position.push_back(&actuator_pos_[j_idx]);
       actuator_states_[actuator_idx].position.push_back(&actuator_pos_[j_idx + 1]);
       actuator_states_[actuator_idx].velocity.push_back(&actuator_vel_[j_idx]);
@@ -201,7 +187,6 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
     } else {
       // a simple transmission because not in paired constraints
       // Wrap base simple transmission raw data - current state
-      ROS_INFO("Joint Index %d", j_idx);
       actuator_states_[actuator_idx].position.push_back(&actuator_pos_[j_idx]);
       actuator_states_[actuator_idx].velocity.push_back(&actuator_vel_[j_idx]);
       actuator_states_[actuator_idx].effort.push_back(&actuator_eff_[j_idx]);
@@ -223,11 +208,10 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   // Register transmissions to each interface
   simple_idx = 0;
   differential_idx = 0;
-  int joint_index = 0;
   for(int a_idx = 0; a_idx < num_actuators; a_idx += 1){
     std::ostringstream oss;
     oss << a_idx;
-    if(std::find(differential_pairs_.begin(), differential_pairs_.end(), joint_index) != differential_pairs_.end()){
+    if(std::find(differential_pairs_.begin(), differential_pairs_.end(), a_idx) != differential_pairs_.end()){
       // a differential transmission if in paired constraints
 
       actuator_to_joint_interface_.registerHandle(ti::ActuatorToJointStateHandle("differential_trans" + oss.str(),
@@ -238,7 +222,6 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
             differential_transmissions_[differential_idx],
             actuator_commands_[a_idx],
             joint_commands_[a_idx]));
-      joint_index += 2;
       differential_idx++;
     } else {
       // a simple transmission because not in paired constraints
@@ -250,22 +233,11 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
             simple_transmissions_[simple_idx],
             actuator_commands_[a_idx],
             joint_commands_[a_idx]));
-      joint_index += 1;
       simple_idx++;
     }
   }
   ROS_INFO("Finished setting up transmissions");
-
-  joint_state_tracker_sub_ = nh.subscribe("joint_state_tracker", 1, &KokoHW::calibrationStateCallback, this);
-  motor_state_sub_ = nh.subscribe("koko_hardware/motor_states", 1, &KokoHW::motorStateCallback, this);
-  for (int i = 0; i < motor_names_.size(); i++) {
-    motor_cmd_publishers_[i] = nh.advertise<std_msgs::Float64>("koko_hardware/" + motor_names_[i] + "_cmd", 1);
-  }
-  ROS_INFO("Finished setting up subscribers and publisher");
-
-  ros::Duration(0.444).sleep();
   if( is_accel_calibrate ) {
-    ros::Duration(0.444).sleep();
     accelerometerCalibrate(num_simple_actuators);
   }
 }
@@ -276,7 +248,7 @@ void KokoHW::setReadGravityVector() {
   if (is_base_ == true) {
     // Apply base gravity transform
     KDL::Rotation base_rot_z;
-    base_rot_z.DoRotZ(-4.301 - M_PI);
+    base_rot_z.DoRotZ(-4.301 - M_PI / 2.0);
     KDL::Vector corrected_base;
     corrected_base = base_rot_z * actuator_accel_[0] * 9.81 / actuator_accel_[0].Norm();
     corrected_base.data[0] = -corrected_base.data[0];
@@ -290,6 +262,7 @@ void KokoHW::setReadGravityVector() {
     KDL::Vector raw_left;
     KDL::Vector raw;
 
+    raw_right = actuator_accel_.at(start_ind + 2*i);  // KDL Vector
     raw_left = actuator_accel_.at(start_ind + 2*i+1);  // KDL Vector
     // Rotate Left accel vector into Right accel Frame
     KDL::Rotation left_rot_z;
@@ -321,14 +294,13 @@ void KokoHW::setReadGravityVector() {
     read_gravity_vector_[start_ind + i] = raw * 9.81 / raw.Norm();
   }
   // TODO: Find Gripper link transform
-  if(is_gripper_) {
-    KDL::Rotation grip_rot_z;
-    grip_rot_z.DoRotZ(2 * M_PI);
-    KDL::Vector corrected_grip;
-    corrected_grip = grip_rot_z * actuator_accel_[start_ind + 2*num_diff_actuators_] / actuator_accel_[start_ind + 2*num_diff_actuators_].Norm() * 9.81;
-    corrected_grip.data[2] = -corrected_grip.data[2];
-    read_gravity_vector_[start_ind + num_diff_actuators_] = corrected_grip;
-  }
+  KDL::Rotation grip_rot_z;
+  grip_rot_z.DoRotZ(2 * M_PI);
+  KDL::Vector corrected_grip;
+  corrected_grip = grip_rot_z * actuator_accel_[start_ind + 2*num_diff_actuators_] / actuator_accel_[start_ind + 2*num_diff_actuators_].Norm() * 9.81;
+  corrected_grip.data[2] = -corrected_grip.data[2];
+  read_gravity_vector_[start_ind + num_diff_actuators_] = corrected_grip;
+
   double a = 0.992;
   gravity_vector_[0] = a * gravity_vector_[0] - (1.0 - a) * read_gravity_vector_[0][0];
   gravity_vector_[1] = a * gravity_vector_[1] - (1.0 - a) * read_gravity_vector_[0][1];
@@ -336,8 +308,9 @@ void KokoHW::setReadGravityVector() {
 }
 
 void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
-  ROS_ERROR("in accel calibration");
   KDL::ChainFkSolverPos_recursive fksolver(kdl_chain_);
+
+
   // calibrate base
   // Account for base link (assumes that there is only one base link and one gripper link)
   int index = 0;
@@ -348,12 +321,10 @@ void KokoHW::accelerometerCalibrate(int num_simple_actuators) {
   KDL::JntArray jointPositions = KDL::JntArray(num_joints_);
   KDL::Frame base_frame;
   if (is_base_) {
-    ROS_ERROR("in base");
 
     std::vector<double> error_base(8, 0.0);
 
     for(int k = 0; k < 8; k ++){
-      ROS_ERROR("problem? %d", k);
       actuator_pos_[index] = actuator_pos_initial_[index] + 2.0 * M_PI * k;
       // add 2kpi to motor position
       // propogate to joints
@@ -422,34 +393,26 @@ void KokoHW::getRequiredParam(ros::NodeHandle &nh, const std::string name, TPara
 }
 
 void KokoHW::read() {
-
 }
 
 void KokoHW::write() {
   if(!read_from_motors_)
     return;
+
   if (is_calibrated_) {
+    setReadGravityVector();
     computeInverseDynamics();
     // added for using transmission interface
-    for (int i = 0; i < num_joints_; i++) {
-      if(i == 1){
-        // ROS_ERROR("joint pre %d command: %f", i, raw_joint_cmd_[i]);
-      }
-      if ( !(is_gripper_ && i == num_joints_ - 1) ) {
-        joint_cmd_[i] = 0.0;
-        joint_cmd_[i] = raw_joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
-      } else {
-        joint_cmd_[i] = raw_joint_cmd_[i];
-        // ROS_ERROR("joint gripper cmd %f", joint_cmd_[i]);
-      }
-
+    for (int i = 0; i < num_joints_; i++){
+      // :joint_cmd_[i] = 0.0;
+      joint_cmd_[i] = joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
       // checking joint limits and publish counter torque if near the limit
       if(joint_pos_[i] > softstop_max_angles_[i] - softstop_tolerance_){
-        ROS_WARN_THROTTLE(1, "Going over soft stop max, %d", i);
+        ROS_ERROR("Going over soft stop");
         double del = joint_pos_[i] - softstop_max_angles_[i] + softstop_tolerance_;
         joint_cmd_[i] += -1.0 * softstop_torque_limit_ * del * del;
       } else if (joint_pos_[i] < softstop_min_angles_[i] + softstop_tolerance_){
-        ROS_WARN_THROTTLE(1, "Going over soft stop min, %d",i);
+        ROS_ERROR("Going over soft stop");
         double del = softstop_min_angles_[i] + softstop_tolerance_ - joint_pos_[i];
         joint_cmd_[i] += softstop_torque_limit_ * del * del;
       }
@@ -460,9 +423,6 @@ void KokoHW::write() {
       actuator_cmd_[i] = joint_torque_directions_[i] * actuator_cmd_[i];
       double motor_torque = actuator_cmd_[i];
       double motor_current = current_to_torque_ratios_[i] * motor_torque;
-      if(i == num_joints_ - 1){
-        // ROS_ERROR("motor gripper cmd %f", motor_current);
-      }
 
       if (std::abs(motor_current) > motor_current_limits_[i]){
         if (motor_current > 0){
@@ -476,7 +436,6 @@ void KokoHW::write() {
 
       commandMsg.data =  motor_current;
       motor_cmd_publishers_[i].publish(commandMsg);
-      // ROS_ERROR("motor command: %f", motor_current);
     }
   }
 }
@@ -504,16 +463,12 @@ void KokoHW::buildDynamicChain(KDL::Chain &chain){
 }
 
 void KokoHW::computeInverseDynamics() {
-  int id_joints = num_joints_;
-  if (is_gripper_) {
-    id_joints -= 1;
-  }
-  KDL::JntArray jointPositions(id_joints);
-  KDL::JntArray jointVelocities(id_joints);
-  KDL::JntArray jointAccelerations(id_joints);
+  KDL::JntArray jointPositions(num_joints_);
+  KDL::JntArray jointVelocities(num_joints_);
+  KDL::JntArray jointAccelerations(num_joints_);
   KDL::Wrenches f_ext;
 
-  for (int i = 0; i < id_joints; i++) {
+  for (int i = 0; i < num_joints_; i++) {
     jointPositions(i) = joint_pos_[i];
     jointVelocities(i) = joint_vel_[i];
     jointAccelerations(i) = 0.0;
@@ -553,7 +508,7 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
       accel_vect.data[2] = msg->accel[i].z;
       actuator_accel_.at(index) = accel_vect;
       actuator_vel_[index] = msg->velocity[i];
-      actuator_eff_[index] = msg->direct_current[i];
+      //actuator_eff_[index] = msg->effort[i];
     }
   }
   // Propagate actuator information to joint information
@@ -561,13 +516,14 @@ void KokoHW::motorStateCallback(const koko_hardware_drivers::MotorState::ConstPt
   for(int i = 0; i < num_joints_; i++) {
     joint_pos_[i] = joint_pos_[i] + joint_pos_initial_[i];
   }
+  // setReadGravityVector();
   read_from_motors_ = true;
-  setReadGravityVector();
 }
 
 void KokoHW::calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg) {
-  if (is_calibrated_ || is_accel_calibrate)
+  if (is_calibrated_)
     return;
+
   if (calibration_counter_ >= 10) {
     for (int i = 0; i < joint_pos_initial_.size(); i++) {
       joint_pos_initial_[i] = msg->position[i];

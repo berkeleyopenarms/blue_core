@@ -29,9 +29,9 @@ namespace koko_controllers{
 
     KDL::Tree my_tree;
 
-    if(!kdl_parser::treeFromString(robot_desc_string, my_tree)){
+    if(!kdl_parser::treeFromString(robot_desc_string, my_tree)) {
       ROS_ERROR("Failed to contruct kdl tree");
-      return false; 
+      return false;
     }
 
     std::string endlink;
@@ -56,14 +56,6 @@ namespace koko_controllers{
       ROS_ERROR("No paired_constraint given node namespace %s", n.getNamespace().c_str());
     }
 
-    if (!n.getParam("p_gains", p_gains)) {
-      ROS_ERROR("No p_gains given node namespace %s", n.getNamespace().c_str());
-    }
-
-    if (!n.getParam("d_gains", d_gains)) {
-      ROS_ERROR("No d_gains given node namespace %s", n.getNamespace().c_str());
-    }
-
     if (!n.getParam("z_offset_controller", z_offset_controller)) {
       ROS_ERROR("No z_offset_controller given node namespace %s", n.getNamespace().c_str());
     }
@@ -76,8 +68,19 @@ namespace koko_controllers{
       ROS_ERROR("Paired_constraints length must be even");
     }
 
-    KDL::Chain dummyChain;
+    // Load PID parameters
+    pid_controllers_.resize(6);
 
+    std::string pid_prefix = "pid_";
+    char dimension_names[] = "xyzrpy";
+
+    for (int i = 0; i < 6; i++) {
+      pid_controllers_[i].init(ros::NodeHandle(n, pid_prefix + dimension_names[i]));
+    }
+
+    // Get URDF
+
+    KDL::Chain dummyChain;
     if (!my_tree.getChain("base_link", endlink, dummyChain)) {
       ROS_ERROR("Failed to construct kdl chain");
       return false;
@@ -85,7 +88,7 @@ namespace koko_controllers{
 
     int ns = dummyChain.getNrOfSegments();
     ROS_INFO("ns = %d", ns);
-    for(int i = 0; i < ns; i++){
+    for(int i = 0; i < ns; i++) {
       KDL::Segment seg = dummyChain.segments[i];
 
       if (seg.getJoint().getType() != 8)
@@ -100,6 +103,8 @@ namespace koko_controllers{
         double min_torque;
         double min_angle;
         double max_angle;
+        double pos_mult;
+        double rot_mult;
         double d_gain;
 
         if (!n.getParam(jointName + "/max_torque", max_torque)) {
@@ -118,6 +123,22 @@ namespace koko_controllers{
           ROS_ERROR("No %s/max_angle given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
           return false;
         }
+        if (!n.getParam(jointName + "/d_gain", d_gain)) {
+          ROS_ERROR("No %s/d_gain given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
+          return false;
+        }
+
+        if (!n.getParam(jointName + "/pos_mult", pos_mult)) {
+          ROS_ERROR("No %s/pos_mult given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
+          return false;
+        }
+        if (!n.getParam(jointName + "/rot_mult", rot_mult)) {
+          ROS_ERROR("No %s/rot_mult given (namespace: %s)", jointName.c_str(), n.getNamespace().c_str());
+          return false;
+        }
+
+        jointPD.pos_mult = pos_mult;
+        jointPD.rot_mult = rot_mult;
 
         jointPD.max_torque = max_torque;
         jointPD.min_torque = min_torque;
@@ -137,15 +158,12 @@ namespace koko_controllers{
     }
 
     subController = n.subscribe("command", 1, &CartesianPoseController::controllerPoseCallback, this);
-    subCommand = n.subscribe("command_label", 1, &CartesianPoseController::commandCallback, this);
-
 
     ROS_INFO("nj %d", chain.getNrOfJoints());
 
     p_error_last.resize(6);
     d_error.resize(6);
     visualizer = "simple_6dof_MOVE_ROTATE_3D";
-    command_label = 0;
 
     commandPub = node.advertise<std_msgs::Float64MultiArray>("/commandPub", 1000);
     deltaPub = node.advertise<std_msgs::Float64MultiArray>("/deltaPub", 1000);
@@ -174,21 +192,14 @@ namespace koko_controllers{
     commandPose.position.x = cartpos.p.data[0];
     commandPose.position.y = cartpos.p.data[1];
     commandPose.position.z = cartpos.p.data[2];
-    cartpos.M.GetQuaternion(commandPose.orientation.x, commandPose.orientation.y, 
+    cartpos.M.GetQuaternion(commandPose.orientation.x, commandPose.orientation.y,
       commandPose.orientation.z, commandPose.orientation.w);
 
   }
 
-  void CartesianPoseController::commandCallback(const std_msgs::Int32 msg) 
+  void CartesianPoseController::controllerPoseCallback(const geometry_msgs::PoseStamped msg)
   {
-    command_label = msg.data;
-  }
-
-  void CartesianPoseController::controllerPoseCallback(const geometry_msgs::PoseStamped msg) 
-  {
-    if (command_label == 25) {
-      commandPose = msg.pose;
-    }
+    commandPose = msg.pose;
   }
 
   void CartesianPoseController::publishCommandMsg(KDL::Vector desired_position, KDL::Rotation desired_rotation) {
@@ -217,7 +228,7 @@ namespace koko_controllers{
 
 
   void CartesianPoseController::update(const ros::Time& time, const ros::Duration& period)
-  { 
+  {
 
     unsigned int nj = chain.getNrOfJoints();
     std::vector<double> commands(nj);
@@ -246,18 +257,28 @@ namespace koko_controllers{
       twist_error.vel.Normalize() * 1.0;
     } */
 
+    KDL::Jacobian jacobian(nj);
+    KDL::ChainJntToJacSolver jacSolver(chain);
+    jacSolver.JntToJac(jnt_pos_, jacobian, -1);
+
+    // KDL::Twist twist_error
+
     publishDeltaMsg(twist_error);
     KDL::Wrench wrench_desi;
     for (unsigned int i=0; i<6; i++)
       wrench_desi(i) = computeCommand(twist_error(i), period, i);
 
-    KDL::Jacobian jacobian(nj);
-    KDL::ChainJntToJacSolver jacSolver(chain);
-    jacSolver.JntToJac(jnt_pos_, jacobian, -1);
-    for (unsigned int i = 0; i < nj; i++){
+    for (unsigned int i = 0; i < nj; i++) {
       commands[i] = 0;
       for (unsigned int j=0; j<6; j++) {
-        commands[i] += (jacobian(j,i) * wrench_desi(j));
+
+        if(j == 0 || j == 1 || j == 2) {
+          // position coordinates of jacobian
+          commands[i] += (jacobian(j,i) * wrench_desi(j)) * joint_vector[i].pos_mult;
+        } else {
+          // rotation coordinates of jacobian
+          commands[i] += (jacobian(j,i) * wrench_desi(j)) * joint_vector[i].rot_mult;
+        }
       }
 
     }
@@ -303,7 +324,7 @@ namespace koko_controllers{
     for(int i = 0; i < nj; i++) {
       if(std::find(paired_constraints.begin(), paired_constraints.end(), i) == paired_constraints.end()) {
         commands[i] = std::min(std::max(commands[i], joint_vector[i].min_torque), joint_vector[i].max_torque);
-      }  
+      }
     }
 
     for (int i = 0; i < paired_constraints.size(); i = i + 2) {
@@ -318,11 +339,11 @@ namespace koko_controllers{
       if (lift >= 0 && roll >= 0 && (lift + roll) > max_effort) {
         scalar = max_effort / (lift + roll);
       } else if (lift < 0 && roll >= 0 && (roll - lift) > max_effort) {
-        scalar = max_effort / (roll - lift);    
+        scalar = max_effort / (roll - lift);
       } else if (lift < 0 && roll < 0 && (-roll - lift) > max_effort) {
-        scalar = max_effort / (-roll - lift);    
+        scalar = max_effort / (-roll - lift);
       } else if (lift >= 0 && roll < 0 && (lift - roll) > max_effort) {
-        scalar = max_effort / (lift - roll);    
+        scalar = max_effort / (lift - roll);
       }
       commands[lift_index] *= scalar;
       commands[roll_index] *= scalar;
@@ -333,10 +354,11 @@ namespace koko_controllers{
     }
   }
 
-  double CartesianPoseController::computeCommand(double error, ros::Duration dt, int index)
+  double CartesianPoseController::computeCommand(double error, const ros::Duration& dt, int index)
   {
     if (dt == ros::Duration(0.0) || std::isnan(error) || std::isinf(error))
       return 0.0;
+
     double error_dot = d_error[index];
     if (dt.toSec() > 0.0)  {
       error_dot = (error - p_error_last[index]) /dt.toSec();
@@ -344,7 +366,7 @@ namespace koko_controllers{
     }
     if (std::isnan(error_dot) || std::isinf(error_dot))
       return 0.0;
-    double p_term, d_term;
+
     d_error[index] = error_dot;
 
     err_dot_histories[index].push_back(error_dot);
@@ -354,12 +376,10 @@ namespace koko_controllers{
       err_dot_histories[index].erase(err_dot_histories[index].begin());
     }
 
-    double err_dot_average = std::accumulate(err_dot_histories[index].begin(), err_dot_histories[index].end(),
+    double error_dot_average = std::accumulate(err_dot_histories[index].begin(), err_dot_histories[index].end(),
                               0.0) / err_dot_histories[index].size();
-    p_term = p_gains[index] * error;
-    d_term = d_gains[index] * err_dot_average;
 
-    return p_term + d_term;
+    return pid_controllers_[index].computeCommand(error, error_dot_average, dt);
   }
 
   geometry_msgs::Pose CartesianPoseController::enforceJointLimits(geometry_msgs::Pose commandPose)
@@ -433,14 +453,14 @@ namespace koko_controllers{
       deltaX(4, 0) = rotation_difference_vec(1);
       deltaX(5, 0) = rotation_difference_vec(2);
       ROS_INFO("delta X %f, %f, %f, %f, %f, %f", deltaX(0, 0), deltaX(1, 0),  deltaX(2, 0),
-         deltaX(3, 0),  deltaX(4, 0),  deltaX(5, 0));
+        deltaX(3, 0),  deltaX(4, 0),  deltaX(5, 0));
 
 
       Eigen::MatrixXd deltaJoint = jacPos.transpose() * deltaX;
-      ROS_INFO("delta joint %f, %f, %f, %f, %f, %f",deltaJoint(0,0), deltaJoint(1,0), deltaJoint(2,0)
-      ,deltaJoint(3,0), deltaJoint(4,0), deltaJoint(5,0));
+      ROS_INFO("delta joint %f, %f, %f, %f, %f, %f",deltaJoint(0,0), deltaJoint(1,0), deltaJoint(2,0),
+        deltaJoint(3,0), deltaJoint(4,0), deltaJoint(5,0));
 
-      double alpha = 1; 
+      double alpha = 1;
       for (int k = 0; k < nj; k++) {
         jointInverseKin(k) = alpha * deltaJoint(k,0) + jointInverseKin(k);
       }

@@ -15,6 +15,7 @@
 
 #include <geometry_msgs/Vector3.h>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
+#include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/segment.hpp>
 
@@ -35,7 +36,8 @@ private:
   void motorStateCallback(const koko_hardware_drivers::MotorState::ConstPtr& msg);
   void calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
   void gravityVectorCallback(const geometry_msgs::Vector3ConstPtr& grav);
-  void accelerometerCalibrate(int num_diff_actuators);
+  void setReadGravityVector();
+  void accelerometerCalibrate(int num_simple_actuators);
   void computeInverseDynamics();
   void buildDynamicChain(KDL::Chain &chain);
 
@@ -59,7 +61,7 @@ private:
   // Publishers and subscribers
   ros::Subscriber motor_state_sub_;
   std::vector<ros::Publisher> motor_cmd_publishers_;
-  ros::Subscriber joint_state_tracker_sub;
+  ros::Subscriber joint_state_tracker_sub_;
   ros::Subscriber gravity_vector_sub_;
 
   // Parameters read in from configuration
@@ -71,13 +73,17 @@ private:
   std::vector<double> softstop_min_angles_;
   std::vector<double> softstop_max_angles_;
   std::vector<double> joint_torque_directions_;
+  std::vector<double> actuator_revolution_constant_;
+  std::vector<double> id_gains_;
   double softstop_torque_limit_;
   double softstop_tolerance_;
-  std::vector<double> motor_torque_limits_;
+  std::vector<double> motor_current_limits_;
+  bool is_accel_calibrate;
 
   // Calibration
   int calibration_counter_;
   bool is_calibrated_;
+  double is_hardstop_calibrate_;
   std::vector<double> joint_pos_initial_;
   std::vector<double> actuator_pos_initial_;
   int num_joints_;
@@ -87,6 +93,9 @@ private:
   ti::JointToActuatorEffortInterface joint_to_actuator_interface_;
   std::vector<ti::SimpleTransmission *> simple_transmissions_;
   std::vector<ti::DifferentialTransmission *> differential_transmissions_;
+  int num_diff_actuators_;
+  bool is_base_;
+  bool is_gripper_;
 
   // Actuator and joint space data
   std::vector<ti::ActuatorData> actuator_states_;
@@ -99,16 +108,13 @@ private:
   std::vector<double> actuator_vel_;
   std::vector<double> actuator_eff_;
   std::vector<double> actuator_cmd_;
+  std::vector<KDL::Vector> actuator_accel_;
+  std::vector<KDL::Vector> read_gravity_vector_;
   std::vector<double> joint_pos_;
   std::vector<double> joint_vel_;
   std::vector<double> joint_eff_;
   std::vector<double> joint_cmd_;
-
-  // TODO: these are redundant and should be removed
-  std::vector<double> cmd;
-  std::vector<double> pos;
-  std::vector<double> vel;
-  std::vector<double> eff;
+  std::vector<double> raw_joint_cmd_;
 
   // Gravity Compensation
   KDL::Vector gravity_vector_;

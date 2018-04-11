@@ -47,7 +47,7 @@
         xyz="0.0043477541389173 2.01234773878345E-05 -0.0764683318824377"
         rpy="0 0 0" />
       <mass
-        value="1.80901122392276" />
+        value="1.90901122392276" />
       <inertia
         ixx="0.0091937456982913"
         ixy="1.27362263865398E-08"
@@ -93,8 +93,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-2.3412"
-      upper="3.3999"
+      lower="-3.3999"
+      upper="2.3412"
       effort="0"
       velocity="0" />
   </joint>
@@ -105,7 +105,7 @@
         xyz="-5.0083559080677E-06 0.000232928456050885 -1.77451392545103E-05"
         rpy="0 0 0" />
       <mass
-        value="0.388307108622636" />
+        value="0.488307108622636" />
       <inertia
         ixx="0.000804272985961788"
         ixy="4.84548777859872E-08"
@@ -163,7 +163,7 @@
         xyz="0.0052656488201055 5.32997221069781E-05 -0.0641725544925586"
         rpy="0 0 0" />
       <mass
-        value="1.52396434922939" />
+        value="1.92396434922939" />
       <inertia
         ixx="0.00578789299599043"
         ixy="1.90247522695056E-06"
@@ -201,7 +201,7 @@
     type="revolute">
     <origin
       xyz="0 0.070147 -6.25E-05"
-      rpy="-1.5708 1.5673 -3.1416" />
+      rpy="-1.5708 -1.5673 -3.1416" />
     <parent
       link="shoulder_lift_link" />
     <child
@@ -221,7 +221,7 @@
         xyz="9.06307628945058E-09 -0.00233330219603445 -1.63700112519316E-05"
         rpy="0 0 0" />
       <mass
-        value="0.336087767400233" />
+        value="0.436087767400233" />
       <inertia
         ixx="0.000748389205107341"
         ixy="-4.35589119855736E-12"
@@ -279,7 +279,7 @@
         xyz="0.00526385736219506 2.70691865020822E-05 -0.0641638075944594"
         rpy="0 0 0" />
       <mass
-        value="1.52367945216034" />
+        value="1.42367945216034" />
       <inertia
         ixx="0.0057866591250737"
         ixy="3.71515699629511E-07"
@@ -317,7 +317,7 @@
     type="revolute">
     <origin
       xyz="0 0.070147 -6.25E-05"
-      rpy="1.5708 -1.5708 0" />
+      rpy="1.5708 1.5708 0" />
     <parent
       link="upper_arm_lift_link" />
     <child
@@ -337,7 +337,7 @@
         xyz="-5.0041305142412E-06 0.000232915126013089 -1.77452141933987E-05"
         rpy="0 0 0" />
       <mass
-        value="0.388307111315058" />
+        value="0.488307111315058" />
       <inertia
         ixx="0.000804244148456861"
         ixy="4.84475098854999E-08"
@@ -392,16 +392,75 @@
     name="wrist_roll_link">
     <inertial>
       <origin
+        xyz="-7.00549073506807E-05 2.51271935254316E-05 0.052367118189184"
+        rpy="0 0 0" />
+      <mass
+        value="0.657109755986862" />
+      <inertia
+        ixx="0.001916887873826385"
+        ixy="-12.04547948818479E-08"
+        ixz="2.8796133363069E-06"
+        iyy="0.001877268801166351"
+        iyz="9.64172907801915E-07"
+        izz="0.000693333065172452" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0.1"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/wrist_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0.1"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://koko_description_sevendof_dyn/meshes/wrist_roll_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_roll_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.170147 -6.25E-05"
+      rpy="-1.5708 -2.4803E-15 -3.1416" />
+    <parent
+      link="wrist_lift_link" />
+    <child
+      link="wrist_roll_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2.6761"
+      upper="2.6761"
+      effort="0"
+      velocity="0" />
+  </joint>
+
+  <link
+    name="gripper_link">
+    <inertial>
+      <origin
         xyz="-7.00549073506807E-05 2.51271935254316E-05 -0.052367118189184"
         rpy="0 0 0" />
       <mass
-        value="0.247109755986862" />
+        value="0.0047109755986862" />
       <inertia
         ixx="0.000916887873826385"
         ixy="-6.04547948818479E-08"
-        ixz="1.6796133363069E-06"
+        ixz="0.6796133363069E-06"
         iyy="0.000877268801166351"
-        iyz="5.64172907801915E-07"
+        iyz="0.64172907801915E-07"
         izz="0.000293333065172452" />
     </inertial>
     <visual>
@@ -429,15 +488,15 @@
     </collision>
   </link>
   <joint
-    name="wrist_roll_joint"
+    name="gripper_joint"
     type="revolute">
     <origin
       xyz="0 0.070147 -6.25E-05"
       rpy="-1.5708 -2.4803E-15 -3.1416" />
     <parent
-      link="wrist_lift_link" />
-    <child
       link="wrist_roll_link" />
+    <child
+      link="gripper_link" />
     <axis
       xyz="0 0 1" />
     <limit
