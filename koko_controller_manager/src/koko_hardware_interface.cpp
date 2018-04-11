@@ -437,12 +437,14 @@ void KokoHW::write() {
         // ROS_ERROR("joint pre %d command: %f", i, raw_joint_cmd_[i]);
       }
       if ( !(is_gripper_ && i == num_joints_ - 1) ) {
-        joint_cmd_[i] = 0.0;
         joint_cmd_[i] = raw_joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
       } else {
         joint_cmd_[i] = raw_joint_cmd_[i];
-        // ROS_ERROR("joint gripper cmd %f", joint_cmd_[i]);
       }
+
+      // Prevent raw joint commands from persisting, so no torque is
+      // applied if a controller is stopped
+      raw_joint_cmd_[i] = 0.0;
 
       // checking joint limits and publish counter torque if near the limit
       if(joint_pos_[i] > softstop_max_angles_[i] - softstop_tolerance_){
