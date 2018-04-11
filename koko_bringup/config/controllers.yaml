@@ -41,19 +41,19 @@ koko_controllers:
       - wrist_lift_joint
       - wrist_roll_joint
     base_roll_joint:
-      pid: {p: 20, i: 0, d: 4, i_clamp: 0}
+      pid: {p: 50, i: 10, d: 10, i_clamp_min: -1, i_clamp_max: 1}
     shoulder_lift_joint:
-      pid: {p: 20, i: 0, d: 3, i_clamp: 0}
+      pid: {p: 40, i: 8, d: 10, i_clamp_min: -1, i_clamp_max: 1}
     shoulder_roll_joint:
-      pid: {p: 16, i: 0, d: 2.5, i_clamp: 0}
+      pid: {p: 40, i: 8, d: 8, i_clamp_min: -1, i_clamp_max: 1}
     elbow_lift_joint:
-      pid: {p: 12, i: 0, d: 2.5, i_clamp: 0}
+      pid: {p: 30, i: 6, d: 8, i_clamp_min: -1, i_clamp_max: 1}
     elbow_roll_joint:
-      pid: {p: 12, i: 0, d: 2.5, i_clamp: 0}
+      pid: {p: 30, i: 6, d: 8, i_clamp_min: -1, i_clamp_max: 1}
     wrist_lift_joint:
-      pid: {p:  3, i: 0, d: 0.5, i_clamp: 0}
+      pid: {p: 20, i: 4, d: 5, i_clamp_min: -1, i_clamp_max: 1}
     wrist_roll_joint:
-      pid: {p:  3, i: 0, d: 0.5, i_clamp: 0}
+      pid: {p: 15, i: 3, d: 5, i_clamp_min: -1, i_clamp_max: 1}
 
   cartesian_pose_controller:
     endlink: 'wrist_roll_link'
@@ -61,12 +61,12 @@ koko_controllers:
     filter_length: 1
     type: koko_controllers/CartesianPoseController
 
-    pid_pos_x: {p: 200, i: 000, d: 50, i_clamp_min: -50, i_clamp_max: 50}
-    pid_pos_y: {p: 200, i: 000, d: 50, i_clamp_min: -50, i_clamp_max: 50}
-    pid_pos_z: {p: 200, i: 000, d: 50, i_clamp_min: -50, i_clamp_max: 50}
-    pid_rot_r: {p: 13.0, i: 0.0, d: 0.1, i_clamp_min: 0, i_clamp_max: 0}
-    pid_rot_p: {p: 13.0, i: 0.0, d: 0.1, i_clamp_min: 0, i_clamp_max: 0}
-    pid_rot_y: {p: 13.0, i: 0.0, d: 0.1, i_clamp_min: 0, i_clamp_max: 0}
+    pid_pos_x: {p: 200, i: 00, d: 70, i_clamp_min: -50, i_clamp_max: 50}
+    pid_pos_y: {p: 200, i: 00, d: 70, i_clamp_min: -50, i_clamp_max: 50}
+    pid_pos_z: {p: 200, i: 00, d: 70, i_clamp_min: -50, i_clamp_max: 50}
+    pid_rot_r: {p: 13.0, i: 0.0, d: 0.5, i_clamp_min: 0, i_clamp_max: 0}
+    pid_rot_p: {p: 13.0, i: 0.0, d: 0.5, i_clamp_min: 0, i_clamp_max: 0}
+    pid_rot_y: {p: 13.0, i: 0.0, d: 0.5, i_clamp_min: 0, i_clamp_max: 0}
 
     posture_control: true
     posture_gain: 20.0
