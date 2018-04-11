@@ -39,32 +39,28 @@ namespace koko_controllers{
       ROS_ERROR("No endlink given node namespace %s", n.getNamespace().c_str());
     }
 
-    posture_control = false;
-    if (!n.getParam("posture_control", posture_control)) {
+    posture_control_ = false;
+    if (!n.getParam("posture_control", posture_control_)) {
       ROS_ERROR("No posture_control given node namespace %s", n.getNamespace().c_str());
     }
 
-    if (!n.getParam("posture_target", posture_target)) {
+    if (!n.getParam("posture_target", posture_target_)) {
       ROS_ERROR("No posture_target given node namespace %s", n.getNamespace().c_str());
     }
 
-    if (!n.getParam("posture_gain", posture_gain)) {
+    if (!n.getParam("posture_gain", posture_gain_)) {
       ROS_ERROR("No posture_gain given node namespace %s", n.getNamespace().c_str());
     }
 
-    if (!n.getParam("paired_constraints", paired_constraints)) {
+    if (!n.getParam("paired_constraints_", paired_constraints_)) {
       ROS_ERROR("No paired_constraint given node namespace %s", n.getNamespace().c_str());
     }
 
-    if (!n.getParam("z_offset_controller", z_offset_controller)) {
-      ROS_ERROR("No z_offset_controller given node namespace %s", n.getNamespace().c_str());
-    }
-
-    if (!n.getParam("filter_length", filter_length)) {
+    if (!n.getParam("filter_length", filter_length_)) {
       ROS_ERROR("No filter_length given node namespace %s", n.getNamespace().c_str());
     }
 
-    if (paired_constraints.size() % 2 != 0) {
+    if (paired_constraints_.size() % 2 != 0) {
       ROS_ERROR("Paired_constraints length must be even");
     }
 
@@ -86,7 +82,7 @@ namespace koko_controllers{
 
     KDL::Chain dummyChain;
     if (!my_tree.getChain("base_link", endlink, dummyChain)) {
-      ROS_ERROR("Failed to construct kdl chain");
+      ROS_ERROR("Failed to construct kdl kdl_chain_");
       return false;
     }
 
@@ -97,10 +93,10 @@ namespace koko_controllers{
 
       if (seg.getJoint().getType() != 8)
       {
-        JointPD jointPD;
+        JointSettings jointPD;
         std::string jointName = seg.getJoint().getName();
-        joint_names.push_back(jointName);
-        chain.addSegment(seg);
+        joint_names_.push_back(jointName);
+        kdl_chain_.addSegment(seg);
         jointPD.joint = robot->getHandle(jointName);
 
         double max_torque;
@@ -150,7 +146,7 @@ namespace koko_controllers{
         jointPD.min_angle = min_angle;
         jointPD.d_gain = d_gain;
         jointPD.joint_name = jointName;
-        joint_vector.push_back(jointPD);
+        joint_vector_.push_back(jointPD);
 
       }
     }
@@ -161,21 +157,16 @@ namespace koko_controllers{
       return false;
     }
 
-    subController = n.subscribe("command", 1, &CartesianPoseController::controllerPoseCallback, this);
+    sub_command_ = n.subscribe("command", 1, &CartesianPoseController::controllerPoseCallback, this);
 
-    ROS_INFO("nj %d", chain.getNrOfJoints());
+    ROS_INFO("nj %d", kdl_chain_.getNrOfJoints());
 
-    p_error_last.resize(6);
-    d_error.resize(6);
-    visualizer = "simple_6dof_MOVE_ROTATE_3D";
-
-    commandPub = node.advertise<std_msgs::Float64MultiArray>("/commandPub", 1000);
-    deltaPub = node.advertise<std_msgs::Float64MultiArray>("/deltaPub", 1000);
-    inverseDynamicsPub = node.advertise<std_msgs::Float64MultiArray>("/inverseDynamicsPub", 1000);
+    pub_command_ = node.advertise<std_msgs::Float64MultiArray>("pub_command_msg", 1);
+    pub_delta_ = node.advertise<std_msgs::Float64MultiArray>("delta_msg", 1);
 
     for (int i = 0; i < 6; i++) {
       std::vector<double> err_dot_history;
-      err_dot_histories.push_back(err_dot_history);
+      d_error_history_.push_back(err_dot_history);
     }
 
     return true;
@@ -183,63 +174,62 @@ namespace koko_controllers{
 
   void CartesianPoseController::starting(const ros::Time& time)
   {
-    unsigned int nj = chain.getNrOfJoints();
+    unsigned int nj = kdl_chain_.getNrOfJoints();
 
-    KDL::ChainFkSolverPos_recursive fksolver1(chain);
+    KDL::ChainFkSolverPos_recursive fksolver(kdl_chain_);
     KDL::Frame cartpos;
 
     KDL::JntArray jnt_pos_ = KDL::JntArray(nj);
     for (int i = 0; i <nj; i++) {
-      jnt_pos_(i) = joint_vector[i].joint.getPosition();
+      jnt_pos_(i) = joint_vector_[i].joint.getPosition();
     }
-    int status = fksolver1.JntToCart(jnt_pos_, cartpos);
-    commandPose.position.x = cartpos.p.data[0];
-    commandPose.position.y = cartpos.p.data[1];
-    commandPose.position.z = cartpos.p.data[2];
-    cartpos.M.GetQuaternion(commandPose.orientation.x, commandPose.orientation.y,
-      commandPose.orientation.z, commandPose.orientation.w);
+    int status = fksolver.JntToCart(jnt_pos_, cartpos);
+    command_pose_.position.x = cartpos.p.data[0];
+    command_pose_.position.y = cartpos.p.data[1];
+    command_pose_.position.z = cartpos.p.data[2];
+    cartpos.M.GetQuaternion(command_pose_.orientation.x, command_pose_.orientation.y,
+      command_pose_.orientation.z, command_pose_.orientation.w);
 
   }
 
   void CartesianPoseController::controllerPoseCallback(const geometry_msgs::PoseStamped msg)
   {
-    commandPose = msg.pose;
+    command_pose_ = msg.pose;
   }
 
   void CartesianPoseController::publishCommandMsg(KDL::Vector desired_position, KDL::Rotation desired_rotation) {
     double r; double p; double y;
     desired_rotation.GetRPY(r, p, y);
-    std_msgs::Float64MultiArray commandMsg;
-    commandMsg.data.push_back(desired_position.data[0]);
-    commandMsg.data.push_back(desired_position.data[1]);
-    commandMsg.data.push_back(desired_position.data[2]);
-    commandMsg.data.push_back(r);
-    commandMsg.data.push_back(p);
-    commandMsg.data.push_back(y);
-    //commandPub.publish(commandMsg);
+    std_msgs::Float64MultiArray command_msg;
+    command_msg.data.push_back(desired_position.data[0]);
+    command_msg.data.push_back(desired_position.data[1]);
+    command_msg.data.push_back(desired_position.data[2]);
+    command_msg.data.push_back(r);
+    command_msg.data.push_back(p);
+    command_msg.data.push_back(y);
+    pub_command_.publish(command_msg);
   }
 
   void CartesianPoseController::publishDeltaMsg(KDL::Twist twist_error) {
-    std_msgs::Float64MultiArray deltaMsg;
-    deltaMsg.data.push_back(twist_error.vel.data[0]);
-    deltaMsg.data.push_back(twist_error.vel.data[1]);
-    deltaMsg.data.push_back(twist_error.vel.data[2]);
-    deltaMsg.data.push_back(twist_error.rot.data[0]);
-    deltaMsg.data.push_back(twist_error.rot.data[1]);
-    deltaMsg.data.push_back(twist_error.rot.data[2]);
-    deltaPub.publish(deltaMsg);
+    std_msgs::Float64MultiArray delta_msg;
+    delta_msg.data.push_back(twist_error.vel.data[0]);
+    delta_msg.data.push_back(twist_error.vel.data[1]);
+    delta_msg.data.push_back(twist_error.vel.data[2]);
+    delta_msg.data.push_back(twist_error.rot.data[0]);
+    delta_msg.data.push_back(twist_error.rot.data[1]);
+    delta_msg.data.push_back(twist_error.rot.data[2]);
+    pub_delta_.publish(delta_msg);
   }
-
 
   void CartesianPoseController::update(const ros::Time& time, const ros::Duration& period)
   {
 
-    unsigned int nj = chain.getNrOfJoints();
+    unsigned int nj = kdl_chain_.getNrOfJoints();
     std::vector<double> commands(nj);
 
-    KDL::Vector desired_position(commandPose.position.x, commandPose.position.y, commandPose.position.z);
-    KDL::Rotation desired_rotation = KDL::Rotation::Quaternion(commandPose.orientation.x, commandPose.orientation.y,
-                                                             commandPose.orientation.z, commandPose.orientation.w);
+    KDL::Vector desired_position(command_pose_.position.x, command_pose_.position.y, command_pose_.position.z);
+    KDL::Rotation desired_rotation = KDL::Rotation::Quaternion(command_pose_.orientation.x, command_pose_.orientation.y,
+                                                             command_pose_.orientation.z, command_pose_.orientation.w);
     publishCommandMsg(desired_position, desired_rotation);
 
     KDL::Frame pose_desired = KDL::Frame(desired_rotation, desired_position);
@@ -248,10 +238,10 @@ namespace koko_controllers{
     Eigen::Matrix<double, Eigen::Dynamic, 1> jnt_vel_(nj, 1);
     // KDL::JntArray jnt_vel_ = KDL::JntArray(nj);
     for (int i = 0; i <nj; i++) {
-      jnt_pos_(i) = joint_vector[i].joint.getPosition();
-      jnt_vel_(i) = joint_vector[i].joint.getVelocity();
+      jnt_pos_(i) = joint_vector_[i].joint.getPosition();
+      jnt_vel_(i) = joint_vector_[i].joint.getVelocity();
     }
-    KDL::ChainFkSolverPos_recursive jnt_to_pose_solver(chain);
+    KDL::ChainFkSolverPos_recursive jnt_to_pose_solver(kdl_chain_);
     KDL::Frame pose_current;
     jnt_to_pose_solver.JntToCart(jnt_pos_, pose_current);
 
@@ -263,12 +253,12 @@ namespace koko_controllers{
     } */
 
     KDL::Jacobian jacobian(nj);
-    KDL::ChainJntToJacSolver jacSolver(chain);
-    jacSolver.JntToJac(jnt_pos_, jacobian, -1);
+    KDL::ChainJntToJacSolver jac_solver(kdl_chain_);
+    jac_solver.JntToJac(jnt_pos_, jacobian, -1);
 
     // Eigen::Matrix<double, Eigen::Dynamic, 1> joint_vel(nj, 1);
     // for(int i = 0; o < nj; i++){
-      // joint_vel(i, 1) = joint_vector[i].joint.getVelocity()
+      // joint_vel(i, 1) = joint_vector_[i].joint.getVelocity()
     // }
 
     Eigen::Matrix<double, Eigen::Dynamic, 1> twist_error_dot(nj, 1);
@@ -278,8 +268,6 @@ namespace koko_controllers{
       twist_error_dot_(i) = -twist_error_dot[i];
     }
 
-
-    publishDeltaMsg(twist_error);
     KDL::Wrench wrench_desi;
     for (unsigned int i=0; i<6; i++)
       wrench_desi(i) = computeCommand(twist_error(i), twist_error_dot_(i), period, i);
@@ -293,13 +281,13 @@ namespace koko_controllers{
 
         if(j == 0 || j == 1 || j == 2) {
           // position coordinates of jacobian
-          commands[i] += (jacobian(j,i) * wrench_desi(j)) * joint_vector[i].pos_mult;
+          commands[i] += (jacobian(j,i) * wrench_desi(j)) * joint_vector_[i].pos_mult;
           if (i == 3 && j == 2){
             // ROS_ERROR("command pos %d, %f", i, commands[i]);
           }
         } else {
           // rotation coordinates of jacobian
-          commands[i] += (jacobian(j,i) * wrench_desi(j)) * joint_vector[i].rot_mult;
+          commands[i] += (jacobian(j,i) * wrench_desi(j)) * joint_vector_[i].rot_mult;
         }
       }
 
@@ -308,15 +296,15 @@ namespace koko_controllers{
     // ROS_INFO_THROTTLE(3, "Jac col 6 %f, %f, %f, %f, %f, %f", jacobian(0,6), jacobian(1,6), jacobian(2,6), jacobian(3,6), jacobian(4,6), jacobian(5,6));
     // d gain joint portion
     for(int i = 0; i < nj; i++) {
-      commands[i] += -joint_vector[i].d_gain * jnt_vel_(i);
+      commands[i] += -joint_vector_[i].d_gain * jnt_vel_(i);
     }
 
 
     // null space posture control
-    if (posture_control) {
+    if (posture_control_) {
       Eigen::Matrix<double, Eigen::Dynamic, 1>  posture_error(nj,1);
       for (int i = 0; i < nj; i++) {
-        posture_error(i, 0) = posture_target[i] - jnt_pos_(i);
+        posture_error(i, 0) = posture_target_[i] - jnt_pos_(i);
       }
       Eigen::Matrix<double, 6, Eigen::Dynamic>  jacobian_eig(6, nj);
 
@@ -332,7 +320,7 @@ namespace koko_controllers{
       I_nj.setIdentity();
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>  nullspace_proj = I_nj - jacobian_pinv * jacobian_eig;
 
-      Eigen::Matrix<double, Eigen::Dynamic, 1> posture_error_proj = nullspace_proj * (posture_gain * posture_error);
+      Eigen::Matrix<double, Eigen::Dynamic, 1> posture_error_proj = nullspace_proj * (posture_gain_ * posture_error);
 
 
       for(int i = 0; i < nj; i++) {
@@ -344,19 +332,19 @@ namespace koko_controllers{
 
 
     for(int i = 0; i < nj; i++) {
-      if(std::find(paired_constraints.begin(), paired_constraints.end(), i) == paired_constraints.end()) {
-        commands[i] = std::min(std::max(commands[i], joint_vector[i].min_torque), joint_vector[i].max_torque);
+      if(std::find(paired_constraints_.begin(), paired_constraints_.end(), i) == paired_constraints_.end()) {
+        commands[i] = std::min(std::max(commands[i], joint_vector_[i].min_torque), joint_vector_[i].max_torque);
       }
     }
 
-    for (int i = 0; i < paired_constraints.size(); i = i + 2) {
-      int lift_index = paired_constraints[i];
-      int roll_index = paired_constraints[i+1];
+    for (int i = 0; i < paired_constraints_.size(); i = i + 2) {
+      int lift_index = paired_constraints_[i];
+      int roll_index = paired_constraints_[i+1];
       double lift = commands[lift_index];
       double roll = commands[roll_index];
       //ROS_INFO("lift: %f, roll: %f", commands[lift_index],  commands[roll_index]);
 
-      double max_effort = joint_vector[lift_index].max_torque + joint_vector[roll_index].max_torque;
+      double max_effort = joint_vector_[lift_index].max_torque + joint_vector_[roll_index].max_torque;
       double scalar = 1;
       if (lift >= 0 && roll >= 0 && (lift + roll) > max_effort) {
         scalar = max_effort / (lift + roll);
@@ -370,9 +358,9 @@ namespace koko_controllers{
       commands[lift_index] *= scalar;
       commands[roll_index] *= scalar;
     }
-    for (int i = 0; i < joint_vector.size(); i++) {
+    for (int i = 0; i < joint_vector_.size(); i++) {
       //ROS_INFO("command %d: %f", i, commands[i]);
-      joint_vector[i].joint.setCommand(commands[i]);
+      joint_vector_[i].joint.setCommand(commands[i]);
     }
   }
 
@@ -381,25 +369,18 @@ namespace koko_controllers{
     if (dt == ros::Duration(0.0) || std::isnan(error) || std::isinf(error))
       return 0.0;
 
-    // double error_dot = d_error[index];
-    // if (dt.toSec() > 0.0)  {
-      // error_dot = (error - p_error_last[index]) /dt.toSec();
-      // p_error_last[index] = error;
-    // }
     if (std::isnan(error_dot) || std::isinf(error_dot))
       return 0.0;
 
-    d_error[index] = error_dot;
+    d_error_history_[index].push_back(error_dot);
+    int size = d_error_history_[index].size();
 
-    err_dot_histories[index].push_back(error_dot);
-    int size = err_dot_histories[index].size();
-
-    if (err_dot_histories[index].size() > filter_length) {
-      err_dot_histories[index].erase(err_dot_histories[index].begin());
+    if (d_error_history_[index].size() > filter_length_) {
+      d_error_history_[index].erase(d_error_history_[index].begin());
     }
 
-    double error_dot_average = std::accumulate(err_dot_histories[index].begin(), err_dot_histories[index].end(),
-                              0.0) / err_dot_histories[index].size();
+    double error_dot_average = std::accumulate(d_error_history_[index].begin(), d_error_history_[index].end(),
+                              0.0) / d_error_history_[index].size();
 
     if (index == 3){
       // ROS_ERROR("command error%d, %f", index, error);
@@ -407,48 +388,48 @@ namespace koko_controllers{
     return pid_controllers_[index].computeCommand(error, error_dot_average, dt);
   }
 
-  geometry_msgs::Pose CartesianPoseController::enforceJointLimits(geometry_msgs::Pose commandPose)
+  geometry_msgs::Pose CartesianPoseController::enforceJointLimits(geometry_msgs::Pose command_pose_)
   {
 
-    ROS_ERROR("commandPose before %f %f %f", commandPose.position.x, commandPose.position.y, commandPose.position.z);
-    unsigned int nj = chain.getNrOfJoints();
-    KDL::JntArray jointPositions = KDL::JntArray(nj);
+    ROS_ERROR("command_pose_ before %f %f %f", command_pose_.position.x, command_pose_.position.y, command_pose_.position.z);
+    unsigned int nj = kdl_chain_.getNrOfJoints();
+    KDL::JntArray joint_positions = KDL::JntArray(nj);
 
     for (int i =0; i < nj; i++) {
-      jointPositions(i) =  joint_vector[i].joint.getPosition();
+      joint_positions(i) =  joint_vector_[i].joint.getPosition();
     }
 
     KDL::Frame cartpos;
-    KDL::ChainFkSolverPos_recursive fksolver1(chain);
-    int status = fksolver1.JntToCart(jointPositions, cartpos);
+    KDL::ChainFkSolverPos_recursive fksolver(kdl_chain_);
+    int status = fksolver.JntToCart(joint_positions, cartpos);
 
     KDL::Jacobian jacobian(nj);
-    KDL::ChainJntToJacSolver jacSolver(chain);
-    jacSolver.JntToJac(jointPositions, jacobian, -1);
+    KDL::ChainJntToJacSolver jac_solver(kdl_chain_);
+    jac_solver.JntToJac(joint_positions, jacobian, -1);
 
-    KDL::JntArray jointInverseKin = KDL::JntArray(nj);
+    KDL::JntArray joint_inverse_kin = KDL::JntArray(nj);
     for (int i = 0; i < nj; i++) {
-      jointInverseKin(i) = jointPositions(i);
+      joint_inverse_kin(i) = joint_positions(i);
     }
 
     Eigen::Matrix<double, 3, Eigen::Dynamic> ee_pose_desired(3,1);
-    ee_pose_desired(0, 0) = commandPose.position.x;
-    ee_pose_desired(1, 0) = commandPose.position.y;
-    ee_pose_desired(2, 0) = commandPose.position.z;
+    ee_pose_desired(0, 0) = command_pose_.position.x;
+    ee_pose_desired(1, 0) = command_pose_.position.y;
+    ee_pose_desired(2, 0) = command_pose_.position.z;
 
-    KDL::Rotation desired_rotation = KDL::Rotation::Quaternion(commandPose.orientation.x,
-                                                               commandPose.orientation.y,
-                                                               commandPose.orientation.z,
-                                                               commandPose.orientation.w
+    KDL::Rotation desired_rotation = KDL::Rotation::Quaternion(command_pose_.orientation.x,
+                                                               command_pose_.orientation.y,
+                                                               command_pose_.orientation.z,
+                                                               command_pose_.orientation.w
                                                                );
 
     //ROS_ERROR("desired position: %f, %f, %f", ee_pose_desired(0), ee_pose_desired(1), ee_pose_desired(2));
 
     for (int j = 0; j < 1000; j++)
     {
-      int status = fksolver1.JntToCart(jointInverseKin, cartpos);
+      int status = fksolver.JntToCart(joint_inverse_kin, cartpos);
       //ROS_INFO("cartpos: %f, %f, %f", cartpos.p.data[0], cartpos.p.data[1], cartpos.p.data[2]);
-      jacSolver.JntToJac(jointInverseKin, jacobian, -1);
+      jac_solver.JntToJac(joint_inverse_kin, jacobian, -1);
 
       Eigen::Matrix<double,6,Eigen::Dynamic> jacPos(6,nj);
 
@@ -487,19 +468,19 @@ namespace koko_controllers{
 
       double alpha = 1;
       for (int k = 0; k < nj; k++) {
-        jointInverseKin(k) = alpha * deltaJoint(k,0) + jointInverseKin(k);
+        joint_inverse_kin(k) = alpha * deltaJoint(k,0) + joint_inverse_kin(k);
       }
     }
 
     for (int i = 0; i < nj; i++)  {
 
-      jointInverseKin(i) = fmod(jointInverseKin(i) + M_PI, 2 * M_PI);
-      if (jointInverseKin(i) < 0) jointInverseKin(i) += 2 * M_PI;
-      jointInverseKin(i) = jointInverseKin(i) - M_PI;
-      jointInverseKin(i) = std::min(std::max(jointInverseKin(i), joint_vector[i].min_angle), joint_vector[i].max_angle);
+      joint_inverse_kin(i) = fmod(joint_inverse_kin(i) + M_PI, 2 * M_PI);
+      if (joint_inverse_kin(i) < 0) joint_inverse_kin(i) += 2 * M_PI;
+      joint_inverse_kin(i) = joint_inverse_kin(i) - M_PI;
+      joint_inverse_kin(i) = std::min(std::max(joint_inverse_kin(i), joint_vector_[i].min_angle), joint_vector_[i].max_angle);
     }
 
-    fksolver1.JntToCart(jointInverseKin, cartpos);
+    fksolver.JntToCart(joint_inverse_kin, cartpos);
     geometry_msgs::Point point;
     point.x = cartpos.p.data[0];
     point.y = cartpos.p.data[1];
@@ -509,7 +490,7 @@ namespace koko_controllers{
     geometry_msgs::Pose confined_pose;
     confined_pose.position = point;
     confined_pose.orientation = rot;
-    // ROS_ERROR("commandPose after %f %f %f", confined_pose.position.x, confined_pose.position.y, confined_pose.position.z);
+    // ROS_ERROR("command_pose_ after %f %f %f", confined_pose.position.x, confined_pose.position.y, confined_pose.position.z);
 
     return confined_pose;
   }
