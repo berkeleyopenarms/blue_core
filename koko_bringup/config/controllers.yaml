@@ -58,32 +58,32 @@ koko_controllers:
   cartesian_pose_controller:
     endlink: 'wrist_roll_link'
     paired_constraints: [1, 2, 3, 4, 5, 6]
-    filter_length: 20
+    filter_length: 1
     type: koko_controllers/CartesianPoseController
 
-    pid_x: {p: 100, i: 0, d: 1, i_clamp: 0}
-    pid_y: {p: 100, i: 0, d: 1, i_clamp: 0}
-    pid_z: {p: 100, i: 0, d: 1, i_clamp: 0}
-    pid_r: {p: 8, i: 0, d: 0.01, i_clamp: 0}
-    pid_p: {p: 8, i: 0, d: 0.01, i_clamp: 0}
-    pid_y: {p: 8, i: 0, d: 0.01, i_clamp: 0}
+    pid_pos_x: {p: 200, i: 000, d: 50, i_clamp_min: -50, i_clamp_max: 50}
+    pid_pos_y: {p: 200, i: 000, d: 50, i_clamp_min: -50, i_clamp_max: 50}
+    pid_pos_z: {p: 200, i: 000, d: 50, i_clamp_min: -50, i_clamp_max: 50}
+    pid_rot_r: {p: 13.0, i: 0.0, d: 0.1, i_clamp_min: 0, i_clamp_max: 0}
+    pid_rot_p: {p: 13.0, i: 0.0, d: 0.1, i_clamp_min: 0, i_clamp_max: 0}
+    pid_rot_y: {p: 13.0, i: 0.0, d: 0.1, i_clamp_min: 0, i_clamp_max: 0}
 
     posture_control: true
-    posture_gain: 10.0
+    posture_gain: 20.0
     # posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29]
-    posture_target: [0.0, -1.57, 0.0, -1.57, -1.57,-1.0, 0.0]
+    posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90,-1.0, 0.0]
     z_offset_controller: 0.0
     root_name: koko
     base_roll_joint:
-      d_gain: 8.0
-      pos_mult: 1.5
+      d_gain: 12.0
+      pos_mult: 1.0
       rot_mult: 1.0
       max_torque: 30
       min_torque: -30
       max_angle: 3.3
       min_angle: -2.2
     shoulder_lift_joint:
-      d_gain: 8.0
+      d_gain: 05.0
       pos_mult: 1.0
       rot_mult: 1.0
       max_torque: 30
@@ -91,7 +91,7 @@ koko_controllers:
       max_angle: 0.5
       min_angle: -2.2
     shoulder_roll_joint:
-      d_gain: 8.0
+      d_gain: 5.0
       pos_mult: 1.0
       rot_mult: 1.0
       max_torque: 30
@@ -99,15 +99,15 @@ koko_controllers:
       max_angle: 2.6
       min_angle: -2.6
     elbow_lift_joint:
-      d_gain: 4.0
-      pos_mult: 1.8
+      d_gain: 3.0
+      pos_mult: 1.0
       rot_mult: 1.0
       max_torque: 30
       min_torque: -30
       max_angle: 0.5
       min_angle: -2.2
     elbow_roll_joint:
-      d_gain: 4.0
+      d_gain: 3.0
       pos_mult: 1.0
       rot_mult: 1.0
       max_torque: 30
@@ -115,16 +115,16 @@ koko_controllers:
       max_angle: 2.6
       min_angle: -2.6
     wrist_lift_joint:
-      d_gain: 2.0
-      pos_mult: 1.00
-      rot_mult: 1.0
+      d_gain: 0.0
+      pos_mult: 0.3
+      rot_mult: 0.5
       max_torque: 30
       min_torque: -30
       max_angle: 0.5
       min_angle: -2.2
     wrist_roll_joint:
-      d_gain: 2.0
-      pos_mult: 1.00
+      d_gain: 1.0
+      pos_mult: 0.0
       rot_mult: 1.0
       max_torque: 30
       min_torque: -30

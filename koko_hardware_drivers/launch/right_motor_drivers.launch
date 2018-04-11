@@ -3,7 +3,7 @@
 
   <!-- Load motor parameters, in case this node is being run independently -->
  <rosparam
-   file="$(find koko_bringup)/config/left_robot_parameters.yaml"
+   file="$(find koko_bringup)/config/right_robot_parameters.yaml"
    command="load" />
 
  <!-- Start the ROS driver -->

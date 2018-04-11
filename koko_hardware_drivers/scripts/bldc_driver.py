@@ -18,7 +18,7 @@ from comms import *
 
 class BLDCDriverNode:
     MAX_CURRENT = 1.5
-    MAX_TEMP_WARN = 55 # degrees C
+    MAX_TEMP_WARN = 60 # degrees C
     MAX_TEMP_MOTORS_OFF = 70
     CONTROL_LOOP_FREQ = 120
 
@@ -70,12 +70,11 @@ class BLDCDriverNode:
                     calibrations = self.bldc.readCalibration(id)
                     print(calibrations)
                     self.bldc.setZeroAngle(id, calibrations['angle'])
-                    self.bldc.setCurrentControlMode(id)
                     self.bldc.setInvertPhases(id, calibrations['inv'])
                     self.bldc.setERevsPerMRev(id, calibrations['epm'])
                     self.bldc.setTorqueConstant(id, calibrations['torque'])
                     self.bldc.setPositionOffset(id, calibrations['zero'])
-                    self.bldc.writeRegisters(id, 0x1015, 1, struct.pack('<f', calibrations['zero']))
+                    self.bldc.setCurrentControlMode(id)
                     self.starting_angles[id] = 0.0
                     self.bldc.writeRegisters(id, 0x1030, 1, struct.pack('<H', 1000))
                     rospy.loginfo("Motor %d ready: supply voltage=%fV", id, self.bldc.getVoltage(id))
@@ -97,6 +96,10 @@ class BLDCDriverNode:
 
     def loop(self):
         r = rospy.Rate(self.CONTROL_LOOP_FREQ)
+
+        loop_count = 0
+
+        prev_freq_tracker_time = rospy.get_time()
         while not rospy.is_shutdown():
             stateMsg = MotorState()
             for motor_id in self.motor_names:
@@ -126,15 +129,24 @@ class BLDCDriverNode:
                     accel.z = accel_z
                     stateMsg.accel.append(accel)
 
-                    if temperature > self.MAX_TEMP_WARN:
-                        rospy.logwarn_throttle(1, "Motor {} is overheating, currently at  {}C".format(motor_id, temperature))
-                        if temperature > self.MAX_TEMP_MOTORS_OFF:
-                            self.stop_motors = True
+                    if temperature > self.MAX_TEMP_MOTORS_OFF:
+                        self.stop_motors = True
+                        if loop_count % 250 == 0:
                             rospy.logerr("Motor %d is too hot, setting motor currents to zero, at %fC", motor_id, temperature)
+                    elif temperature > self.MAX_TEMP_WARN and loop_count % 250 == 0:
+                        rospy.logwarn("Motor %d is warm, currently at  %fC", motor_id, temperature)
 
                 except Exception as e:
                     rospy.logerr("Motor " + str(motor_id) +  " driver error: " + str(e))
 
+            if loop_count % 250 == 0:
+                current_time = rospy.get_time()
+                freq = 250 / (current_time - prev_freq_tracker_time)
+                prev_freq_tracker_time = current_time
+
+                rospy.loginfo("Motor driver communication rate: %fHz", freq)
+
+            loop_count += 1
             self.state_publisher.publish(stateMsg)
             r.sleep()
 

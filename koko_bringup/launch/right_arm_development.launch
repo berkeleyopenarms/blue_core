@@ -21,4 +21,8 @@
   <node name="vive_teleop"
     pkg="koko_vive"
     type="vive_teleop.py" />
+
+  <!-- <node name="rviz_teleop" -->
+    <!-- pkg="koko_misc" -->
+    <!-- type="visual_controller" /> -->
 </launch>
