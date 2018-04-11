@@ -71,11 +71,15 @@ namespace koko_controllers{
     // Load PID parameters
     pid_controllers_.resize(6);
 
-    std::string pid_prefix = "pid_";
-    char dimension_names[] = "xyzrpy";
+    std::string pid_prefix = "pid";
+    char dimension_names_pos[] = "xyz";
+    char dimension_names_rot[] = "rpy";
 
-    for (int i = 0; i < 6; i++) {
-      pid_controllers_[i].init(ros::NodeHandle(n, pid_prefix + dimension_names[i]));
+    for (int i = 0; i < 3; i++) {
+      pid_controllers_[i].init(ros::NodeHandle(n, pid_prefix + "_pos_" + dimension_names_pos[i]));
+    }
+    for (int i = 0; i < 3; i++) {
+      pid_controllers_[i+3].init(ros::NodeHandle(n, pid_prefix + "_rot_" + dimension_names_rot[i]));
     }
 
     // Get URDF
@@ -241,7 +245,8 @@ namespace koko_controllers{
     KDL::Frame pose_desired = KDL::Frame(desired_rotation, desired_position);
 
     KDL::JntArray jnt_pos_ = KDL::JntArray(nj);
-    KDL::JntArray jnt_vel_ = KDL::JntArray(nj);
+    Eigen::Matrix<double, Eigen::Dynamic, 1> jnt_vel_(nj, 1);
+    // KDL::JntArray jnt_vel_ = KDL::JntArray(nj);
     for (int i = 0; i <nj; i++) {
       jnt_pos_(i) = joint_vector[i].joint.getPosition();
       jnt_vel_(i) = joint_vector[i].joint.getVelocity();
@@ -261,20 +266,37 @@ namespace koko_controllers{
     KDL::ChainJntToJacSolver jacSolver(chain);
     jacSolver.JntToJac(jnt_pos_, jacobian, -1);
 
-    // KDL::Twist twist_error
+    // Eigen::Matrix<double, Eigen::Dynamic, 1> joint_vel(nj, 1);
+    // for(int i = 0; o < nj; i++){
+      // joint_vel(i, 1) = joint_vector[i].joint.getVelocity()
+    // }
+
+    Eigen::Matrix<double, Eigen::Dynamic, 1> twist_error_dot(nj, 1);
+    twist_error_dot = jacobian.data * jnt_vel_ ;
+    KDL::Twist twist_error_dot_;
+    for(int i = 0; i < 6; i++){
+      twist_error_dot_(i) = -twist_error_dot[i];
+    }
+
 
     publishDeltaMsg(twist_error);
     KDL::Wrench wrench_desi;
     for (unsigned int i=0; i<6; i++)
-      wrench_desi(i) = computeCommand(twist_error(i), period, i);
+      wrench_desi(i) = computeCommand(twist_error(i), twist_error_dot_(i), period, i);
+
+
 
     for (unsigned int i = 0; i < nj; i++) {
       commands[i] = 0;
       for (unsigned int j=0; j<6; j++) {
 
+
         if(j == 0 || j == 1 || j == 2) {
           // position coordinates of jacobian
           commands[i] += (jacobian(j,i) * wrench_desi(j)) * joint_vector[i].pos_mult;
+          if (i == 3 && j == 2){
+            // ROS_ERROR("command pos %d, %f", i, commands[i]);
+          }
         } else {
           // rotation coordinates of jacobian
           commands[i] += (jacobian(j,i) * wrench_desi(j)) * joint_vector[i].rot_mult;
@@ -354,16 +376,16 @@ namespace koko_controllers{
     }
   }
 
-  double CartesianPoseController::computeCommand(double error, const ros::Duration& dt, int index)
+  double CartesianPoseController::computeCommand(double error, double error_dot, const ros::Duration& dt, int index)
   {
     if (dt == ros::Duration(0.0) || std::isnan(error) || std::isinf(error))
       return 0.0;
 
-    double error_dot = d_error[index];
-    if (dt.toSec() > 0.0)  {
-      error_dot = (error - p_error_last[index]) /dt.toSec();
-      p_error_last[index] = error;
-    }
+    // double error_dot = d_error[index];
+    // if (dt.toSec() > 0.0)  {
+      // error_dot = (error - p_error_last[index]) /dt.toSec();
+      // p_error_last[index] = error;
+    // }
     if (std::isnan(error_dot) || std::isinf(error_dot))
       return 0.0;
 
@@ -379,6 +401,9 @@ namespace koko_controllers{
     double error_dot_average = std::accumulate(err_dot_histories[index].begin(), err_dot_histories[index].end(),
                               0.0) / err_dot_histories[index].size();
 
+    if (index == 3){
+      // ROS_ERROR("command error%d, %f", index, error);
+    }
     return pid_controllers_[index].computeCommand(error, error_dot_average, dt);
   }
 

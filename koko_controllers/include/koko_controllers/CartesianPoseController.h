@@ -28,7 +28,7 @@ public:
   bool init(hardware_interface::EffortJointInterface *robot, ros::NodeHandle &n);
   void update(const ros::Time& time, const ros::Duration& period);
   void setCommand(const std_msgs::Float64MultiArrayConstPtr& pos_commands);
-  double computeCommand(double error, const ros::Duration& dt, int index);
+  double computeCommand(double error, double error_dot, const ros::Duration& dt, int index);
   void starting(const ros::Time& time);
   void visualCallback(const visualization_msgs::InteractiveMarkerFeedback msg);
   void controllerPoseCallback(const geometry_msgs::PoseStamped msg);

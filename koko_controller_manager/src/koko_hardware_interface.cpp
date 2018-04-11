@@ -264,6 +264,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   ROS_INFO("Finished setting up subscribers and publisher");
 
   ros::Duration(0.444).sleep();
+  ros::Duration(0.444).sleep();
   if( is_accel_calibrate ) {
     ros::Duration(0.444).sleep();
     accelerometerCalibrate(num_simple_actuators);
