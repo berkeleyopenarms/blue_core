@@ -15,8 +15,7 @@ koko_controllers:
     stalled_velocity_threshold: 0.01
     stall_timeout: 0.2
     gains:
-      # gripper_joint: {p: 10, i: 5, d: 1.5, i_clamp: 1}
-      gripper_joint: {p: 0.0, i: 0.0, d: 0.0, i_clamp: 1}
+      gripper_joint: {p: 10, i: 5, d: 1.5, i_clamp: 1}
 
   ### Joint controllers
 
