@@ -31,8 +31,9 @@
     type="spawner"
     output="screen"
     args="koko_controllers/joint_state_controller
+          koko_controllers/gripper_controller
           " />
-<!-- koko_controllers/gripper_controller -->
+
   <node name="joint_state_controller_spawner_stopped"
     pkg="controller_manager"
     type="spawner"
@@ -41,7 +42,6 @@
           koko_controllers/cartesian_pose_controller
           koko_controllers/joint_position_controller" />
 
-          <!-- koko_controllers/gripper_action_controller -->
           <!-- koko_controllers/cartesian_pose_controller -->
           <!-- koko_controllers/joint_position_controller -->
   <!-- Joint calibration -->

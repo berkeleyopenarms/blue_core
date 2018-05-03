@@ -15,7 +15,7 @@ koko_controllers:
     stalled_velocity_threshold: 0.01
     stall_timeout: 0.2
     gains:
-      gripper_joint: {p: 10, i: 5, d: 1.5, i_clamp: 1}
+      gripper_joint: {p: 25, i: 5, d: 1.5, i_clamp: 1}
 
   ### Joint controllers
 
@@ -40,34 +40,20 @@ koko_controllers:
       - elbow_roll_joint
       - wrist_lift_joint
       - wrist_roll_joint
-    # base_roll_joint:
-      # pid: {p: 50, i: 10, d: 10, i_clamp_min: -1, i_clamp_max: 1}
-    # shoulder_lift_joint:
-      # pid: {p: 40, i: 8, d: 10, i_clamp_min: -1, i_clamp_max: 1}
-    # shoulder_roll_joint:
-      # pid: {p: 40, i: 8, d: 8, i_clamp_min: -1, i_clamp_max: 1}
-    # elbow_lift_joint:
-      # pid: {p: 30, i: 6, d: 8, i_clamp_min: -1, i_clamp_max: 1}
-    # elbow_roll_joint:
-      # pid: {p: 30, i: 6, d: 8, i_clamp_min: -1, i_clamp_max: 1}
-    # wrist_lift_joint:
-      # pid: {p: 20, i: 4, d: 5, i_clamp_min: -1, i_clamp_max: 1}
-    # wrist_roll_joint:
-      # pid: {p: 15, i: 3, d: 5, i_clamp_min: -1, i_clamp_max: 1}
     base_roll_joint:
-      pid: {p: 50, i: 0, d: 0, i_clamp_min: -1, i_clamp_max: 1}
+      pid: {p: 50, i: 5.0, d: 10, i_clamp_min: -1, i_clamp_max: 1}
     shoulder_lift_joint:
-      pid: {p: 40, i: 0, d: 0, i_clamp_min: -1, i_clamp_max: 1}
+      pid: {p: 40, i: 3, d: 10, i_clamp_min: -1, i_clamp_max: 1}
     shoulder_roll_joint:
-      pid: {p: 40, i: 0, d: 0, i_clamp_min: -1, i_clamp_max: 1}
+      pid: {p: 40, i: 3, d: 8, i_clamp_min: -1, i_clamp_max: 1}
     elbow_lift_joint:
-      pid: {p: 30, i: 0, d: 0, i_clamp_min: -1, i_clamp_max: 1}
+      pid: {p: 30, i: 2, d: 8, i_clamp_min: -1, i_clamp_max: 1}
     elbow_roll_joint:
-      pid: {p: 30, i: 0, d: 0, i_clamp_min: -1, i_clamp_max: 1}
+      pid: {p: 30, i: 2, d: 8, i_clamp_min: -1, i_clamp_max: 1}
     wrist_lift_joint:
-      pid: {p: 20, i: 0, d: 0, i_clamp_min: -1, i_clamp_max: 1}
+      pid: {p: 20, i: 1, d: 5, i_clamp_min: -1, i_clamp_max: 1}
     wrist_roll_joint:
-      pid: {p: 15, i: 0, d: 0, i_clamp_min: -1, i_clamp_max: 1}
+      pid: {p: 15, i: 1, d: 5, i_clamp_min: -1, i_clamp_max: 1}
 
   cartesian_pose_controller:
     endlink: 'wrist_roll_link'
