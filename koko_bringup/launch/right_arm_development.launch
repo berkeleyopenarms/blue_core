@@ -25,4 +25,10 @@
   <!-- <node name="rviz_teleop" -->
     <!-- pkg="koko_misc" -->
     <!-- type="visual_controller" /> -->
+
+  <!-- <node name="pose_to_joint" -->
+    <!-- pkg="koko_kinematics" -->
+    <!-- type="pose_target_posture" -->
+    <!-- output="screen"/> -->
+
 </launch>

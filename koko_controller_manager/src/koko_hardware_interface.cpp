@@ -30,7 +30,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   ROS_INFO("Robot has %d joints", num_joints_);
 
   is_base_ = false;
-  if (!(std::find(differential_pairs_.begin(), differential_pairs_.end(), 0) !=differential_pairs_.end())){
+  if (!(std::find(differential_pairs_.begin(), differential_pairs_.end(), 0) != differential_pairs_.end())){
     is_base_ = true;
     ROS_INFO("Robot Configured with Base");
   } else {
@@ -38,7 +38,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   }
 
   is_gripper_ = false;
-  if (!(std::find(differential_pairs_.begin(), differential_pairs_.end(), num_joints_ - 1) !=differential_pairs_.end())){
+  if (!(std::find(differential_pairs_.begin(), differential_pairs_.end(), num_joints_ - 1) != differential_pairs_.end())){
     is_gripper_ = true;
     ROS_INFO("Robot Configured with Gripper");
   } else {
@@ -433,9 +433,6 @@ void KokoHW::write() {
     computeInverseDynamics();
     // added for using transmission interface
     for (int i = 0; i < num_joints_; i++) {
-      if(i == 1){
-        // ROS_ERROR("joint pre %d command: %f", i, raw_joint_cmd_[i]);
-      }
       if ( !(is_gripper_ && i == num_joints_ - 1) ) {
         joint_cmd_[i] = raw_joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
       } else {
@@ -463,9 +460,6 @@ void KokoHW::write() {
       actuator_cmd_[i] = joint_torque_directions_[i] * actuator_cmd_[i];
       double motor_torque = actuator_cmd_[i];
       double motor_current = current_to_torque_ratios_[i] * motor_torque;
-      if(i == num_joints_ - 1){
-        // ROS_ERROR("motor gripper cmd %f", motor_current);
-      }
 
       if (std::abs(motor_current) > motor_current_limits_[i]){
         if (motor_current > 0){
@@ -483,7 +477,6 @@ void KokoHW::write() {
     }
   }
 }
-
 
 void KokoHW::buildDynamicChain(KDL::Chain &chain){
   int ns = chain.getNrOfSegments();

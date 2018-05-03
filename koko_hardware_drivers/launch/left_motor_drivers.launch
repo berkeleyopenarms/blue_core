@@ -1,0 +1,18 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+  <!-- Load motor parameters, in case this node is being run independently -->
+ <rosparam
+   file="$(find koko_bringup)/config/left_robot_parameters.yaml"
+   command="load" />
+
+ <!-- Start the ROS driver -->
+ <node
+   name="motor_interface"
+   pkg="koko_hardware_drivers"
+   type="bldc_driver.py"
+   args="/dev/ttyUSB0"
+   ns="koko_hardware"
+   output="screen" />
+
+</launch>

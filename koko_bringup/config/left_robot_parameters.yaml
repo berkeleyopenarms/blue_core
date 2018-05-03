@@ -8,16 +8,17 @@ koko_hardware:
         - elbow_roll_joint
         - wrist_lift_joint
         - wrist_roll_joint
+        - gripper_joint
     endlink: wrist_roll_link
     differential_pairs: [1, 2, 3, 4, 5, 6]
-    gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412]
-    joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    # id_torque_gains: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    id_torque_gains: [1.38, 1.27, 1.27, 1.27, 1.27, 1.0, 1.0]
-    softstop_min_angles: [-2.2, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6]
-    softstop_max_angles: [3.3, 0.5, 2.6, .5, 2.6, 0.5, 2.6]
-    softstop_tolerance: 0.01
-    softstop_torque_limit: 45.0
+    gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 14.4]
+    joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    id_torque_gains: [1.12, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    # id_torque_gains: [1.38, 1.27, 1.27, 1.27, 1.27, 1.0, 1.0]
+    softstop_min_angles: [-2.2, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -1.45]
+    softstop_max_angles: [3.3, 0.5, 2.6, .5, 2.6, 0.5, 2.6, 1.45]
+    softstop_tolerance: 0.19
+    softstop_torque_limit: 95.0
 
     ### Motor configuration
     motor_names:
@@ -28,12 +29,20 @@ koko_hardware:
         - left_motor2
         - right_motor3
         - left_motor3
-    motor_ids: [1, 23, 22, 17, 10, 19, 21]
+        - gripper_motor
+    motor_ids: [14, 32, 31, 16, 33, 41, 42, 13]
     # motor_current_limits: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    motor_current_limits: [3.0, 2.5, 2.5, 2.5, 2.5, 1.5, 1.5]
-    current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0]
+    motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 0.2]
+    current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0, 1.0]
 
     ### Calibration configuration
-    hardstop_start_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0]
-    calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0]
+    hardstop_start_angles: [-0.785398, -2.19, 1.570796, 0.0, -1.570796, -0.23, 0.0, 0.0]
+    calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0, 0.0] # for vive calibration
     accelerometer_calibration: false
+
+    ### Posture control parameters for gradient descent ik pose controller
+    posture_control: false
+    posture_gain: .01
+    # posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29]
+    posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90,-1.0, 0.0]
+    endlink_tracker: "wrist_roll_link"
