@@ -33,6 +33,10 @@ target_link_libraries(koko_controller_manager koko_hardware_interface ${catkin_L
 
 ### Install
 
+install(PROGRAMS scripts/spawner.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )

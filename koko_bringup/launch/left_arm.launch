@@ -26,24 +26,21 @@
     pkg="koko_controller_manager"
     type="koko_controller_manager"
     output="screen" />
-  <node name="joint_state_controller_spawner"
-    pkg="controller_manager"
-    type="spawner"
-    output="screen"
-    args="koko_controllers/joint_state_controller
-          koko_controllers/gripper_controller
-          " />
 
-  <node name="joint_state_controller_spawner_stopped"
-    pkg="controller_manager"
-    type="spawner"
-    output="screen"
-    args="--stopped
-          koko_controllers/cartesian_pose_controller
-          koko_controllers/joint_position_controller" />
+  <node name="koko_controller_spawner"
+    pkg="koko_controller_manager"
+    type="spawner.py"
+    output="screen">
+    <rosparam param="start_controllers">
+      - koko_controllers/joint_state_controller
+      - koko_controllers/gripper_controller
+    </rosparam>
+    <rosparam param="stop_controllers">
+      - koko_controllers/cartesian_pose_controller
+      - koko_controllers/joint_position_controller
+    </rosparam>
+  </node>
 
-          <!-- koko_controllers/cartesian_pose_controller -->
-          <!-- koko_controllers/joint_position_controller -->
   <!-- Joint calibration -->
   <!-- TODO: this is temporary, and is being moved to the hardware interface initialization -->
   <node
