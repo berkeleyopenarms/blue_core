@@ -21,8 +21,13 @@
   <build_depend>controller_interface</build_depend>
   <build_depend>urdf</build_depend>
   <build_depend>control_toolbox</build_depend>
-  <build_depend>hardware_inteface</build_depend>
+  <build_depend>hardware_interface</build_depend>
   <build_depend>control_msgs</build_depend>
+  <build_depend>robot_state_publisher</build_depend>
+  <build_depend>position_controllers</build_depend>
+  <build_depend>effort_controllers</build_depend>
+  <build_depend>joint_state_controller</build_depend>
+  <build_depend>gripper_action_controller</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
@@ -31,6 +36,11 @@
   <run_depend>control_toolbox</run_depend>
   <run_depend>hardware_interface</run_depend>
   <run_depend>control_msgs</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>position_controllers</run_depend>
+  <run_depend>effort_controllers</run_depend>
+  <run_depend>joint_state_controller</run_depend>
+  <run_depend>gripper_action_controller</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
