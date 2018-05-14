@@ -16,34 +16,29 @@ ENCODER_ANGLE_PERIOD = 1 << 14
 MAX_CURRENT = 1.2
 CONTROL_LOOP_FREQ = 500
 
-mapping = {3: "base_roll_motor"}
-# mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", \
-#            16: "left_motor2", 21: "right_motor3", 19: "left_motor3"}
-port_default = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0"
-
-# mapping = {15: "base_roll_motor"}
-# mapping = {15: "base_roll_motor", 11: "right_motor1", 12: "left_motor1", 14: "right_motor2", \
-#            16: "left_motor2", 21: "right_motor3", 19: "left_motor3"}
+port_default = "/dev/ttyUSB0"
 
 ##################################################################################################
 
 def main():
     rospy.init_node('freq_publisher', anonymous=True)
 
-    if len(sys.argv) > 1:
-        port = sys.argv[1]
+    motor_id = int(sys.argv[1])
+
+    if len(sys.argv) >= 3:
+        port = sys.argv[2]
     else:
         port = port_default
-    print port
+
+    rospy.loginfo("Testing communication frequency: {} {}".format(motor_id, port))
+
     s = serial.Serial(port=port, baudrate=1000000, timeout=0.1)
-    print s.BAUDRATES
     device = BLDCControllerClient(s)
     time.sleep(0.1)
-    for key in mapping:
-        device.leaveBootloader(key)
-        time.sleep(0.1)
-        s.flush()
-        time.sleep(0.1)
+
+    device.leaveBootloader(motor_id)
+    time.sleep(0.1)
+    s.flush()
     time.sleep(0.1)
 
     last_time = rospy.get_time()
@@ -54,12 +49,11 @@ def main():
     while not rospy.is_shutdown():
 
         for i in range(10): # "low pass filter"
-            for key in mapping:
-                try:
-                    curr_angle = device.getEncoder(key)
-                except Exception as e:
-                    rospy.logerr(str(e))
-                    rospy.logerr(str(key))
+            try:
+                curr_angle = device.getRotorPosition(motor_id)
+            except Exception as e:
+                rospy.logerr(str(e))
+                rospy.logerr(str(motor_id))
 
         current_time = rospy.get_time()
         dt = current_time - last_time
@@ -67,6 +61,8 @@ def main():
         msg.data = freq
         freq_pub.publish(msg)
         last_time = current_time
+
+        rospy.loginfo_throttle(0.5, freq)
 
 if __name__ == '__main__':
     main()
