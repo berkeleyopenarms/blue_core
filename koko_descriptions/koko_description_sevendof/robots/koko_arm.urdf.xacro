@@ -6,6 +6,7 @@
   <!-- PR2 Arm -->
   <xacro:include filename="$(find koko_description_sevendof)/urdf/base_v0/base.urdf.xacro" />
   <xacro:include filename="$(find koko_description_sevendof)/urdf/link_v0/link.urdf.xacro" />
+  <xacro:include filename="$(find koko_description_sevendof)/urdf/gripper_v0/gripper.urdf.xacro" />
   <!-- <xacro:include filename="$(find koko_description_sevendof)/urdf/upper_arm_v0/upper_arm.urdf.xacro" /> -->
   <!-- <xacro:include filename="$(find koko_description_sevendof)/urdf/forearm_v0/forearm.urdf.xacro" /> -->
   <!-- PR2 gripper -->
@@ -23,6 +24,7 @@
 
   <xacro:koko_base_v0 side="right" reflect="-1" child="shoulder_roll_link"/>
   <xacro:koko_link_v0 side="right" stage="shoulder" child="upper_arm_roll_link" reflect="-1"/>
-  <xacro:koko_link_v0 side="right" stage="upper_arm" child="elbow_roll_link" reflect="-1"/>
-  <xacro:koko_link_v0 side="right" stage="elbow" child="wrist_roll_link" reflect="-1"/>
+  <xacro:koko_link_v0 side="right" stage="upper_arm" child="elbow_roll_link" reflect="1"/>
+  <xacro:koko_link_v0 side="right" stage="elbow" child="wrist_roll_link" reflect="0"/>
+  <xacro:koko_end_effector_v0 side="right" name="wrist_roll_link"/>
 </robot>

@@ -58,7 +58,7 @@
       name="${side}_base_roll_joint"
       type="revolute">
       <origin
-        xyz="0 0 0.054356"
+        xyz="0 0 0.087371"
         rpy="3.1416 -2.2011E-29 0.0" />
       <parent
         link="${side}_base_link" />
