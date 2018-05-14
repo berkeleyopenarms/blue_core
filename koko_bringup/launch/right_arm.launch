@@ -1,71 +1,67 @@
 <launch>
 
-  <!-- Load configuration -->
-  <rosparam
-    file="$(find koko_bringup)/config/right_robot_parameters.yaml"
-    command="load" />
-  <rosparam
-    file="$(find koko_bringup)/config/controllers.yaml"
-    command="load" />
+  <group ns="right_arm" clear_params="true">
 
-  <!-- Load URDFs -->
-  <param
-    name="robot_description"
-    textfile="$(find koko_description_sevendof_kin)/robots/koko_description_sevendof_kin.urdf" />
-  <param
-    name="robot_dyn_description"
-    textfile="$(find koko_description_sevendof_dyn)/robots/koko_description_sevendof_dyn.urdf" />
+    <!-- Broadcast our joint states as TFs -->
+    <node
+      name="robot_state_publisher"
+      pkg="robot_state_publisher"
+      type="state_publisher" />
 
-  <!-- Start communication with the motor drivers -->
-  <include
-    file="$(find koko_hardware_drivers)/launch/motor_drivers.launch" />
+    <!-- Load URDFs -->
+    <param name="robot_description"
+      textfile="$(find koko_description_sevendof_kin)/robots/koko_description_sevendof_kin.urdf" />
+    <param
+      name="robot_dyn_description"
+      textfile="$(find koko_description_sevendof_dyn)/robots/koko_description_sevendof_dyn.urdf"
+      />
 
-  <!-- Start the control stack -->
-  <node
-    name="koko_controller_manager"
-    pkg="koko_controller_manager"
-    type="koko_controller_manager"
-    output="screen" />
-  <node name="koko_controller_spawner"
-    pkg="koko_controller_manager"
-    type="spawner.py"
-    output="screen">
-    <rosparam param="start_controllers">
-      - koko_controllers/joint_state_controller
-      - koko_controllers/gripper_controller
-    </rosparam>
-    <rosparam param="stop_controllers">
-      - koko_controllers/cartesian_pose_controller
-      - koko_controllers/joint_position_controller
-    </rosparam>
-  </node>
+    <!-- Load configuration -->
+    <rosparam
+      file="$(find koko_bringup)/config/right_robot_parameters.yaml"
+      command="load"
+      />
+    <rosparam
+      file="$(find koko_bringup)/config/controllers.yaml"
+      command="load"
+      />
 
-  <!-- Joint calibration -->
-  <!-- TODO: this is temporary, and is being moved to the hardware interface initialization -->
-  <node
-    name="hardstop_calibrator"
-    pkg="koko_bringup"
-    type="hardstop_calibrate"
-    output="screen" />
+    <include
+      file="$(find koko_bringup)/launch/single_arm_core.launch"
+      />
 
-  <!-- Broadcast our joint states as TFs -->
-  <node
-    name="robot_state_publisher"
-    pkg="robot_state_publisher"
-    type="state_publisher" />
+    <!-- <include -->
+    <!--   file="$(find koko_bringup)/launch/right_arm.launch" /> -->
 
-  <!-- Position the robot in the world -->
-  <node
-    name="transformer"
-    pkg="tf"
-    type="static_transform_publisher"
-    args="0.0 0.0 0.0 0.0 0.0 0.0 1 world base_link 100" />
+    <!-- Start rviz for visualization/debugging -->
+    <node
+      name="rviz"
+      pkg="rviz"
+      type="rviz" />
+      <!-- args="-d $(find koko_description_base)/urdf.rviz" /> -->
 
-  <!-- Accept connections from our Python API via rosbridge -->
-  <include
-    file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
-  <node name="tf2_web_republisher"
-    pkg="tf2_web_republisher"
-    type="tf2_web_republisher" />
+    <!-- [> GUI <] -->
+    <node
+      name="gui_for_debugging"
+      pkg="rqt_gui"
+      type="rqt_gui"
+      output="screen"/>
 
+    <!-- [< Vive teleop>] -->
+    <node name="vive_teleop"
+      pkg="koko_vive"
+      type="vive_teleop.py"
+      />
+
+    <!-- <node name="rviz_teleop" -->
+      <!-- pkg="koko_misc" -->
+      <!-- type="visual_controller" /> -->
+
+    <node name="pose_to_joint"
+      pkg="koko_kinematics"
+      type="pose_target_posture"
+      output="screen"
+      />
+
+  </group>
 </launch>
