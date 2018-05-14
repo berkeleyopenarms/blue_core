@@ -423,14 +423,11 @@ namespace koko_controllers{
                                                                command_pose_.orientation.w
                                                                );
 
-    //ROS_ERROR("desired position: %f, %f, %f", ee_pose_desired(0), ee_pose_desired(1), ee_pose_desired(2));
-
     for (int j = 0; j < 1000; j++)
     {
       int status = fksolver.JntToCart(joint_inverse_kin, cartpos);
       //ROS_INFO("cartpos: %f, %f, %f", cartpos.p.data[0], cartpos.p.data[1], cartpos.p.data[2]);
       jac_solver.JntToJac(joint_inverse_kin, jacobian, -1);
-
       Eigen::Matrix<double,6,Eigen::Dynamic> jacPos(6,nj);
 
       for (unsigned int joint = 0; joint < nj; joint++) {
