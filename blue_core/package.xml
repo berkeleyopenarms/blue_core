@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>blue</name>
+  <name>blue_core</name>
   <version>0.0.0</version>
-  <description>The blue meta package contains all the basic software for running and using a Blue</description>
+  <description>The blue_core metapackage contains all the basic software for running and using a Blue robot arm</description>
 
   <maintainer email="phil80301@berkeley.edu">Philipp Wu</maintainer>
 
