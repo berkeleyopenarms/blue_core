@@ -9,12 +9,11 @@
     command="load" />
 
   <!-- Load URDFs -->
-  <param
-    name="robot_description"
-    textfile="$(find koko_description_sevendof_dyn)/robots/koko_description_sevendof_dyn.urdf" />
-  <param
-    name="robot_dyn_description"
-    textfile="$(find koko_description_sevendof_dyn)/robots/koko_description_sevendof_dyn.urdf" />
+  <!-- Load URDFs -->
+  <param name="robot_description"
+      command="$(find xacro)/xacro '$(find koko_description_sevendof)/robots/koko_left_arm.urdf.xacro'" />
+  <param name="robot_dyn_description"
+      command="$(find xacro)/xacro '$(find koko_description_sevendof)/robots/koko_left_arm.urdf.xacro'" />
 
   <!-- Start communication with the motor drivers -->
   <include

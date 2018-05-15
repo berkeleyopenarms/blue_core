@@ -26,12 +26,12 @@
 
   <!-- ============================  link  ============================ -->
   <!-- Includes elbow flex, FA roll joints in macros below -->
-  <xacro:macro name="koko_link_v0" params="side stage child reflect">
-    <xacro:koko_roll_link_v0 side="${side}" stage="${stage}" reflect="${reflect}" />
+  <xacro:macro name="koko_link_v0" params="side stage child reflect wrist:=0">
+    <xacro:koko_roll_link_v0 side="${side}" stage="${stage}" reflect="${reflect}" wrist="${wrist}"/>
     <xacro:koko_lift_link_v0 side="${side}" stage="${stage}" child="${child}" reflect="${reflect}" />
   </xacro:macro>
 
-  <xacro:macro name="koko_roll_link_v0" params="side stage reflect">
+  <xacro:macro name="koko_roll_link_v0" params="side stage reflect wrist">
     <link
       name="${side}_${stage}_roll_link">
       <inertial>
@@ -39,7 +39,7 @@
           xyz="0.00526385736219506 2.70691865020822E-05 -0.0641638075944594"
           rpy="0 0 0" />
         <mass
-          value="1.92367945216034" />
+          value="${1.91396434922939 - 0.50028 * wrist}" />
         <inertia
           ixx="0.0057866591250737"
           ixy="3.71515699629511E-07"
@@ -101,7 +101,7 @@
           xyz="-5.0083559080677E-06 0.000232928456050885 -1.77451392545103E-05"
           rpy="0 0 0" />
         <mass
-          value="0.488307108622636" />
+          value="0.448307108622636" />
         <inertia
           ixx="0.000804272985961788"
           ixy="4.84548777859872E-08"

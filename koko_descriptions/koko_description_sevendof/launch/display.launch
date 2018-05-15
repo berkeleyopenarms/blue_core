@@ -4,9 +4,8 @@
   <arg
     name="gui"
     default="True" />
-  <param
-    name="robot_description"
-    textfile="$(find koko_description_sevendof)/robots/test.xml" />
+  <param name="robot_description"
+      command="$(find xacro)/xacro '$(find koko_description_sevendof)/robots/koko_arm.urdf.xacro'" />
   <param
     name="use_gui"
     value="$(arg gui)" />

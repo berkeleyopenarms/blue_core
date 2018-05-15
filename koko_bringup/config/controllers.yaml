@@ -10,53 +10,53 @@ koko_controllers:
 
   gripper_controller:
     type: effort_controllers/GripperActionController
-    joint:  gripper_joint
+    joint:  right_gripper_joint
     goal_tolerance: 0.01
     stalled_velocity_threshold: 0.01
     stall_timeout: 0.2
     gains:
-      gripper_joint: {p: 25, i: 5, d: 1.5, i_clamp: 1}
+      right_gripper_joint: {p: 25, i: 5, d: 1.5, i_clamp: 1}
 
   ### Joint controllers
 
   joint_torque_controller:
     type: effort_controllers/JointGroupEffortController
     joints:
-      - base_roll_joint
-      - shoulder_lift_joint
-      - shoulder_roll_joint
-      - elbow_lift_joint
-      - elbow_roll_joint
-      - wrist_lift_joint
-      - wrist_roll_joint
+      - right_base_roll_joint
+      - right_shoulder_lift_joint
+      - right_shoulder_roll_joint
+      - right_elbow_lift_joint
+      - right_elbow_roll_joint
+      - right_wrist_lift_joint
+      - right_wrist_roll_joint
 
   joint_position_controller:
     type: koko_controllers/KokoJointGroupPositionController
     joints:
-      - base_roll_joint
-      - shoulder_lift_joint
-      - shoulder_roll_joint
-      - elbow_lift_joint
-      - elbow_roll_joint
-      - wrist_lift_joint
-      - wrist_roll_joint
-    base_roll_joint:
+      - right_base_roll_joint
+      - right_shoulder_lift_joint
+      - right_shoulder_roll_joint
+      - right_elbow_lift_joint
+      - right_elbow_roll_joint
+      - right_wrist_lift_joint
+      - right_wrist_roll_joint
+    right_base_roll_joint:
       pid: {p: 50, i: 5.0, d: 10, i_clamp_min: -1, i_clamp_max: 1}
-    shoulder_lift_joint:
+    right_shoulder_lift_joint:
       pid: {p: 40, i: 3, d: 10, i_clamp_min: -1, i_clamp_max: 1}
-    shoulder_roll_joint:
+    right_shoulder_roll_joint:
       pid: {p: 40, i: 3, d: 8, i_clamp_min: -1, i_clamp_max: 1}
-    elbow_lift_joint:
+    right_elbow_lift_joint:
       pid: {p: 30, i: 2, d: 8, i_clamp_min: -1, i_clamp_max: 1}
-    elbow_roll_joint:
+    right_elbow_roll_joint:
       pid: {p: 30, i: 2, d: 8, i_clamp_min: -1, i_clamp_max: 1}
-    wrist_lift_joint:
+    right_wrist_lift_joint:
       pid: {p: 20, i: 1, d: 5, i_clamp_min: -1, i_clamp_max: 1}
-    wrist_roll_joint:
+    right_wrist_roll_joint:
       pid: {p: 15, i: 1, d: 5, i_clamp_min: -1, i_clamp_max: 1}
 
   cartesian_pose_controller:
-    endlink: 'wrist_roll_link'
+    endlink: 'right_end_roll_link'
     paired_constraints: [1, 2, 3, 4, 5, 6]
     filter_length: 1
     type: koko_controllers/CartesianPoseController
@@ -74,7 +74,7 @@ koko_controllers:
     posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90,-1.0, 0.0]
     z_offset_controller: 0.0
     root_name: koko
-    base_roll_joint:
+    right_base_roll_joint:
       d_gain: 12.0
       pos_mult: 1.0
       rot_mult: 1.0
@@ -82,7 +82,7 @@ koko_controllers:
       min_torque: -30
       max_angle: 3.3
       min_angle: -2.2
-    shoulder_lift_joint:
+    right_shoulder_lift_joint:
       d_gain: 05.0
       pos_mult: 1.0
       rot_mult: 1.0
@@ -90,7 +90,7 @@ koko_controllers:
       min_torque: -30
       max_angle: 0.5
       min_angle: -2.2
-    shoulder_roll_joint:
+    right_shoulder_roll_joint:
       d_gain: 5.0
       pos_mult: 1.0
       rot_mult: 1.0
@@ -98,7 +98,7 @@ koko_controllers:
       min_torque: -30
       max_angle: 2.6
       min_angle: -2.6
-    elbow_lift_joint:
+    right_elbow_lift_joint:
       d_gain: 3.0
       pos_mult: 1.0
       rot_mult: 1.0
@@ -106,7 +106,7 @@ koko_controllers:
       min_torque: -30
       max_angle: 0.5
       min_angle: -2.2
-    elbow_roll_joint:
+    right_elbow_roll_joint:
       d_gain: 3.0
       pos_mult: 1.0
       rot_mult: 1.0
@@ -114,7 +114,7 @@ koko_controllers:
       min_torque: -30
       max_angle: 2.6
       min_angle: -2.6
-    wrist_lift_joint:
+    right_wrist_lift_joint:
       d_gain: 0.0
       pos_mult: 0.3
       rot_mult: 0.5
@@ -122,7 +122,7 @@ koko_controllers:
       min_torque: -30
       max_angle: 0.5
       min_angle: -2.2
-    wrist_roll_joint:
+    right_wrist_roll_joint:
       d_gain: 1.0
       pos_mult: 0.0
       rot_mult: 1.0

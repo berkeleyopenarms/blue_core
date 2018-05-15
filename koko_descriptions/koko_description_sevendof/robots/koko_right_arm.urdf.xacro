@@ -23,8 +23,8 @@
        is the world frame). For more, see http://www.ros.org/wiki/xacro -->
 
   <xacro:koko_base_v0 side="right" reflect="-1" child="shoulder_roll_link"/>
-  <xacro:koko_link_v0 side="right" stage="shoulder" child="upper_arm_roll_link" reflect="-1"/>
-  <xacro:koko_link_v0 side="right" stage="upper_arm" child="elbow_roll_link" reflect="1"/>
-  <xacro:koko_link_v0 side="right" stage="elbow" child="wrist_roll_link" reflect="0"/>
-  <xacro:koko_end_effector_v0 side="right" name="wrist_roll_link"/>
+  <xacro:koko_link_v0 side="right" stage="shoulder" child="elbow_roll_link" reflect="-1" />
+  <xacro:koko_link_v0 side="right" stage="elbow" child="wrist_roll_link" reflect="1" />
+  <xacro:koko_link_v0 side="right" stage="wrist" child="end_roll_link" reflect="0" wrist="1"/>
+  <xacro:koko_end_effector_v0 side="right" name="end_roll_link"/>
 </robot>

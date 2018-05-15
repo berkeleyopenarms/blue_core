@@ -1,14 +1,14 @@
 koko_hardware:
     ### Joint configuration
     joint_names:
-        - base_roll_joint
-        - shoulder_lift_joint
-        - shoulder_roll_joint
-        - elbow_lift_joint
-        - elbow_roll_joint
-        - wrist_lift_joint
-        - wrist_roll_joint
-        - gripper_joint
+        - left_base_roll_joint
+        - left_shoulder_lift_joint
+        - left_shoulder_roll_joint
+        - left_elbow_lift_joint
+        - left_elbow_roll_joint
+        - left_wrist_lift_joint
+        - left_wrist_roll_joint
+        - left_gripper_joint
     endlink: wrist_roll_link
     differential_pairs: [1, 2, 3, 4, 5, 6]
     gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 14.4]
