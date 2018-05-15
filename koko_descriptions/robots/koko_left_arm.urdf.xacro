@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="koko_descriptions_right">
+
+  <!-- The following included files set up definitions of parts of the robot body -->
+  <!-- misc common stuff? -->
+  <!-- PR2 Arm -->
+  <xacro:include filename="$(find koko_descriptions)/urdf/base_v0/base.urdf.xacro" />
+  <xacro:include filename="$(find koko_descriptions)/urdf/link_v0/link.urdf.xacro" />
+  <xacro:include filename="$(find koko_descriptions)/urdf/gripper_v0/gripper.urdf.xacro" />
+  <!-- <xacro:include filename="$(find koko_descriptions)/urdf/upper_arm_v0/upper_arm.urdf.xacro" /> -->
+  <!-- <xacro:include filename="$(find koko_descriptions)/urdf/forearm_v0/forearm.urdf.xacro" /> -->
+  <!-- PR2 gripper -->
+  <!-- <xacro:include filename="$(find pr2_description)/urdf/gripper_v0/gripper.urdf.xacro" /> -->
+
+  <!-- Now we can start using the macros included above to define the actual PR2 -->
+
+  <!-- The first use of a macro.  This one was defined in base.urdf.xacro above.
+       A macro like this will expand to a set of link and joint definitions, and to additional
+       Gazebo-related extensions (sensor plugins, etc).  The macro takes an argument, name,
+       that equals "base", and uses it to generate names for its component links and joints
+       (e.g., base_link).  The included origin block is also an argument to the macro.  By convention,
+       the origin block defines where the component is w.r.t its parent (in this case the parent
+       is the world frame). For more, see http://www.ros.org/wiki/xacro -->
+
+  <xacro:koko_base_v0 side="left" reflect="1" child="shoulder_roll_link"/>
+  <xacro:koko_link_v0 side="left" stage="shoulder" child="elbow_roll_link" reflect="1" />
+  <xacro:koko_link_v0 side="left" stage="elbow" child="wrist_roll_link" reflect="-1" />
+  <xacro:koko_link_v0 side="left" stage="wrist" child="end_roll_link" reflect="0" wrist="1"/>
+  <xacro:koko_end_effector_v0 side="left" name="end_roll_link"/>
+</robot>
