@@ -1,5 +1,5 @@
 <package>
-  <name>koko_description_sevendof_dyn</name>
+  <name>koko_descriptions</name>
   <version>1.0.0</version>
   <description>
     <p>URDF Description package for koko_description_sevendof_dyn</p>
@@ -7,14 +7,21 @@
 for koko_description_sevendof_dyn robot</p>
   </description>
   <author>me</author>
-  <maintainer email="lxd20@todo.todo">lxd20</maintainer>
+  <maintainer email="phil80301@berkeley.edu">Philipp Wu</maintainer>
+
+  <author email="brentyi@berkeley.edu">Brent Yi</author>
+  <author email="phil80301@berkeley.edu">Philipp Wu</author>
+
   <license>BSD</license>
+
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roslaunch</build_depend>
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>rviz</run_depend>
+  <run_depend>xacro</run_depend>
   <run_depend>joint_state_publisher</run_depend>
   <run_depend>gazebo</run_depend>
+
   <export>
     <architecture_independent />
   </export>

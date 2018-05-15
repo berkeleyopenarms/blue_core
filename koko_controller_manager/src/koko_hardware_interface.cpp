@@ -12,7 +12,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   std::string robot_desc_string;
 
   // load in robot parameters from parameter server
-  getRequiredParam(nh, "robot_dyn_description", robot_desc_string);
+  getRequiredParam(nh, "robot_description", robot_desc_string);
   getRequiredParam(nh, "koko_hardware/joint_names", joint_names_);
   getRequiredParam(nh, "koko_hardware/motor_names", motor_names_);
   getRequiredParam(nh, "koko_hardware/gear_ratios", gear_ratios_);

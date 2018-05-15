@@ -35,7 +35,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://koko_description_sevendof/meshes/base_link.STL" />
+            filename="package://koko_descriptions/meshes/base_link.STL" />
         </geometry>
         <material
           name="">
@@ -49,7 +49,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://koko_description_sevendof/meshes/base_link.STL" />
+            filename="package://koko_descriptions/meshes/base_link.STL" />
         </geometry>
       </collision>
     </link>

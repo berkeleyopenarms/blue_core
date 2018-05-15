@@ -1,0 +1,145 @@
+<!--
+  This should really be a to-be-loaded yaml file, but is temporarily an to-be-included launch
+  XML for the sake of substitution args. Kind of a hack, but can be fixed if we upgrade to
+  Lunar and/or the "subst_args for loaded YAMLs" feature is ever backported to Kinetic
+
+  Relevant Github issues:
+    https://github.com/ros/ros_comm/issues/1051
+    https://github.com/ros/ros_comm/pull/1354
+-->
+
+<launch>
+  <arg name="side" />
+  <rosparam param="koko_controllers" subst_value="true">
+    ### Controller for publishing to the joint_states topic
+
+    joint_state_controller:
+      type: joint_state_controller/JointStateController
+      publish_rate: 125
+
+    ### Gripper controller
+
+    gripper_controller:
+      type: effort_controllers/GripperActionController
+      joint:  $(arg side)_gripper_joint
+      goal_tolerance: 0.01
+      stalled_velocity_threshold: 0.01
+      stall_timeout: 0.2
+      gains:
+        $(arg side)_gripper_joint: {p: 25, i: 5, d: 1.5, i_clamp: 1}
+
+    ### Joint controllers
+
+    joint_torque_controller:
+      type: effort_controllers/JointGroupEffortController
+      joints:
+        - $(arg side)_base_roll_joint
+        - $(arg side)_shoulder_lift_joint
+        - $(arg side)_shoulder_roll_joint
+        - $(arg side)_elbow_lift_joint
+        - $(arg side)_elbow_roll_joint
+        - $(arg side)_wrist_lift_joint
+        - $(arg side)_wrist_roll_joint
+
+    joint_position_controller:
+      type: koko_controllers/KokoJointGroupPositionController
+      joints:
+        - $(arg side)_base_roll_joint
+        - $(arg side)_shoulder_lift_joint
+        - $(arg side)_shoulder_roll_joint
+        - $(arg side)_elbow_lift_joint
+        - $(arg side)_elbow_roll_joint
+        - $(arg side)_wrist_lift_joint
+        - $(arg side)_wrist_roll_joint
+      $(arg side)_base_roll_joint:
+        pid: {p: 50, i: 5.0, d: 10, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_shoulder_lift_joint:
+        pid: {p: 40, i: 3, d: 10, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_shoulder_roll_joint:
+        pid: {p: 40, i: 3, d: 8, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_elbow_lift_joint:
+        pid: {p: 30, i: 2, d: 8, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_elbow_roll_joint:
+        pid: {p: 30, i: 2, d: 8, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_wrist_lift_joint:
+        pid: {p: 20, i: 1, d: 5, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_wrist_roll_joint:
+        pid: {p: 15, i: 1, d: 5, i_clamp_min: -1, i_clamp_max: 1}
+
+    cartesian_pose_controller:
+      endlink: '$(arg side)_end_roll_link'
+      paired_constraints: [1, 2, 3, 4, 5, 6]
+      filter_length: 1
+      type: koko_controllers/CartesianPoseController
+
+      pid_pos_x: {p: 200, i: 00, d: 70, i_clamp_min: -50, i_clamp_max: 50}
+      pid_pos_y: {p: 200, i: 00, d: 70, i_clamp_min: -50, i_clamp_max: 50}
+      pid_pos_z: {p: 200, i: 00, d: 70, i_clamp_min: -50, i_clamp_max: 50}
+      pid_rot_r: {p: 13.0, i: 0.0, d: 0.5, i_clamp_min: 0, i_clamp_max: 0}
+      pid_rot_p: {p: 13.0, i: 0.0, d: 0.5, i_clamp_min: 0, i_clamp_max: 0}
+      pid_rot_y: {p: 13.0, i: 0.0, d: 0.5, i_clamp_min: 0, i_clamp_max: 0}
+
+      posture_control: true
+      posture_gain: 20.0
+      # posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29]
+      posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90,-1.0, 0.0]
+      z_offset_controller: 0.0
+      root_name: koko
+      $(arg side)_base_roll_joint:
+        d_gain: 12.0
+        pos_mult: 1.0
+        rot_mult: 1.0
+        max_torque: 30
+        min_torque: -30
+        max_angle: 3.3
+        min_angle: -2.2
+      $(arg side)_shoulder_lift_joint:
+        d_gain: 05.0
+        pos_mult: 1.0
+        rot_mult: 1.0
+        max_torque: 30
+        min_torque: -30
+        max_angle: 0.5
+        min_angle: -2.2
+      $(arg side)_shoulder_roll_joint:
+        d_gain: 5.0
+        pos_mult: 1.0
+        rot_mult: 1.0
+        max_torque: 30
+        min_torque: -30
+        max_angle: 2.6
+        min_angle: -2.6
+      $(arg side)_elbow_lift_joint:
+        d_gain: 3.0
+        pos_mult: 1.0
+        rot_mult: 1.0
+        max_torque: 30
+        min_torque: -30
+        max_angle: 0.5
+        min_angle: -2.2
+      $(arg side)_elbow_roll_joint:
+        d_gain: 3.0
+        pos_mult: 1.0
+        rot_mult: 1.0
+        max_torque: 30
+        min_torque: -30
+        max_angle: 2.6
+        min_angle: -2.6
+      $(arg side)_wrist_lift_joint:
+        d_gain: 0.0
+        pos_mult: 0.3
+        rot_mult: 0.5
+        max_torque: 30
+        min_torque: -30
+        max_angle: 0.5
+        min_angle: -2.2
+      $(arg side)_wrist_roll_joint:
+        d_gain: 1.0
+        pos_mult: 0.0
+        rot_mult: 1.0
+        max_torque: 30
+        min_torque: -30
+        max_angle: 2.6
+        min_angle: -2.6
+  </rosparam>
+</launch>

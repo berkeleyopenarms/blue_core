@@ -40,7 +40,7 @@ int main(int argc, char** argv)
   ros::NodeHandle node;
   ros::Duration(0.0444).sleep();
   // publisher and subscriber setup
-  pub = node.advertise<sensor_msgs::JointState>("/joint_state_tracker", 100);
+  pub = node.advertise<sensor_msgs::JointState>("joint_state_tracker", 100);
 
   if (!node.getParam("koko_hardware/joint_names", joint_names)) {
     ROS_ERROR("No joint_names given (namespace: %s)", node.getNamespace().c_str());

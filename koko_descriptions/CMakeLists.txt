@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 
-project(koko_description_sevendof)
+project(koko_descriptions)
 
 find_package(catkin REQUIRED)
 

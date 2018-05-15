@@ -4,6 +4,9 @@
   <include file="$(find koko_bringup)/launch/_single_arm.launch">
     <arg name="side" value="left" />
   </include>
+  <include file="$(find koko_bringup)/launch/_single_arm.launch">
+    <arg name="side" value="right" />
+  </include>
 
   <!-- Accept connections from our Python API via rosbridge -->
   <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />

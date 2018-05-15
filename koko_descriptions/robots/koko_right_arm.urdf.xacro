@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://ros.org/wiki/xacro" name="koko_description_sevendof_right">
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="koko_descriptions_right">
 
   <!-- The following included files set up definitions of parts of the robot body -->
   <!-- misc common stuff? -->
   <!-- PR2 Arm -->
-  <xacro:include filename="$(find koko_description_sevendof)/urdf/base_v0/base.urdf.xacro" />
-  <xacro:include filename="$(find koko_description_sevendof)/urdf/link_v0/link.urdf.xacro" />
-  <xacro:include filename="$(find koko_description_sevendof)/urdf/gripper_v0/gripper.urdf.xacro" />
-  <!-- <xacro:include filename="$(find koko_description_sevendof)/urdf/upper_arm_v0/upper_arm.urdf.xacro" /> -->
-  <!-- <xacro:include filename="$(find koko_description_sevendof)/urdf/forearm_v0/forearm.urdf.xacro" /> -->
+  <xacro:include filename="$(find koko_descriptions)/urdf/base_v0/base.urdf.xacro" />
+  <xacro:include filename="$(find koko_descriptions)/urdf/link_v0/link.urdf.xacro" />
+  <xacro:include filename="$(find koko_descriptions)/urdf/gripper_v0/gripper.urdf.xacro" />
+  <!-- <xacro:include filename="$(find koko_descriptions)/urdf/upper_arm_v0/upper_arm.urdf.xacro" /> -->
+  <!-- <xacro:include filename="$(find koko_descriptions)/urdf/forearm_v0/forearm.urdf.xacro" /> -->
   <!-- PR2 gripper -->
   <!-- <xacro:include filename="$(find pr2_description)/urdf/gripper_v0/gripper.urdf.xacro" /> -->
 
