@@ -20,17 +20,17 @@
 
     <!-- Start communication with the motor drivers -->
     <node
-       name="motor_interface"
-       pkg="koko_hardware_drivers"
-       type="bldc_driver.py"
-       ns="koko_hardware"
-       required="true"
-       output="screen" />
+      name="motor_interface"
+      pkg="koko_hardware_drivers"
+      type="bldc_driver.py"
+      ns="koko_hardware"
+      required="true"
+      output="screen" />
 
     <!-- Start the control stack -->
-    <rosparam
-      file="$(find koko_bringup)/config/controllers.yaml"
-      command="load" />
+    <include
+      file="$(find koko_bringup)/config/controllers.xml"
+      pass_all_args="true" />
     <node
       name="koko_controller_manager"
       pkg="koko_controller_manager"
