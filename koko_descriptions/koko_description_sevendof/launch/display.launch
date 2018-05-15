@@ -5,7 +5,7 @@
     name="gui"
     default="True" />
   <param name="robot_description"
-      command="$(find xacro)/xacro '$(find koko_description_sevendof)/robots/koko_arm.urdf.xacro'" />
+      command="$(find xacro)/xacro '$(find koko_description_sevendof)/robots/koko_left_arm.urdf.xacro'" />
   <param
     name="use_gui"
     value="$(arg gui)" />
