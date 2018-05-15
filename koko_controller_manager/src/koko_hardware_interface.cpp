@@ -7,11 +7,12 @@ namespace ti = transmission_interface;
 
 KokoHW::KokoHW(ros::NodeHandle &nh)
 {
+  std::string baselink;
   std::string endlink;
   std::string robot_desc_string;
 
   // load in robot parameters from parameter server
-  getRequiredParam(nh, "robot_dyn_description", robot_desc_string);
+  getRequiredParam(nh, "robot_description", robot_desc_string);
   getRequiredParam(nh, "koko_hardware/joint_names", joint_names_);
   getRequiredParam(nh, "koko_hardware/motor_names", motor_names_);
   getRequiredParam(nh, "koko_hardware/gear_ratios", gear_ratios_);
@@ -24,6 +25,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
   getRequiredParam(nh, "koko_hardware/softstop_tolerance", softstop_tolerance_);
   getRequiredParam(nh, "koko_hardware/motor_current_limits", motor_current_limits_);
   getRequiredParam(nh, "koko_hardware/id_torque_gains", id_gains_);
+  getRequiredParam(nh, "koko_hardware/baselink", baselink);
   getRequiredParam(nh, "koko_hardware/endlink", endlink);
   getRequiredParam(nh, "koko_hardware/accelerometer_calibration", is_accel_calibrate);
 
@@ -64,7 +66,7 @@ KokoHW::KokoHW(ros::NodeHandle &nh)
     exit(1);
   }
   KDL::Chain chain;
-  if (!my_tree.getChain("base_link", endlink, chain)) {
+  if (!my_tree.getChain(baselink, endlink, chain)) {
     ROS_FATAL("Failed to construct kdl chain");
     ros::shutdown();
     exit(1);

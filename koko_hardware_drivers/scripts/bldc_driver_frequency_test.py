@@ -37,27 +37,31 @@ def main():
     time.sleep(0.1)
 
     device.leaveBootloader(motor_id)
-    time.sleep(0.1)
+    time.sleep(0.2)
     s.flush()
     time.sleep(0.1)
 
-    last_time = rospy.get_time()
 
     freq_pub = rospy.Publisher("/freq", Float32, queue_size=1)
     msg = Float32()
 
+    last_time = rospy.get_time()
+
     while not rospy.is_shutdown():
 
-        for i in range(10): # "low pass filter"
+        for i in range(100): # "low pass filter"
             try:
-                curr_angle = device.getRotorPosition(motor_id)
+                # curr_angle = device.getRotorPosition(motor_id)
+                # state = device.setCommandAndGetState(motor_id, 0)
+                # state = device.setCommand(motor_id, 0)
+                state = device.getState(motor_id)
             except Exception as e:
                 rospy.logerr(str(e))
                 rospy.logerr(str(motor_id))
 
         current_time = rospy.get_time()
         dt = current_time - last_time
-        freq = 1.0 / dt * 10
+        freq = 1.0 / dt * 100
         msg.data = freq
         freq_pub.publish(msg)
         last_time = current_time
