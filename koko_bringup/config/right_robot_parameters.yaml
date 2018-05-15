@@ -1,15 +1,16 @@
 koko_hardware:
     ### Joint configuration
     joint_names:
-        - base_roll_joint
-        - shoulder_lift_joint
-        - shoulder_roll_joint
-        - elbow_lift_joint
-        - elbow_roll_joint
-        - wrist_lift_joint
-        - wrist_roll_joint
-        - gripper_joint
-    endlink: wrist_roll_link
+        - right_base_roll_joint
+        - right_shoulder_lift_joint
+        - right_shoulder_roll_joint
+        - right_elbow_lift_joint
+        - right_elbow_roll_joint
+        - right_wrist_lift_joint
+        - right_wrist_roll_joint
+        - right_gripper_joint
+    baselink: right_base_link
+    endlink: right_end_roll_link
     differential_pairs: [1, 2, 3, 4, 5, 6]
     gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 14.4]
     joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
@@ -30,7 +31,7 @@ koko_hardware:
         - right_motor3
         - left_motor3
         - gripper_motor
-    motor_ids: [1, 43, 38, 17, 10, 19, 21, 2]
+    motor_ids: [1, 43, 38, 17, 10, 19, 21, 34]
     # motor_current_limits: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 0.3]
     # motor_current_limits: [3.0, 2.5, 2.5, 2.5, 2.5, 1.5, 1.5]
@@ -46,4 +47,4 @@ koko_hardware:
     posture_gain: .01
     # posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29]
     posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90,-1.0, 0.0]
-    endlink_tracker: "wrist_roll_link"
+    endlink_tracker: "right_end_roll_link"
