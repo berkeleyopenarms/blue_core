@@ -1,0 +1,13 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+ <node
+    name="motor_interface"
+    pkg="blue_hardware_drivers"
+    type="bldc_driver.py"
+    args="/dev/ttyUSB0"
+    ns="blue_hardware"
+    output="screen"
+   />
+
+</launch>

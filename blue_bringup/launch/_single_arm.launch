@@ -1,0 +1,62 @@
+<launch>
+  <arg name="side" />
+
+  <group ns="$(arg side)_arm" clear_params="true">
+
+    <!-- Load configuration -->
+    <rosparam
+      file="$(find blue_bringup)/config/$(arg side)_robot_parameters.yaml"
+      command="load" />
+
+    <!-- Broadcast our joint states as TFs -->
+    <node
+      name="robot_state_publisher"
+      pkg="robot_state_publisher"
+      type="state_publisher" />
+
+    <!-- Load URDFs -->
+    <param name="robot_description"
+      command="$(find xacro)/xacro '$(find blue_descriptions)/robots/blue_$(arg side)_arm.urdf.xacro'" />
+
+    <!-- Start communication with the motor drivers -->
+    <node
+      name="motor_interface"
+      pkg="blue_hardware_drivers"
+      type="bldc_driver.py"
+      ns="blue_hardware"
+      required="true"
+      output="screen" />
+
+    <!-- Start the control stack -->
+    <include
+      file="$(find blue_bringup)/config/controllers.xml"
+      pass_all_args="true" />
+    <node
+      name="blue_controller_manager"
+      pkg="blue_controller_manager"
+      type="blue_controller_manager"
+      output="screen" />
+    <node name="blue_controller_spawner"
+      pkg="blue_controller_manager"
+      type="spawner.py"
+      output="screen">
+      <rosparam param="start_controllers">
+        - blue_controllers/joint_state_controller
+        - blue_controllers/gripper_controller
+      </rosparam>
+      <rosparam param="stop_controllers">
+        - blue_controllers/cartesian_pose_controller
+        - blue_controllers/joint_position_controller
+      </rosparam>
+    </node>
+
+    <!-- Joint calibration -->
+    <!-- TODO: this is temporary, and is being moved to the hardware interface initialization -->
+    <node
+      name="hardstop_calibrator"
+      pkg="blue_bringup"
+      type="hardstop_calibrate"
+      output="screen" />
+
+  </group>
+</launch>

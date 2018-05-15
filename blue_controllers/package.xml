@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<package>
+  <name>blue_controllers</name>
+  <version>0.0.0</version>
+  <description>Source code for our custom controller plugins</description>
+
+  <maintainer email="brentyi@berkeley.edu">Brent Yi</maintainer>
+
+  <license>BSD</license>
+
+  <author email="zhaoallan@berkeley.edu">Allan Zhao</author>
+  <author email="brentyi@berkeley.edu">Brent Yi</author>
+  <author email="lxd20@berkeley.edu">Lear Du</author>
+  <author email="phil80301@berkeley.edu">Philipp Wu</author>
+  <author email="zoemccarthy12@gmail.com">Zoe McCarthy</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>controller_interface</build_depend>
+  <build_depend>urdf</build_depend>
+  <build_depend>control_toolbox</build_depend>
+  <build_depend>hardware_interface</build_depend>
+  <build_depend>control_msgs</build_depend>
+  <build_depend>robot_state_publisher</build_depend>
+  <build_depend>position_controllers</build_depend>
+  <build_depend>effort_controllers</build_depend>
+  <build_depend>joint_state_controller</build_depend>
+  <build_depend>gripper_action_controller</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>controller_interface</run_depend>
+  <run_depend>urdf</run_depend>
+  <run_depend>control_toolbox</run_depend>
+  <run_depend>hardware_interface</run_depend>
+  <run_depend>control_msgs</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>position_controllers</run_depend>
+  <run_depend>effort_controllers</run_depend>
+  <run_depend>joint_state_controller</run_depend>
+  <run_depend>gripper_action_controller</run_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+    <controller_interface plugin="${prefix}/blue_controller_plugins.xml"/>
+  </export>
+</package>

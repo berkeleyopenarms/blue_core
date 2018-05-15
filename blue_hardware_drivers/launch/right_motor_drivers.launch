@@ -1,0 +1,18 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+  <!-- Load motor parameters, in case this node is being run independently -->
+ <rosparam
+   file="$(find blue_bringup)/config/right_robot_parameters.yaml"
+   command="load" />
+
+ <!-- Start the ROS driver -->
+ <node
+   name="motor_interface"
+   pkg="blue_hardware_drivers"
+   type="bldc_driver.py"
+   args="/dev/ttyUSB0"
+   ns="blue_hardware"
+   output="screen" />
+
+</launch>
