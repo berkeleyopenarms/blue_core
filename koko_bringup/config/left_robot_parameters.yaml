@@ -47,4 +47,4 @@ koko_hardware:
     posture_gain: .01
     # posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29]
     posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90,-1.0, 0.0]
-    endlink_tracker: "wrist_roll_link"
+    endlink_tracker: "left_end_roll_link"
