@@ -26,12 +26,18 @@ class BLDCDriverNode:
         rospy.init_node('bldc_driver', anonymous=True)
 
         motor_ids = rospy.get_param('motor_ids')
+        assert motor_ids != None
+
         motor_names = rospy.get_param('motor_names')
+        assert motor_names != None
+
+        port = rospy.get_param('serial_port')
+        assert port != None
+
         self.motor_names = {}
         for id, name in zip(motor_ids, motor_names):
             self.motor_names[id] = name
 
-        port = sys.argv[1]
         self.serial = serial.Serial(port=port, baudrate=1000000, timeout=0.1)
         self.bldc = BLDCControllerClient(self.serial)
         self.command_queue = {}
