@@ -5,7 +5,7 @@
     name="gui"
     default="True" />
   <param name="robot_description"
-      command="$(find xacro)/xacro '$(find blue_description_sevendof)/robots/blue_left_arm.urdf.xacro'" />
+      command="$(find xacro)/xacro '$(find blue_descriptions)/robots/blue_full.urdf.xacro'" />
   <param
     name="use_gui"
     value="$(arg gui)" />
@@ -21,5 +21,5 @@
     name="rviz"
     pkg="rviz"
     type="rviz"
-    args="-d $(find blue_description_sevendof)/urdf.rviz" />
+    args="-d $(find blue_descriptions)/urdf.rviz" />
 </launch>
