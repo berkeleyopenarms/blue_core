@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+
+<!-- XML namespaces -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Inertial properties differ slightly for left vs right arm -->
+  <xacro:property name="base_camera_height"  value="0.303506965011826" />
+  <xacro:property name="camera_angle"  value= "0.0" />
+
+  <!-- ============================  link  ============================ -->
+  <!-- Includes elbow flex, FA roll joints in macros below -->
+  <xacro:macro name="blue_robot_base_v0" params="">
+
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.0340720710868516 -5.82248094938009E-06 -0.701353347324681"
+        rpy="0 0 0" />
+      <mass
+        value="16.2841622231049" />
+      <inertia
+        ixx="2.14925955046191"
+        ixy="-1.29716552583247E-05"
+        ixz="0.0350729990773796"
+        iyy="1.86082991311609"
+        iyz="6.6571955031526E-05"
+        izz="0.793500351133606" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://blue_descriptions/meshes/robot_base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://blue_descriptions/meshes/robot_base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint
+    name="left_fixed_joint"
+    type="fixed">
+    <origin
+      xyz="-0.01409 0.11289 0"
+      rpy="0.61087 -0.5236 3.1416" />
+    <parent
+      link="base_link" />
+    <child
+      link="left_base_link" />
+    <axis
+      xyz="0.5 0.49673 0.70941" />
+  </joint>
+  <joint
+    name="right_fixed_joint"
+    type="fixed">
+    <origin
+      xyz="-0.01409 -0.11289 0"
+      rpy="-0.61087 -0.5236 3.1416" />
+    <parent
+      link="base_link" />
+    <child
+      link="right_base_link" />
+    <axis
+      xyz="0.5 -0.49673 0.70941" />
+  </joint>
+
+  <link
+    name="camera_link">
+    <inertial>
+      <origin
+        xyz="-0.00759217244323041 0.0650724306353812 0.000615586148610126"
+        rpy="0 0 0" />
+      <mass
+        value="0.274759207683782" />
+      <inertia
+        ixx="0.000597466918447966"
+        ixy="-1.22023781832195E-06"
+        ixz="-7.19559686887802E-07"
+        iyy="0.000569118421202202"
+        iyz="-2.24460961567124E-07"
+        izz="0.000184848568794368" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://blue_descriptions/meshes/camera_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://blue_descriptions/meshes/camera_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint
+    name="camera_rotation_joint"
+    type="fixed">
+    <origin
+      xyz="-0.0190500000000001 0 ${base_camera_height}"
+      rpy="1.5707963267949 -5.91437301648455E-15 ${camera_angle}" />
+    <parent
+      link="base_link" />
+    <child
+      link="camera_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+
+  <link
+    name="camera_view_link" />
+
+  <joint
+    name="camera_view_joint"
+    type="fixed">
+    <origin
+      xyz="0.0190500000000003 0.0727749999999998 0"
+      rpy="0 -1.5707963267949 0" />
+    <parent
+      link="camera_link" />
+    <child
+      link="camera_view_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+
+  </xacro:macro>
+
+</robot>

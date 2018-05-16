@@ -35,7 +35,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/base_link.STL" />
+            filename="package://blue_descriptions/meshes/arm_base_link.STL" />
         </geometry>
         <material
           name="">
@@ -49,7 +49,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/base_link.STL" />
+            filename="package://blue_descriptions/meshes/arm_base_link.STL" />
         </geometry>
       </collision>
     </link>
