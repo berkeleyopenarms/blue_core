@@ -1,0 +1,50 @@
+<launch>
+
+  <!-- What of robot am I? -->
+  <arg name="configuration" default="full" doc="left, right, or full" />
+
+  <!-- Load URDF -->
+  <param
+    name="robot_description"
+    command="$(find xacro)/xacro '$(find blue_descriptions)/robots/blue_$(arg configuration).urdf.xacro'" />
+
+  <!-- Run core control processes -->
+  <include file="$(find blue_bringup)/launch/_single_arm_control.launch"
+    if="$(eval configuration == 'right' or configuration == 'full')">
+    <arg name="side" value="right" />
+  </include>
+  <include
+    file="$(find blue_bringup)/launch/_single_arm_control.launch"
+    if="$(eval configuration == 'left' or configuration == 'full')">
+    <arg name="side" value="left" />
+  </include>
+
+  <!-- Bring our joint_states message(s) into the root namespace -->
+  <node
+    name="joint_state_publisher"
+    pkg="joint_state_publisher"
+    type="joint_state_publisher"
+    if="$(eval configuration == 'full')">
+    <rosparam param="source_list">
+      - left_arm/joint_states
+      - right_arm/joint_states
+    </rosparam>
+  </node>
+  <remap
+    from="$(arg configuration)_arm/joint_states"
+    to="joint_states"
+    unless="$(eval configuration == 'full')" />
+
+    <!-- Compute forward kinematics and broadcast them via tf -->
+    <node
+      name="robot_state_publisher"
+      pkg="robot_state_publisher"
+      type="state_publisher" />
+
+    <!-- Accept connections from our Python API via rosbridge -->
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+    <node name="tf2_web_republisher"
+      pkg="tf2_web_republisher"
+      type="tf2_web_republisher" />
+
+  </launch>

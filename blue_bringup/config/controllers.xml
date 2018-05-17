@@ -10,6 +10,8 @@
 
 <launch>
   <arg name="side" />
+  <!-- use_root_urdf is not used, see https://github.com/ros/ros_comm/issues/889 -->
+  <arg name="use_root_urdf" default="false" />
   <rosparam param="blue_controllers" subst_value="true">
     ### Controller for publishing to the joint_states topic
 
