@@ -1,22 +1,17 @@
 <launch>
-  <arg name="side" />
+  <arg name="side" doc="Side of the robot: left or right" />
 
   <group ns="$(arg side)_arm" clear_params="true">
 
+    <!-- Use global URDF -->
+    <remap
+      from="robot_description"
+      to="/robot_description" />
+
     <!-- Load configuration -->
     <rosparam
-      file="$(find blue_bringup)/config/$(arg side)_robot_parameters.yaml"
+      file="$(find blue_bringup)/config/robot_parameters_$(arg side).yaml"
       command="load" />
-
-    <!-- Broadcast our joint states as TFs -->
-    <node
-      name="robot_state_publisher"
-      pkg="robot_state_publisher"
-      type="state_publisher" />
-
-    <!-- Load URDFs -->
-    <param name="robot_description"
-      command="$(find xacro)/xacro '$(find blue_descriptions)/robots/blue_$(arg side)_arm.urdf.xacro'" />
 
     <!-- Start communication with the motor drivers -->
     <node
@@ -51,7 +46,6 @@
     </node>
 
     <!-- Joint calibration -->
-    <!-- TODO: this is temporary, and is being moved to the hardware interface initialization -->
     <node
       name="hardstop_calibrator"
       pkg="blue_bringup"

@@ -10,6 +10,7 @@
 
 <launch>
   <arg name="side" />
+
   <rosparam param="blue_controllers" subst_value="true">
     ### Controller for publishing to the joint_states topic
 
