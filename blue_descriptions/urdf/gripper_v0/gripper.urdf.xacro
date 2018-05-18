@@ -3,8 +3,7 @@
 <!-- XML namespaces -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- ============================  link  ============================ -->
-  <!-- Includes elbow flex, FA roll joints in macros below -->
+  <!-- ============================  End link and gripper ============================ -->
   <xacro:macro name="blue_end_effector_v0" params="side name">
     <xacro:blue_end_v0 side="${side}" name="${name}"/>
     <xacro:blue_gripper_v0 side="${side}" parent="${name}"/>

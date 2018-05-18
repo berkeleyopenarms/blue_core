@@ -1,21 +1,21 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="blue_descriptions_right">
-  <xacro:include filename="$(find blue_descriptions)/urdf/base_v0/base.urdf.xacro" />
-  <xacro:include filename="$(find blue_descriptions)/urdf/link_v0/link.urdf.xacro" />
-  <xacro:include filename="$(find blue_descriptions)/urdf/gripper_v0/gripper.urdf.xacro" />
+  <xacro:arg name="is_gazebo" default="false" />
+  <xacro:property name="is_gazebo" value="$(arg is_gazebo)" />
+
+
+
+  <!-- ====== Load in robot base macro ====== -->
   <xacro:include filename="$(find blue_descriptions)/urdf/robot_base_v0/robot_base.urdf.xacro" />
 
-  <xacro:blue_robot_base_v0 />
+  <!-- ====== Robot camera height and angle parameters  ====== -->
+  <xacro:property name="base_camera_height"  value="0.303506965011826" />
+  <xacro:property name="camera_angle"  value= "0.0" />
 
-  <xacro:blue_base_v0 side="right" reflect="-1" child="shoulder_roll_link"/>
-  <xacro:blue_link_v0 side="right" stage="shoulder" child="elbow_roll_link" reflect="-1" />
-  <xacro:blue_link_v0 side="right" stage="elbow" child="wrist_roll_link" reflect="1" />
-  <xacro:blue_link_v0 side="right" stage="wrist" child="end_roll_link" reflect="0" wrist="1"/>
-  <xacro:blue_end_effector_v0 side="right" name="end_roll_link"/>
+  <!-- ====== Build base ====== -->
+  <xacro:blue_robot_base_v0 cam_height="${base_camera_height}" cam_angle="${camera_angle}" is_gazebo="${is_gazebo}"/>
+  <!-- ====== Build right and left arms====== -->
+  <xacro:include filename="$(find blue_descriptions)/robots/blue_right.urdf.xacro" />
+  <xacro:include filename="$(find blue_descriptions)/robots/blue_left.urdf.xacro" />
 
-  <xacro:blue_base_v0 side="left" reflect="1" child="shoulder_roll_link"/>
-  <xacro:blue_link_v0 side="left" stage="shoulder" child="elbow_roll_link" reflect="1" />
-  <xacro:blue_link_v0 side="left" stage="elbow" child="wrist_roll_link" reflect="-1" />
-  <xacro:blue_link_v0 side="left" stage="wrist" child="end_roll_link" reflect="0" wrist="1"/>
-  <xacro:blue_end_effector_v0 side="left" name="end_roll_link"/>
 </robot>

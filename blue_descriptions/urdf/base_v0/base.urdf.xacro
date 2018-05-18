@@ -73,6 +73,19 @@
         velocity="0" />
     </joint>
 
+    <xacro:if value="${is_gazebo}">
+      <transmission name="${side}_base_roll_joint_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}_base_roll_joint">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="{side}_base_roll_motor">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+    </xacro:if>
+
   </xacro:macro>
 
 </robot>
