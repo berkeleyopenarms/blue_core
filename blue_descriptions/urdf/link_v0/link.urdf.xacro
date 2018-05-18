@@ -70,6 +70,20 @@
         effort="0"
         velocity="0" />
     </joint>
+
+    <xacro:if value="${is_gazebo}">
+      <transmission name="${side}_${stage}_lift_joint_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}_${stage}_lift_joint">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}_${stage}_lift_motor">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+    </xacro:if>
+
   </xacro:macro>
 
   <xacro:macro name="blue_lift_link_v0" params="side stage child reflect">
@@ -132,5 +146,19 @@
         effort="0"
         velocity="0" />
     </joint>
+
+    <xacro:if value="${is_gazebo}">
+      <transmission name="${side}_${stage}_roll_joint_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}_${stage}_roll_joint">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}_${stage}_roll_motor">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+    </xacro:if>
+
   </xacro:macro>
 </robot>

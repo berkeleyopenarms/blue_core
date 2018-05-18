@@ -3,8 +3,6 @@
   <xacro:arg name="is_gazebo" default="false" />
   <xacro:property name="is_gazebo" value="$(arg is_gazebo)" />
 
-
-
   <!-- ====== Load in robot base macro ====== -->
   <xacro:include filename="$(find blue_descriptions)/urdf/robot_base_v0/robot_base.urdf.xacro" />
 

@@ -79,7 +79,7 @@
         <joint name="${side}_base_roll_joint">
           <hardwareInterface>EffortJointInterface</hardwareInterface>
         </joint>
-        <actuator name="{side}_base_roll_motor">
+        <actuator name="${side}_base_roll_motor">
           <hardwareInterface>EffortJointInterface</hardwareInterface>
           <mechanicalReduction>1</mechanicalReduction>
         </actuator>

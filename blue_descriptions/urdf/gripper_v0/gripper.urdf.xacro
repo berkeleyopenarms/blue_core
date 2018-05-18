@@ -111,5 +111,19 @@
         effort="0"
         velocity="0" />
     </joint>
+
+    <xacro:if value="${is_gazebo}">
+      <transmission name="${side}_gripper_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}_gripper_joint">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}_gripper_motor">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+    </xacro:if>
+
   </xacro:macro>
 </robot>
