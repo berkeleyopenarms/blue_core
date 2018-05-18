@@ -52,5 +52,16 @@
       type="hardstop_calibrate"
       output="screen" />
 
+    <!-- VR teleop nodes -->
+    <!-- TODO: move these to a launch file in the vive package -->
+    <node
+      name="vive_pose_ik"
+      pkg="blue_kinematics"
+      type="ik_vive_posture" />
+    <node
+      name="vive_gripper"
+      pkg="blue_vive"
+      type="vive_teleop.py" />
+
   </group>
 </launch>
