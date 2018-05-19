@@ -18,7 +18,6 @@
     name="spawn_urdf"
     pkg="gazebo_ros"
     type="spawn_model"
-    respawn="false"
     args="-param robot_description -urdf -model blue_full"
     output="screen"/>
 
