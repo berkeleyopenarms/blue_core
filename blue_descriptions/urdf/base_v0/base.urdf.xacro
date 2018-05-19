@@ -69,8 +69,8 @@
       <limit
         lower="${0.5*((reflect+1)*base_left_min+(1-reflect)*base_right_min)}"
         upper="${0.5*((reflect+1)*base_left_max+(1-reflect)*base_right_max)}"
-        effort="0"
-        velocity="0" />
+        effort="30"
+        velocity="20" />
     </joint>
 
     <xacro:if value="${is_gazebo}">

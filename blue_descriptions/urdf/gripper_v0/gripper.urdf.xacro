@@ -108,8 +108,8 @@
       <limit
         lower="-2.6761"
         upper="2.6761"
-        effort="0"
-        velocity="0" />
+        effort="30"
+        velocity="20" />
     </joint>
 
     <xacro:if value="${is_gazebo}">

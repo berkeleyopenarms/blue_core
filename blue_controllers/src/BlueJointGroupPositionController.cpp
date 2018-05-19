@@ -33,15 +33,16 @@ namespace blue_controllers
       return false;
     }
 
-    ROS_ERROR_STREAM("1 Starting Controller");
+    // ROS_ERROR_STREAM("1 Starting Controller");
     pid_controllers_.resize(n_joints_);
-    ROS_ERROR_STREAM("2 Starting Controller");
+    // ROS_ERROR_STREAM("2 Starting Controller");
     for(unsigned int i=0; i<n_joints_; i++)
     {
       ROS_ERROR("Starting Controller %d", i);
       try
       {
         joints_.push_back(hw->getHandle(joint_names_[i]));
+        ROS_ERROR("Joint Name %s", joint_names_[i].c_str());
       }
       catch (const hardware_interface::HardwareInterfaceException& e)
       {
@@ -110,6 +111,8 @@ namespace blue_controllers
         // Set the PID error and compute the PID command with nonuniform
         // time step size.
         commanded_effort = pid_controllers_[i].computeCommand(error, -joints_[i].getVelocity(), period);
+
+        // ROS_ERROR("%f", commanded_effort);
 
         joints_[i].setCommand(commanded_effort);
     }
