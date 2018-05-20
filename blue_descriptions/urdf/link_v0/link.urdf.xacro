@@ -35,10 +35,8 @@
           <mesh
             filename="package://blue_descriptions/meshes/roll_link.STL" />
         </geometry>
-        <material
-          name="">
-          <color
-            rgba="1 1 1 1" />
+        <material name="">
+          <color rgba="1 1 1 1" />
         </material>
       </visual>
       <collision>
@@ -67,8 +65,8 @@
       <limit
         lower="-2.2944"
         upper="0"
-        effort="30"
-        velocity="20" />
+        effort="80"
+        velocity="50" />
     </joint>
 
     <xacro:if value="${is_gazebo}">
@@ -111,10 +109,8 @@
           <mesh
             filename="package://blue_descriptions/meshes/lift_link.STL" />
         </geometry>
-        <material
-          name="">
-          <color
-            rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+        <material name="">
+          <color rgba="0.116747 0.862745 1.0 1" />
         </material>
       </visual>
       <collision>
@@ -143,8 +139,8 @@
       <limit
         lower="-2.6761"
         upper="2.6761"
-        effort="30"
-        velocity="20" />
+        effort="80"
+        velocity="50" />
     </joint>
 
     <xacro:if value="${is_gazebo}">

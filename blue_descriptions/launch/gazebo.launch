@@ -11,7 +11,7 @@
   <!-- Convert xacro and put on parameter server -->
   <param
     name="robot_description"
-    command="$(find xacro)/xacro.py $(find blue_descriptions)/robots/blue_full.urdf.xacro is_gazebo:=true" />
+    command="$(find xacro)/xacro --inorder $(find blue_descriptions)/robots/blue_full.urdf.xacro is_gazebo:=true" />
 
   <!-- Spawn a robot into Gazebo -->
   <node
