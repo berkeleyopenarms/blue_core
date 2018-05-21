@@ -6,7 +6,7 @@
   <!-- Load URDF -->
   <param
     name="robot_description"
-    command="$(find xacro)/xacro '$(find blue_descriptions)/robots/blue_$(arg configuration).urdf.xacro'" />
+    command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_$(arg configuration).urdf.xacro'" />
 
   <!-- Run core control processes -->
   <include file="$(find blue_bringup)/launch/_single_arm_control.launch"

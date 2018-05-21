@@ -37,10 +37,8 @@
           <mesh
             filename="package://blue_descriptions/meshes/arm_base_link.STL" />
         </geometry>
-        <material
-          name="">
-          <color
-            rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+        <material name="">
+          <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
         </material>
       </visual>
       <collision>
@@ -69,9 +67,22 @@
       <limit
         lower="${0.5*((reflect+1)*base_left_min+(1-reflect)*base_right_min)}"
         upper="${0.5*((reflect+1)*base_left_max+(1-reflect)*base_right_max)}"
-        effort="0"
-        velocity="0" />
+        effort="80"
+        velocity="50" />
     </joint>
+
+    <xacro:if value="${is_gazebo}">
+      <transmission name="${side}_base_roll_joint_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}_base_roll_joint">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}_base_roll_motor">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+    </xacro:if>
 
   </xacro:macro>
 

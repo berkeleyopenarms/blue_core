@@ -35,10 +35,8 @@
           <mesh
             filename="package://blue_descriptions/meshes/roll_link.STL" />
         </geometry>
-        <material
-          name="">
-          <color
-            rgba="1 1 1 1" />
+        <material name="">
+          <color rgba="1 1 1 1" />
         </material>
       </visual>
       <collision>
@@ -67,9 +65,23 @@
       <limit
         lower="-2.2944"
         upper="0"
-        effort="0"
-        velocity="0" />
+        effort="80"
+        velocity="50" />
     </joint>
+
+    <xacro:if value="${is_gazebo}">
+      <transmission name="${side}_${stage}_lift_joint_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}_${stage}_lift_joint">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}_${stage}_lift_motor">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+    </xacro:if>
+
   </xacro:macro>
 
   <xacro:macro name="blue_lift_link_v0" params="side stage child reflect">
@@ -97,10 +109,8 @@
           <mesh
             filename="package://blue_descriptions/meshes/lift_link.STL" />
         </geometry>
-        <material
-          name="">
-          <color
-            rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+        <material name="">
+          <color rgba="0.116747 0.862745 1.0 1" />
         </material>
       </visual>
       <collision>
@@ -129,8 +139,22 @@
       <limit
         lower="-2.6761"
         upper="2.6761"
-        effort="0"
-        velocity="0" />
+        effort="80"
+        velocity="50" />
     </joint>
+
+    <xacro:if value="${is_gazebo}">
+      <transmission name="${side}_${stage}_roll_joint_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}_${stage}_roll_joint">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}_${stage}_roll_motor">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+    </xacro:if>
+
   </xacro:macro>
 </robot>
