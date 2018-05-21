@@ -3,8 +3,7 @@
 <!-- XML namespaces -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- ============================  link  ============================ -->
-  <!-- Includes elbow flex, FA roll joints in macros below -->
+  <!-- ============================  End link and gripper ============================ -->
   <xacro:macro name="blue_end_effector_v0" params="side name">
     <xacro:blue_end_v0 side="${side}" name="${name}"/>
     <xacro:blue_gripper_v0 side="${side}" parent="${name}"/>
@@ -35,10 +34,8 @@
           <mesh
             filename="package://blue_descriptions/meshes/wrist_roll_link.STL" />
         </geometry>
-        <material
-          name="">
-          <color
-            rgba="1 1 1 1" />
+        <material name="">
+          <color rgba="1 1 1 1" />
         </material>
       </visual>
       <collision>
@@ -109,8 +106,22 @@
       <limit
         lower="-2.6761"
         upper="2.6761"
-        effort="0"
-        velocity="0" />
+        effort="80"
+        velocity="50" />
     </joint>
+
+    <xacro:if value="${is_gazebo}">
+      <transmission name="${side}_gripper_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}_gripper_joint">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}_gripper_motor">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+    </xacro:if>
+
   </xacro:macro>
 </robot>

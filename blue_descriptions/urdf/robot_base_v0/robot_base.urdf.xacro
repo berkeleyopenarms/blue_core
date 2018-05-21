@@ -3,13 +3,17 @@
 <!-- XML namespaces -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- Inertial properties differ slightly for left vs right arm -->
-  <xacro:property name="base_camera_height"  value="0.303506965011826" />
-  <xacro:property name="camera_angle"  value= "0.0" />
+  <!-- ============================  Robot Base  ============================ -->
+  <xacro:macro name="blue_robot_base_v0" params="cam_height cam_angle is_gazebo:=false">
 
-  <!-- ============================  link  ============================ -->
-  <!-- Includes elbow flex, FA roll joints in macros below -->
-  <xacro:macro name="blue_robot_base_v0" params="">
+  <xacro:if value="${is_gazebo}">
+    <link name="world"/>
+    <joint name ="world_joint" type= "fixed">
+      <origin xyz="0 0 1.4" rpy="0 0 0" />
+      <parent link="world"/>
+      <child link="base_link"/>
+    </joint>
+  </xacro:if>
 
   <link
     name="base_link">
@@ -35,10 +39,8 @@
         <mesh
           filename="package://blue_descriptions/meshes/robot_base_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
     <collision>
@@ -103,10 +105,8 @@
         <mesh
           filename="package://blue_descriptions/meshes/camera_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
     <collision>
@@ -124,8 +124,8 @@
     name="camera_rotation_joint"
     type="fixed">
     <origin
-      xyz="-0.0190500000000001 0 ${base_camera_height}"
-      rpy="1.5707963267949 -5.91437301648455E-15 ${camera_angle}" />
+      xyz="-0.0190500000000001 0 ${cam_height}"
+      rpy="1.5707963267949 -5.91437301648455E-15 ${cam_angle}" />
     <parent
       link="base_link" />
     <child
