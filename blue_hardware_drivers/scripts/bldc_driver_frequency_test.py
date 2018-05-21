@@ -53,7 +53,7 @@ def main():
 
     while not rospy.is_shutdown():
 
-        for i in range(100): # "low pass filter"
+        for i in range(10): # "low pass filter"
             for motor_id in motor_ids:
                 try:
                     # curr_angle = device.getRotorPosition(motor_id)
@@ -66,7 +66,7 @@ def main():
 
         current_time = rospy.get_time()
         dt = current_time - last_time
-        freq = 1.0 / dt * 100
+        freq = 1.0 / dt * 10
         msg.data = freq
         freq_pub.publish(msg)
         last_time = current_time
