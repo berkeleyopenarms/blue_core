@@ -31,7 +31,7 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   git clone https://github.com/berkeley-open-robotics/blue_core.git
   ```
 - Install dependencies:
- ```bash
+  ```bash
   rosdep install --from-paths src --ignore-src -r -y
   ```
 - Build:
