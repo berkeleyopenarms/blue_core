@@ -3,17 +3,20 @@
 
   <group ns="$(arg side)_arm" clear_params="true">
 
-    <!-- Use global URDF -->
+    <!-- Use shared URDF, joint states topic -->
     <remap
       from="robot_description"
       to="/robot_description" />
+    <remap
+      from="joint_states"
+      to="/joint_states" />
 
-    <!-- Load configuration -->
+    <!-- Load hardware configuration -->
     <rosparam
       file="$(find blue_bringup)/config/robot_parameters_$(arg side).yaml"
       command="load" />
 
-    <!-- Start communication with the motor drivers -->
+    <!-- Motor driver communication -->
     <node
       name="motor_interface"
       pkg="blue_hardware_drivers"
@@ -23,6 +26,7 @@
       output="screen" />
 
     <!-- Start the control stack -->
+    <!-- http://wiki.ros.org/ros_control -->
     <include
       file="$(find blue_bringup)/config/controllers.xml"
       pass_all_args="true" />
@@ -31,17 +35,13 @@
       pkg="blue_controller_manager"
       type="blue_controller_manager"
       output="screen" />
-    <node name="blue_controller_spawner"
+    <node
+      name="$(anon blue_controller_spawner)"
       pkg="blue_controller_manager"
       type="spawner.py"
       output="screen">
       <rosparam param="start_controllers">
         - blue_controllers/joint_state_controller
-        - blue_controllers/gripper_controller
-      </rosparam>
-      <rosparam param="stop_controllers">
-        - blue_controllers/cartesian_pose_controller
-        - blue_controllers/joint_position_controller
       </rosparam>
     </node>
 

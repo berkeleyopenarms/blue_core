@@ -1,6 +1,6 @@
 <launch>
 
-  <include file="$(find blue_bringup)/launch/_run.launch">
+  <include file="$(find blue_bringup)/launch/include/run.launch.xml">
     <arg name="configuration" value="left" />
   </include>
 

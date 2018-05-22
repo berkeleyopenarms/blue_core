@@ -298,7 +298,7 @@ class BLDCControllerClient:
 
     def readResponse(self, server_id, func_code):
         sync = self._ser.read()
-        if len(sync) != 1 and sync != "\xff":
+        if len(sync) != 1 or sync != "\xff":
             # Reached maximum number of tries
             # self._ser.flushInput()
             return False, None

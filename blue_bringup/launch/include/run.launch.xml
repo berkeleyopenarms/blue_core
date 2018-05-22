@@ -1,0 +1,34 @@
+<launch>
+
+  <!-- What kind of robot am I? -->
+  <arg name="configuration" default="full" doc="left, right, or full" />
+
+  <!-- Load URDF -->
+  <param
+    name="robot_description"
+    command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_full.urdf.xacro'" />
+
+  <!-- Run core control stack -->
+  <include file="$(find blue_bringup)/launch/include/single_arm_control.launch.xml"
+    if="$(eval configuration == 'right' or configuration == 'full')">
+    <arg name="side" value="right" />
+  </include>
+  <include
+    file="$(find blue_bringup)/launch/include/single_arm_control.launch.xml"
+    if="$(eval configuration == 'left' or configuration == 'full')">
+    <arg name="side" value="left" />
+  </include>
+
+  <!-- Compute forward kinematics and broadcast via tf -->
+  <node
+    name="robot_state_publisher"
+    pkg="robot_state_publisher"
+    type="state_publisher" />
+
+  <!-- Support external applications via rosbridge -->
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+  <node name="tf2_web_republisher"
+    pkg="tf2_web_republisher"
+    type="tf2_web_republisher" />
+
+</launch>
