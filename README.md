@@ -17,12 +17,47 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
 
 -----
 
-Manual development environment setup (Ubuntu 16.0.4 w/ ROS Kinetic):
+## How do I set up a development environment?
 
-```bash
-mkdir -p ~/blue_ws/src && cd "$_"
-catkin_init_workspace
-git clone https://github.com/brentyi/blue.git
-rosdep install --from-paths src --ignore-src -r -y
-catkin_make install
-```
+- Install Ubuntu 16.0.4
+- [Install ROS Kinetic]
+- Create a workspace:
+  ```bash
+  mkdir -p ~/blue_ws/src && cd "$_"
+  catkin_init_workspace
+  ```
+- Clone the code:
+  ```bash
+  git clone https://github.com/berkeley-open-robotics/blue_core.git
+  ```
+- Install dependencies:
+ ```bash
+  rosdep install --from-paths src --ignore-src -r -y
+  ```
+- Build:
+  ```bash
+  cd ~/blue_ws
+  catkin_make install
+  ```
+
+-----
+
+## I have a robot turned on and connected to my computer -- how do I run the control stack?
+
+With your workspace's `devel/setup.bash` script sourced:
+- For a left arm:
+  ```bash
+  roslaunch blue_bringup left.launch
+  ``` 
+- For a right arm:
+  ```bash
+  roslaunch blue_bringup right.launch
+  ``` 
+- For the (experimental) two-arm setup:
+  ```bash
+  roslaunch blue_bringup full.launch
+  ```
+  
+For different arms, there are a handful of configuration values that currently still need to be changed in the `koko_bringup/config/robot_parameters_*.yaml` files. Notably:
+- Serial port
+- Motor driver IDs
