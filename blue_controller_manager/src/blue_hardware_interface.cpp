@@ -27,7 +27,6 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   getRequiredParam(nh, "blue_hardware/id_torque_gains", id_gains_);
   getRequiredParam(nh, "blue_hardware/baselink", baselink);
   getRequiredParam(nh, "blue_hardware/endlink", endlink);
-  getRequiredParam(nh, "blue_hardware/accelerometer_calibration", is_accel_calibrate);
 
   // configure robot
   num_joints_ = joint_names_.size();
@@ -258,11 +257,6 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   ROS_INFO("Finished setting up subscribers and publisher");
 
   ros::Duration(0.444).sleep();
-
-  // acceleration calibrate, currently not in use
-  if( is_accel_calibrate ) {
-    accelerometerCalibrate(num_simple_actuators);
-  }
 }
 
 void BlueHW::setReadGravityVector() {
@@ -298,6 +292,7 @@ void BlueHW::setReadGravityVector() {
     KDL::Rotation left_rot_x;
     left_rot_x.DoRotX(M_PI);
     raw_left = left_rot_x * raw_left;
+
     // Average the KDL Vector accelerations
     raw = (raw_right + raw_left) / 2.0;
 
@@ -335,80 +330,6 @@ void BlueHW::setReadGravityVector() {
   gravity_vector_[2] = a * gravity_vector_[2] - (1.0 - a) * read_gravity_vector_[0][2];
 }
 
-void BlueHW::accelerometerCalibrate(int num_simple_actuators) {
-  KDL::ChainFkSolverPos_recursive fksolver(kdl_chain_);
-  // calibrate base
-  // Account for base link (assumes that there is only one base link and one gripper link)
-  int index = 0;
-  KDL::Vector gravity_bot;
-  gravity_bot.data[0] = gravity_vector_[0];
-  gravity_bot.data[1] = gravity_vector_[1];
-  gravity_bot.data[2] = gravity_vector_[2];
-  KDL::JntArray jointPositions = KDL::JntArray(num_joints_);
-  KDL::Frame base_frame;
-  if (is_base_) {
-
-    std::vector<double> error_base(8, 0.0);
-
-    for(int k = 0; k < 8; k ++){
-      ROS_ERROR("problem? %d", k);
-      actuator_pos_[index] = actuator_pos_initial_[index] + 2.0 * M_PI * k;
-      // add 2kpi to motor position
-      // propogate to joints
-      actuator_to_joint_interface_.propagate();
-      for (int j = 0; j < num_joints_; j++) {
-        jointPositions(j) = joint_pos_[j];
-      }
-
-      int status = fksolver.JntToCart(jointPositions, base_frame, index + 1);
-      KDL::Vector expected_gravity_vect = base_frame * read_gravity_vector_[index + 1];
-
-      // gravity vector measured minus gravity vector in this joint position
-      error_base[k] = (expected_gravity_vect - gravity_bot).Norm();
-    }
-
-    index++;
-
-    // choose the k with minimum error
-    int arg_min = std::min_element( error_base.begin(), error_base.end() ) - error_base.begin();
-    actuator_pos_[0] = actuator_pos_initial_[0] + 2.0 * M_PI * arg_min;
-    actuator_revolution_constant_[0] = arg_min;
-  }
-
-  std::vector<double> error_link(8*8, 0.0);
-  for(int i = 0; i< num_diff_actuators_; i++ ){
-
-    for(int m1 = 0; m1 < 8; m1 ++){
-      for(int m2 = 0; m2 < 8 ; m2 ++){
-        actuator_pos_[i*2 + index] = actuator_pos_initial_[i*2 + index] + 2.0 * M_PI * (double) m1;
-        actuator_pos_[i*2 + index + 1] = actuator_pos_initial_[i*2 + index + 1] + 2.0 * M_PI * (double) m2;
-        // add 2kpi to motor position
-        // propogate to joints
-        actuator_to_joint_interface_.propagate();
-        for (int j = 0; j < num_joints_; j++) {
-          jointPositions(j) = joint_pos_[j];
-        }
-
-        int status = fksolver.JntToCart(jointPositions, base_frame, 2 * (i + 1) + index);
-        KDL::Vector expected_gravity_vect = base_frame * read_gravity_vector_[1 + i + index];
-        // gravity vector measured minus gravity vector in this joint position
-        error_link[m1 + m2*8] = (expected_gravity_vect - gravity_bot).Norm();
-        // error will be appended to a list of errors
-        //TODO Remove, currently for debugging purposes
-      }
-    }
-    // choose the k with minimum error
-    int min_ele = std::min_element( error_link.begin(), error_link.end() ) - error_link.begin();
-    int argmin_m1 = min_ele%8;
-    actuator_pos_[i*2 - 1] = actuator_pos_initial_[i*2 - 1] + 2.0 * M_PI * (double) argmin_m1;
-    int argmin_m2 = min_ele / 8;
-    actuator_pos_[i*2] = actuator_pos_initial_[i*2] + 2.0 * M_PI * (double) argmin_m2;
-    actuator_revolution_constant_[i*2-1] = argmin_m1;
-    actuator_revolution_constant_[i*2] = argmin_m2;
-  }
-  is_calibrated_ = true;
-}
-
 
 template <typename TParam>
 void BlueHW::getRequiredParam(ros::NodeHandle &nh, const std::string name, TParam &dest) {
@@ -420,8 +341,8 @@ void BlueHW::getRequiredParam(ros::NodeHandle &nh, const std::string name, TPara
 }
 
 void BlueHW::read() {
-  // Empty because our hardware interface reads joint positions though call backs.
-  // This is due to us having our hardware driver in python
+  // Empty because our hardware interface reads motor states asynchronously via ROS
+  // This should be changed in the future
 }
 
 void BlueHW::write() {

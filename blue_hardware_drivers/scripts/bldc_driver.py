@@ -145,6 +145,11 @@ class BLDCDriverNode:
                 except Exception as e:
                     rospy.logerr("Motor " + str(motor_id) +  " driver error: " + str(e))
 
+            stateMsg.header.seq = loop_count
+            stateMsg.header.stamp = rospy.Time.now()
+            self.state_publisher.publish(stateMsg)
+
+            loop_count += 1
             if loop_count % 250 == 0:
                 current_time = rospy.get_time()
                 freq = 250 / (current_time - prev_freq_tracker_time)
@@ -152,8 +157,6 @@ class BLDCDriverNode:
 
                 rospy.loginfo("Motor driver communication rate: %fHz", freq)
 
-            loop_count += 1
-            self.state_publisher.publish(stateMsg)
             r.sleep()
 
     def make_set_command(self, motor_id):

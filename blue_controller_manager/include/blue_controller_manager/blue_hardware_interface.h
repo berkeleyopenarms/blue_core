@@ -37,7 +37,6 @@ private:
   void calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
   void gravityVectorCallback(const geometry_msgs::Vector3ConstPtr& grav);
   void setReadGravityVector();
-  void accelerometerCalibrate(int num_simple_actuators);
   void computeInverseDynamics();
   void buildDynamicChain(KDL::Chain &chain);
 
