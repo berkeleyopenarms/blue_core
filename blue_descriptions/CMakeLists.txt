@@ -8,7 +8,7 @@ catkin_package(CATKIN_DEPENDS xacro)
 
 find_package(roslaunch)
 
-foreach(dir config launch meshes robots)
+foreach(dir launch meshes robots)
 	install(DIRECTORY ${dir}/
 		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
 endforeach(dir)
