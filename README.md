@@ -20,7 +20,7 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
 ## How do I set up a development environment?
 
 - Install Ubuntu 16.0.4
-- [Install ROS Kinetic]
+- [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation)
 - Create a workspace:
   ```bash
   mkdir -p ~/blue_ws/src && cd "$_"
