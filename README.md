@@ -24,7 +24,6 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
 - Create a workspace:
   ```bash
   mkdir -p ~/blue_ws/src && cd "$_"
-  catkin_init_workspace
   ```
 - Clone the code:
   ```bash
