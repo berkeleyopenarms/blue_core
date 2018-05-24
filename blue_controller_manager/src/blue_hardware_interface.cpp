@@ -489,7 +489,7 @@ void BlueHW::motorStateCallback(const blue_hardware_drivers::MotorState::ConstPt
 }
 
 void BlueHW::calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg) {
-  if (is_calibrated_ || is_accel_calibrate)
+  if (is_calibrated_)
     return;
   if (calibration_counter_ >= 10) {
     // waits for 10 calibration messages before finalizing calibration
