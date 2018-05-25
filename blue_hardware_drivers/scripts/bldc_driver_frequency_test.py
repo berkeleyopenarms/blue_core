@@ -34,12 +34,11 @@ def main():
 
     rospy.loginfo("Testing communication frequency: {} {}".format(motor_ids, port))
 
-    s = serial.Serial(port=port, baudrate=1000000, timeout=0.1)
+    s = serial.Serial(port=port, baudrate=1000000, timeout=0.01)
     device = BLDCControllerClient(s)
     time.sleep(0.1)
 
-    for motor_id in motor_ids:
-        device.leaveBootloader(motor_id)
+    device.leaveBootloader(motor_ids)
 
     time.sleep(0.2)
     s.flush()
@@ -54,15 +53,13 @@ def main():
     while not rospy.is_shutdown():
 
         for i in range(10): # "low pass filter"
-            for motor_id in motor_ids:
-                try:
-                    # curr_angle = device.getRotorPosition(motor_id)
-                    state = device.setCommandAndGetState(motor_id, 0)
-                    # state = device.setCommand(motor_id, 0)
-                    # state = device.getState(motor_id)
-                except Exception as e:
-                    rospy.logerr(str(e))
-                    rospy.logerr(str(motor_id))
+            try:
+                # curr_angle = device.getRotorPosition(motor_id)
+                state = device.setCommandAndGetState(motor_ids, [0]*len(motor_ids))
+                # state = device.setCommand(motor_id, 0)
+                # state = device.getState(motor_id)
+            except Exception as e:
+                rospy.logerr(str(e))
 
         current_time = rospy.get_time()
         dt = current_time - last_time
