@@ -1,6 +1,7 @@
 import struct
 import json
 import time
+import crcmod
 
 class ProtocolError(Exception):
     def __init__(self, message, errors=None):
@@ -29,6 +30,8 @@ COMM_FC_FLASH_PROGRAM = 0x86
 COMM_FC_FLASH_READ = 0x87
 COMM_FC_FLASH_VERIFY = 0x88
 COMM_FC_FLASH_VERIFY_ERASED = 0x89
+
+COMM_FLAG_SEND = 0x00 
 
 COMM_BOOTLOADER_OFFSET = 0x08000000
 COMM_NVPARAMS_OFFSET = 0x08004000
@@ -91,208 +94,226 @@ class BLDCControllerClient:
     def __init__(self, ser):
         self._ser = ser
 
-    def getRotorPosition(self, server_id):
-        angle = struct.unpack('<f', self.readRegisters(server_id, 0x3000, 1))[0]
-        return angle
+    def getRotorPosition(self, server_ids):
+        angles = [struct.unpack('<f', data)[0] for data in self.readRegisters(server_ids, 0x3000, [1 for sid in server_ids])]
+        return angles
 
-    def getState(self, server_id):
+    def getState(self, server_ids):
         # order: angle, velocity, direct_current, quadrature_current, supply_voltage, board_temp, accel_x, accel_y, accel_z
-        state = struct.unpack('<ffffffiii', self.readRegisters(server_id, 0x3000, 9))
-        return state
+        states = [struct.unpack('<ffffffiii', data) for data in self.readRegisters(server_ids, 0x3000, [9 for sid in server_ids])]
+        return states
 
-    def getVoltage(self, server_id):
+    def getVoltage(self, server_ids):
         # order: angle, velocity, direct_current, quadrature_current, supply_voltage, board_temp, accel_x, accel_y, accel_z
-        state = struct.unpack('<f', self.readRegisters(server_id, 0x3004, 1))[0]
-        return state
+        states = [struct.unpack('<f', data)[0] for data in self.readRegisters(server_ids, 0x3004, [1 for sid in server_ids])]
+        return states
 
-    def getTemperature(self, server_id):
+    def getTemperature(self, server_ids):
         # order: angle, velocity, direct_current, quadrature_current, supply_voltage, board_temp, accel_x, accel_y, accel_z
-        state = struct.unpack('<f', self.readRegisters(server_id, 0x3005, 1))[0]
-        return state
+        states = [struct.unpack('<f', data)[0] for data in self.readRegisters(server_ids, [0x3005 for sid in server_ids], [1 for sid in server_ids])]
+        return states
 
-    def setZeroAngle(self, server_id, value):
-        return self.writeRegisters(server_id, 0x1000, 1, struct.pack('<H', value))
+    def setZeroAngle(self, server_ids, value):
+        return self.writeRegisters(server_ids, [0x1000 for sid in server_ids], [1 for sid in server_ids], [struct.pack('<H', val) for val in value])
 
-    def setInvertPhases(self, server_id, value):
-        return self.writeRegisters(server_id, 0x1002, 1, struct.pack('<B', value))
+    def setInvertPhases(self, server_ids, value):
+        return self.writeRegisters(server_ids, [0x1002 for sid in server_ids], [1 for sid in server_ids], [struct.pack('<B', val) for val in value])
 
-    def setERevsPerMRev(self, server_id, value):
-        return self.writeRegisters(server_id, 0x1001, 1, struct.pack('<B', value))
+    def setERevsPerMRev(self, server_ids, value):
+        return self.writeRegisters(server_ids, [0x1001 for sid in server_ids], [1 for sid in server_ids], [struct.pack('<B', val) for val in value])
 
-    def setTorqueConstant(self, server_id, value):
-        return self.writeRegisters(server_id, 0x1022, 1, struct.pack('<f', value))
+    def setTorqueConstant(self, server_ids, value):
+        return self.writeRegisters(server_ids, [0x1022 for sid in server_ids], [1 for sid in server_ids], [struct.pack('<f', val) for val in value])
 
-    def setPositionOffset(self, server_id, value):
-        return self.writeRegisters(server_id, 0x1015, 1, struct.pack('<f', value))
+    def setPositionOffset(self, server_ids, value):
+        return self.writeRegisters(server_ids, [0x1015 for sid in server_ids], [1 for sid in server_ids], [struct.pack('<f', val) for val in value])
 
-    def setCurrentControlMode(self, server_id):
-        return self.writeRegisters(server_id, 0x2000, 1, struct.pack('<B', 0))
+    def setCurrentControlMode(self, server_ids):
+        return self.writeRegisters(server_ids, [0x2000 for sid in server_ids], [1 for sid in server_ids], [struct.pack('<B', 0) for sid in server_ids])
 
-    def setCommand(self, server_id, value):
-        ret = self.writeRegisters(server_id, 0x2002, 1, struct.pack('<f', value))
+    def setCommand(self, server_ids, value):
+        ret = self.writeRegisters(server_ids, [0x2002 for sid in server_ids], [1 for sid in server_ids], [struct.pack('<f', val) for val in value])
         return ret
 
-    def setCommandAndGetState(self, server_id, value):
-        ret = self.readWriteRegisters(server_id, 0x3000, 9, 0x2002, 1, struct.pack('<f', value))
-        state = struct.unpack('<ffffffiii', ret)
-        return state
+    def setCommandAndGetState(self, server_ids, value):
+        ret = self.readWriteRegisters(server_ids, [0x3000 for sid in server_ids], [9 for sid in server_ids], [0x2002 for sid in server_ids], [1 for sid in server_ids], [struct.pack('<f', val) for val in value])
+        states = [struct.unpack('<ffffffiii', data) for data in ret]
+        return states
 
-    def leaveBootloader(self, server_id):
-        self.jumpToAddress(server_id, COMM_FIRMWARE_OFFSET)
+    def leaveBootloader(self, server_ids):
+        self.jumpToAddress(server_ids, [COMM_FIRMWARE_OFFSET for sid in server_ids])
+        time.sleep(0.5)
+        self._ser.read_all()
 
-    def enterBootloader(self, server_id):
-        self.resetSystem(server_id)
+    def enterBootloader(self, server_ids):
+        self.resetSystem(server_ids)
 
-    def readRegisters(self, server_id, start_addr, count):
-        success, data = self.doTransaction(server_id, COMM_FC_REG_READ, struct.pack('<HB', start_addr, count))
-        if not success:
-            raise IOError("Register read failed %d" % server_id)
+    def readRegisters(self, server_ids, start_addr, count):
+        responses = self.doTransaction(server_ids, [COMM_FC_READ_REGS]*len(server_ids), [struct.pack('<HB', addr, ct) for addr, ct in zip(start_addr, count)])
+        data = [response[1] for response in responses]
         return data
 
-    def writeRegisters(self, server_id, start_addr, count, data):
-        success, _ = self.doTransaction(server_id, COMM_FC_REG_WRITE, struct.pack('<HB', start_addr, count) + data)
-        return success
-
-    def readWriteRegisters(self, server_id, read_start_addr, read_count, write_start_addr, write_count, write_data):
-        message = struct.pack('<HBHB', read_start_addr, read_count, write_start_addr, write_count) + write_data
-        success, data = self.doTransaction(server_id, COMM_FC_REG_READ_WRITE, message)
+    def writeRegisters(self, server_ids, start_addr, count):
+        responses = self.doTransaction(server_ids, [COMM_FC_REG_WRITE]*len(server_ids), [struct.pack('<HB', addr, ct) for addr, ct in zip(start_addr, count)])
+        success = [response[0] for response in responses]
+        return success 
+    
+    def readWriteRegisters(self, server_ids, read_start_addr, read_count, write_start_addr, write_count, write_data):
+        message = [struct.pack('<HBHB', readsa, readct, writesa, writect) + writed for readsa, readct, writesa, writect, writed in zip(read_start_addr, read_count, write_start_addr, write_count, write_data)]
+        responses = self.doTransaction(server_ids, [COMM_FC_REG_READ_WRITE]*len(server_ids), message)
+        data = [response[1] for response in responses]
         return data
 
-    def resetSystem(self, server_id):
-        self.writeRequest(server_id, COMM_FC_SYSTEM_RESET)
+    def resetSystem(self, server_ids):
+        self.writeRequest(server_ids, [COMM_FC_SYSTEM_RESET]*len(server_ids))
         return True
 
-    def jumpToAddress(self, server_id, jump_addr=COMM_FIRMWARE_OFFSET):
-        self.writeRequest(server_id, COMM_FC_JUMP_TO_ADDR, struct.pack('<I', jump_addr))
+    def jumpToAddress(self, server_ids, jump_addr=[COMM_FIRMWARE_OFFSET]):
+        self.writeRequest(server_ids, [COMM_FC_JUMP_TO_ADDR]*len(server_ids), [struct.pack('<I', addr) for addr in jump_addr])
         return True
 
-    def getFlashSectorCount(self, server_id):
-        _, data = self.doTransaction(server_id, COMM_FC_FLASH_SECTOR_COUNT, '')
+    def getFlashSectorCount(self, server_ids):
+        _, data = self.doTransaction(server_ids, [COMM_FC_FLASH_SECTOR_COUNT]*len(server_ids), ['' for sid in server_ids])
         return struct.unpack('<I', data)[0]
 
-    def getFlashSectorStart(self, server_id, sector_num):
-        _, data = self.doTransaction(server_id, COMM_FC_FLASH_SECTOR_START, struct.pack('<I', sector_num))
+    def getFlashSectorStart(self, server_ids, sector_nums):
+        _, data = self.doTransaction(server_ids, [COMM_FC_FLASH_SECTOR_START]*len(server_ids), [struct.pack('<I', sector) for sector in sector_nums])
         return struct.unpack('<I', data)[0]
 
-    def getFlashSectorSize(self, server_id, sector_num):
-        _, data = self.doTransaction(server_id, COMM_FC_FLASH_SECTOR_SIZE, struct.pack('<I', sector_num))
+    def getFlashSectorSize(self, server_ids, sector_nums):
+        _, data = self.doTransaction(server_ids, [COMM_FC_FLASH_SECTOR_SIZE]*len(server_ids), [struct.pack('<I', sector) for sector in sector_nums])
         return struct.unpack('<I', data)[0]
 
-    def eraseFlashSector(self, server_id, sector_num):
-        success, _ = self.doTransaction(server_id, COMM_FC_FLASH_SECTOR_ERASE, struct.pack('<I', sector_num))
+    def eraseFlashSector(self, server_ids, sector_nums):
+        success, _ = self.doTransaction(server_ids, [COMM_FC_FLASH_SECTOR_ERASE]*len(server_ids), [struct.pack('<I', sector) for sector in sector_nums])
         return success
 
-    def programFlash(self, server_id, dest_addr, data):
+    def programFlash(self, server_ids, dest_addr, data):
         for i in range(0, len(data), COMM_SINGLE_PROGRAM_LENGTH):
-            success = self._programFlashLimitedLength(server_id, dest_addr + i, data[i:i+COMM_SINGLE_PROGRAM_LENGTH])
+            success = self._programFlashLimitedLength(server_ids, dest_addr + i, data[i:i+COMM_SINGLE_PROGRAM_LENGTH])
             if not success:
                 return False
         return True
 
-    def _programFlashLimitedLength(self, server_id, dest_addr, data):
-        success, _ = self.doTransaction(server_id, COMM_FC_FLASH_PROGRAM, struct.pack('<I', dest_addr) + data)
+    def _programFlashLimitedLength(self, server_ids, dest_addr, data):
+        success, _ = self.doTransaction(server_ids, [COMM_FC_FLASH_PROGRAM]*len(server_ids), [struct.pack('<I', dest) + dat for dest, dat in zip(dest_addr, data)])
         return success
 
-    def readFlash(self, server_id, src_addr, length):
+    def readFlash(self, server_ids, src_addr, length):
         data = ''
         for i in range(0, length, COMM_SINGLE_READ_LENGTH):
             read_len = min(length - i, COMM_SINGLE_READ_LENGTH)
-            data_chunk = self._readFlashLimitedLength(server_id, src_addr + i, read_len)
+            data_chunk = self._readFlashLimitedLength(server_ids, src_addr + i, read_len)
             if len(data_chunk) != read_len:
                 return False
             data += data_chunk
         return data
 
-    def _readFlashLimitedLength(self, server_id, src_addr, length):
-        _, data = self.doTransaction(server_id, COMM_FC_FLASH_READ, struct.pack('<II', src_addr, length))
+    def _readFlashLimitedLength(self, server_ids, src_addr, length):
+        _, data = self.doTransaction(server_ids, [COMM_FC_FLASH_READ]*len(server_ids), struct.pack('<II', src_addr, length))
         return data
 
-    def readCalibration(self, server_id):
-        l = struct.unpack('<H', self.readFlash(server_id, COMM_NVPARAMS_OFFSET+1, 2))[0]
-        return json.loads(self.readFlash(server_id, COMM_NVPARAMS_OFFSET+3, l))
+    def readCalibration(self, server_ids):
+        l = struct.unpack('<H', self.readFlash(server_ids, COMM_NVPARAMS_OFFSET+1, 2))[0]
+        return json.loads(self.readFlash(server_ids, COMM_NVPARAMS_OFFSET+3, l))
 
-    def verifyFlash(self, server_id, dest_addr, data):
+    def verifyFlash(self, server_ids, dest_addr, data):
         for i in range(0, len(data), COMM_SINGLE_VERIFY_LENGTH):
-            success = self._verifyFlashLimitedLength(server_id, dest_addr + i, data[i:i+COMM_SINGLE_VERIFY_LENGTH])
+            success = self._verifyFlashLimitedLength(server_ids, dest_addr + i, data[i:i+COMM_SINGLE_VERIFY_LENGTH])
             if not success:
                 return False
         return True
 
-    def _verifyFlashLimitedLength(self, server_id, dest_addr, data):
-        success, _ = self.doTransaction(server_id, COMM_FC_FLASH_VERIFY, struct.pack('<I', dest_addr) + data)
+    def _verifyFlashLimitedLength(self, server_ids, dest_addr, data):
+        success, _ = self.doTransaction(server_ids, [COMM_FC_FLASH_VERIFY]*len(server_ids), struct.pack('<I', dest_addr) + data)
         return success
 
-    def verifyFlashErased(self, server_id, dest_addr, length):
-        success, _ = self.doTransaction(server_id, COMM_FC_FLASH_VERIFY_ERASED, struct.pack('<II', dest_addr, length))
+    def verifyFlashErased(self, server_ids, dest_addr, length):
+        success, _ = self.doTransaction(server_ids, [COMM_FC_FLASH_VERIFY_ERASED]*len(server_ids), struct.pack('<II', dest_addr, length))
         return success
 
-    def eraseFlash(self, server_id, addr, length, sector_map=None):
+    def eraseFlash(self, server_ids, addr, length, sector_map=None):
         if sector_map is None:
-            sector_map = self.getFlashSectorMap(server_id)
+            sector_map = self.getFlashSectorMap(server_ids)
 
         # Find out which sectors need to be erased
         sector_nums = sector_map.getFlashSectorsOfAddressRange(addr, length)
 
         for sector_num in sector_nums:
-            success = self.eraseFlashSector(server_id, sector_num)
+            success = self.eraseFlashSector(server_ids, sector_num)
             if not success:
                 return False
 
         return True
 
-    def writeFlash(self, server_id, dest_addr, data, sector_map=None, print_progress=False):
+    def writeFlash(self, server_ids, dest_addr, data, sector_map=None, print_progress=False):
         if sector_map is None:
-            sector_map = self.getFlashSectorMap(server_id)
+            sector_map = self.getFlashSectorMap(server_ids)
 
         if print_progress:
             print "Erasing flash"
 
-        success = self.eraseFlash(server_id, dest_addr, len(data), sector_map)
+        success = self.eraseFlash(server_ids, dest_addr, len(data), sector_map)
         if not success:
             return False
 
         if print_progress:
             print "Verifying flash was erased"
 
-        success = self.verifyFlashErased(server_id, dest_addr, len(data))
+        success = self.verifyFlashErased(server_ids, dest_addr, len(data))
         if not success:
             return False
 
         if print_progress:
             print "Programming flash"
 
-        success = self.programFlash(server_id, dest_addr, data)
+        success = self.programFlash(server_ids, dest_addr, data)
         if not success:
             return False
 
         if print_progress:
             print "Verifying flash was programmed"
 
-        success = self.verifyFlash(server_id, dest_addr, data)
+        success = self.verifyFlash(server_ids, dest_addr, data)
         if not success:
             return False
 
         return True
 
-    def getFlashSectorMap(self, server_id):
-        sector_count = self.getFlashSectorCount(server_id)
+    def getFlashSectorMap(self, server_ids):
+        sector_count = self.getFlashSectorCount(server_ids)
         sector_starts = []
         sector_sizes = []
 
         for sector_num in range(sector_count):
-            sector_starts.append(self.getFlashSectorStart(server_id, sector_num))
-            sector_sizes.append(self.getFlashSectorSize(server_id, sector_num))
+            sector_starts.append(self.getFlashSectorStart(server_ids, sector_num))
+            sector_sizes.append(self.getFlashSectorSize(server_ids, sector_num))
 
         return FlashSectorMap(sector_count, sector_starts, sector_sizes)
 
-    def doTransaction(self, server_id, func_code, data):
-        self.writeRequest(server_id, func_code, data)
-        return self.readResponse(server_id, func_code)
+    def doTransaction(self, server_ids, func_code, data):
+        # Send the request to the boards.
+        self.writeRequest(server_ids, func_code, data) 
 
-    def writeRequest(self, server_id, func_code, data=''):
-        message = struct.pack('BB', server_id, func_code) + data
-        prefixed_message = struct.pack('BBH', 0xFF, 0xFF, len(message)) + message
-        datagram = prefixed_message + struct.pack('<H', self._computeCRC(prefixed_message))
+        # Listen to the responses.
+        responses = ['']*len(server_ids)
+        for i in range(len(responses)):
+            responses[i] = self.readResponse(server_ids[i], func_code[i])
+
+        return responses
+
+    def writeRequest(self, server_ids, func_code, data=[]):
+        message = ''
+        flags = COMM_FLAG_SEND
+        for i in range(len(server_ids)):
+            sub_message = struct.pack('<BB', server_ids[i], func_code[i]) + data[i]
+            message = message + struct.pack('H', len(sub_message)) + sub_message
+
+        prefixed_message = struct.pack('<BBBH', 0xFF, 0xFF, flags, len(message)) + message
+        crc = self._computeCRC(message)
+        datagram = prefixed_message + struct.pack('<H', crc) 
+
+        #print (":".join("{:02x}".format(ord(c)) for c in datagram))
 
         self._ser.write(datagram)
 
@@ -308,12 +329,16 @@ class BLDCControllerClient:
             # self._ser.flushInput()
             return False, None
 
+        flags = self._ser.read()
+
         length = self._ser.read(2)
         if length == None or len(length) == 0:
             return False, None
 
         message_len, = struct.unpack('H', length)
         message = self._ser.read(message_len)
+        
+        #print (":".join("{:02x}".format(ord(c)) for c in message))
 
         if len(message) < message_len:
             # self._ser.flushInput()
@@ -325,7 +350,7 @@ class BLDCControllerClient:
             # self._ser.flushInput()
             return False, None
 
-        message_server_id, message_func_code, errors = struct.unpack('<BBH', message[:4])
+        message_server_id, message_func_code, errors = struct.unpack('<BBH', message[2:6])
 
         if message_server_id != server_id:
             raise ProtocolError('received unexpected server ID: saw ' \
@@ -336,8 +361,9 @@ class BLDCControllerClient:
                                 + str(message_func_code) + ', expected ' + str(func_code))
 
         message_crc, = struct.unpack('<H', crc_bytes)
+        computed_crc = self._computeCRC(message)
 
-        if message_crc != self._computeCRC(length + message):
+        if message_crc != computed_crc:
             raise ProtocolError('received unexpected CRC')
 
         success = (errors & COMM_ERRORS_OP_FAILED) == 0
@@ -361,7 +387,9 @@ class BLDCControllerClient:
         # if (errors & COMM_ERRORS_BUF_LEN_MISMATCH) != 0:
         #     raise ProtocolError('buffer length mismatch')
 
-        return success, message[4:]
+        return success, message[6:]
 
     def _computeCRC(self, values):
-        return 0 # TODO
+        crc = crcmod.predefined.Crc('crc-16')
+        crc.update(values)
+        return crc.crcValue
