@@ -35,7 +35,6 @@ blue_hardware:
     motor_ids: [1, 43, 38, 17, 10, 19, 21, 34]
     # motor_current_limits: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 0.3]
-    # motor_current_limits: [3.0, 2.5, 2.5, 2.5, 2.5, 1.5, 1.5]
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0, 1.0]
 
     ### Calibration configuration
@@ -43,5 +42,5 @@ blue_hardware:
     calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0, 0.0] # for vive calibration
 
     ### Posture control parameters for gradient descent ik pose controller
-    posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90,-1.0, 0.0]
+    posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90, -1.0, 0.0]
     posture_weights: [0.2, 1, 1, 1, 1, 0.2, 0.5]
