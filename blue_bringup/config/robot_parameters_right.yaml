@@ -41,11 +41,7 @@ blue_hardware:
     ### Calibration configuration
     hardstop_start_angles: [0.785398, -2.19, 1.570796, 0.0, -1.570796, -0.23, 0.0, 0.0]
     calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0, 0.0] # for vive calibration
-    accelerometer_calibration: false
 
     ### Posture control parameters for gradient descent ik pose controller
-    posture_control: false
-    posture_gain: .01
-    # posture_target: [0.0, 0.54, 1.19, -1.19, -1.33, 0.78, -2.29]
     posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90,-1.0, 0.0]
-    endlink_tracker: "right_end_roll_link"
+    posture_weights: [0.2, 1, 1, 1, 1, 0.2, 0.5]
