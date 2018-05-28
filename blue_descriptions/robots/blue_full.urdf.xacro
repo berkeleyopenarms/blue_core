@@ -15,14 +15,4 @@
   <!-- ====== Build right and left arms====== -->
   <xacro:include filename="$(find blue_descriptions)/robots/blue_right.urdf.xacro" />
   <xacro:include filename="$(find blue_descriptions)/robots/blue_left.urdf.xacro" />
-
-  <xacro:if value="${is_gazebo}">
-    <gazebo>
-      <plugin
-        name="gazebo_ros_control"
-        filename="libgazebo_ros_control.so">
-        <robotNamespace></robotNamespace>
-      </plugin>
-    </gazebo>
-  </xacro:if>
 </robot>

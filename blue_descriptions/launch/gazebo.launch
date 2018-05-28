@@ -20,10 +20,4 @@
     type="spawn_model"
     args="-param robot_description -urdf -model blue_full"
     output="screen"/>
-
-  <node
-    name="fake_joint_calibration"
-    pkg="rostopic"
-    type="rostopic"
-    args="pub /calibrated std_msgs/Bool true" />
 </launch>
