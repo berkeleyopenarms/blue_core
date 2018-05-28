@@ -1,6 +1,8 @@
 <launch>
   <include
-    file="$(find gazebo_ros)/launch/empty_world.launch" />
+    file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" default="$(find blue_descriptions)/worlds/empty_world_nograv.world"/>
+  </include>
 
   <node
     name="tf_footprint_base"
