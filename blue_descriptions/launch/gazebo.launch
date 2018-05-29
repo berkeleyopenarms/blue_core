@@ -1,6 +1,8 @@
 <launch>
   <include
-    file="$(find gazebo_ros)/launch/empty_world.launch" />
+    file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" default="$(find blue_descriptions)/worlds/empty_world_nograv.world"/>
+  </include>
 
   <node
     name="tf_footprint_base"
@@ -20,10 +22,4 @@
     type="spawn_model"
     args="-param robot_description -urdf -model blue_full"
     output="screen"/>
-
-  <node
-    name="fake_joint_calibration"
-    pkg="rostopic"
-    type="rostopic"
-    args="pub /calibrated std_msgs/Bool true" />
 </launch>
