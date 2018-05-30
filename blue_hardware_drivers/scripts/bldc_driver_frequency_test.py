@@ -50,12 +50,44 @@ def main():
 
     last_time = rospy.get_time()
 
+    for id in motor_ids:
+        success = False
+        for attempt in range(5):
+            try:
+                rospy.loginfo("Calibrating motor %d..." % id)
+                #calibrations = device.readCalibration([id])
+                #print(calibrations)
+                #device.setZeroAngle([id], [calibrations['angle']])
+                #device.setInvertPhases([id], [calibrations['inv']])
+                #device.setERevsPerMRev([id], [calibrations['epm']])
+                #device.setTorqueConstant([id], [calibrations['torque']])
+                #device.setPositionOffset([id], [calibrations['zero']])
+                device._ser.read_all()
+                device.setZeroAngle([id], [1169])
+                device.setInvertPhases([id], [1])
+                device.setERevsPerMRev([id], [14])
+                device.setTorqueConstant([id], [1.45])
+                device.setPositionOffset([id], [0.0])
+                device.setCurrentControlMode([id])
+                #starting_angles[id] = 0.0
+                device.writeRegisters([id], [0x1030], [1], [struct.pack('<H', 1000)])
+                rospy.loginfo("Motor %d ready: supply voltage=%fV", id, device.getVoltage([id])[0])
+                success = True
+                break
+            except Exception as e:
+                rospy.logwarn(str(e))
+                rospy.sleep(0.2)
+        if not success:
+            rospy.logerr("Could not calibrate motors")
+            rospy.signal_shutdown("Could not calibrate motors")
+            exit()
+
     while not rospy.is_shutdown():
 
         for i in range(10): # "low pass filter"
             try:
                 # curr_angle = device.getRotorPosition(motor_id)
-                state = device.setCommandAndGetState(motor_ids, [0]*len(motor_ids))
+                state = device.setCommandAndGetState(motor_ids, [1.0]*len(motor_ids))
                 # state = device.setCommand(motor_id, 0)
                 # state = device.getState(motor_id)
             except Exception as e:
