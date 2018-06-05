@@ -1,6 +1,7 @@
 import struct
 import json
 import time
+import crcmod
 
 class ProtocolError(Exception):
     def __init__(self, message, errors=None):
@@ -292,7 +293,7 @@ class BLDCControllerClient:
     def writeRequest(self, server_id, func_code, data=''):
         message = struct.pack('BB', server_id, func_code) + data
         prefixed_message = struct.pack('BBH', 0xFF, 0xFF, len(message)) + message
-        datagram = prefixed_message + struct.pack('<H', self._computeCRC(prefixed_message))
+        datagram = prefixed_message + struct.pack('<H', self._computeCRC(message))
 
         self._ser.write(datagram)
 
@@ -337,7 +338,7 @@ class BLDCControllerClient:
 
         message_crc, = struct.unpack('<H', crc_bytes)
 
-        if message_crc != self._computeCRC(length + message):
+        if message_crc != self._computeCRC(message):
             raise ProtocolError('received unexpected CRC')
 
         success = (errors & COMM_ERRORS_OP_FAILED) == 0
@@ -364,4 +365,7 @@ class BLDCControllerClient:
         return success, message[4:]
 
     def _computeCRC(self, values):
-        return 0 # TODO
+        crc = crcmod.predefined.Crc('crc-16')
+        crc.update(values)
+        return crc.crcValue
+
