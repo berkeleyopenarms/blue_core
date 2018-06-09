@@ -91,8 +91,17 @@ void BLDCDriver::init(std::vector<double>* in_pos, std::vector<double>* in_vel, 
   }
 
   // Init angle
-  for (it = motor_mapping.begin(); it != motor_mapping.end(); it++) {
-    angle_zero[it->first] = device.getRotorPosition(it->first);
+  float* angles = new float[angle_id_mapping.size()];
+  size_t index = 0;
+  for (it = motor_mapping.begin(); it != motor_mapping.end(); it++, index++) {
+    device.getRotorPosition(it->first, &angles[index]);
+  }
+  
+  device.exchange();
+
+  index = 0;
+  for (it = motor_mapping.begin(); it != motor_mapping.end(); it++, index++) {
+    angle_zero[it->first] = angles[index]; 
   }
 
 
@@ -116,16 +125,21 @@ BLDCDriver::BLDCDriver(){
 
 
 void BLDCDriver::read(){
+  float* angles = new float[angle_id_mapping.size()];
   for (int i = 0; i < angle_id_mapping.size(); i++) {
       uint8_t id = angle_id_mapping[i];
 
-      double curr_angle = device.getRotorPosition(id) - angle_zero[id];
+      device.getRotorPosition(id, &angles[i]);
+  }
 
-      (*pos)[i] = curr_angle;
-      (*vel)[i] = 0.0; // TODO: onboard velocity estimate (need kalman?)
-      (*eff)[i] = 0.0; // TODO: current estimate retrieval
-    }
-
+  device.exchange();
+    
+  for (int i = 0; i < angle_id_mapping.size(); i++) {
+    (*pos)[i] =  angles[i] - angle_zero[i];
+    (*vel)[i] = 0.0; // TODO: onboard velocity estimate (need kalman?)
+    (*eff)[i] = 0.0; // TODO: current estimate retrieval
+  } 
+  delete angles;
 }
 
 void BLDCDriver::write(){
@@ -133,8 +147,11 @@ void BLDCDriver::write(){
       uint8_t id = angle_id_mapping[i];
 
       const double cmd_i = (*cmd)[i];
-
-      device.setCommand(id, (float)cmd_i);
+      
+      bool success = false;
+      device.setCommand(id, (float)cmd_i, &success);
   }
+
+  device.exchange();
 }
 

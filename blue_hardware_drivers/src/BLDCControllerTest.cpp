@@ -32,7 +32,8 @@ int main(int argc, char** argv) {
   // client.leaveBootloader(3, 0);
 
   for(int i = 0; i < 10; i++) {
-    float angle = client.getRotorPosition(3);
+    float angle; 
+    client.getRotorPosition(3, &angle);
     std::cout << angle << "\n";
     ros::Duration(0.1).sleep();
   }
