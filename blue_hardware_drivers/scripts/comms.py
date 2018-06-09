@@ -95,6 +95,7 @@ class FlashSectorMap:
 class BLDCControllerClient:
     def __init__(self, ser):
         self._ser = ser
+        self._crc_alg = crcmod.predefined.PredefinedCrc('crc-16')
 
     def getRotorPosition(self, server_ids):
         angles = [struct.unpack('<f', data)[0] for data in self.readRegisters(server_ids, [0x3000 for sid in server_ids], [1 for sid in server_ids])]
@@ -409,6 +410,6 @@ class BLDCControllerClient:
         return success, message[6:]
 
     def _computeCRC(self, values):
-        crc = crcmod.predefined.Crc('crc-16')
+        crc = self._crc_alg.new()
         crc.update(values)
         return crc.crcValue
