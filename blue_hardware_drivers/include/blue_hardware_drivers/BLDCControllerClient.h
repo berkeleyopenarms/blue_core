@@ -26,17 +26,17 @@ class BLDCControllerClient {
 
     void exchange();
 
-    void queuePacket(uint8_t server_id, Packet* packet);
+    void queuePacket(comm_id_t server_id, Packet* packet);
 
-    void leaveBootloader(uint8_t server_id, uint32_t jump_addr);
+    void leaveBootloader(comm_id_t server_id, uint32_t jump_addr);
 
-    void setCurrentControlMode(uint8_t server_id, bool* result);
-    void setZeroAngle(uint8_t server_id, uint16_t value, bool* result);
-    void setERevsPerMRev(uint8_t server_id, uint8_t value, bool* result);
-    void setInvertPhases(uint8_t server_id, uint8_t value, bool* result);
-    void setCommand(uint8_t server_id, float value, bool* result);
-    void setCommandAndGetRotorPosition(uint8_t server_id, float value, float* result);
-    void getRotorPosition(uint8_t server_id, float* result);
+    void setCurrentControlMode(comm_id_t server_id, bool* result);
+    void setZeroAngle(comm_id_t server_id, uint16_t value, bool* result);
+    void setERevsPerMRev(comm_id_t server_id, uint8_t value, bool* result);
+    void setInvertPhases(comm_id_t server_id, uint8_t value, bool* result);
+    void setCommand(comm_id_t server_id, float value, bool* result);
+    void setCommandAndGetRotorPosition(comm_id_t server_id, float value, float* result);
+    void getRotorPosition(comm_id_t server_id, float* result);
 
 
   private:
