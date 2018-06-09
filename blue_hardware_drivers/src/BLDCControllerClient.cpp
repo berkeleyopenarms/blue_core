@@ -23,18 +23,18 @@ void BLDCControllerClient::init(std::string port) {
   ser_.open();
 }
 
-void BLDCControllerClient::leaveBootloader(uint8_t server_id, uint32_t jump_addr) {
+void BLDCControllerClient::leaveBootloader(comm_id_t server_id, uint32_t jump_addr) {
   if (jump_addr == 0) {
     jump_addr = COMM_FIRMWARE_OFFSET;
   }
 
-  Packet* packet = new WritePacket(server_id, COMM_FC_JUMP_TO_ADDR, sizeof(jump_addr), reinterpret_cast<char*> (&jump_addr));
+  Packet* packet = new JumpToAddrPacket(server_id, jump_addr);
   queuePacket(server_id, packet);
 
   // TODO: Generate Receive Packet
 }
 
-void BLDCControllerClient::getRotorPosition(uint8_t server_id, float* result) {
+void BLDCControllerClient::getRotorPosition(comm_id_t server_id, float* result) {
   // Generate Transmit Packet
   Packet* packet = new ReadPacket(server_id, COMM_REG_RO_ROTOR_P, sizeof(*result));
   queuePacket(server_id, packet);
@@ -42,7 +42,7 @@ void BLDCControllerClient::getRotorPosition(uint8_t server_id, float* result) {
   // TODO: Generate Receive Packet
 }
 
-void BLDCControllerClient::setCurrentControlMode(uint8_t server_id, bool* result) {
+void BLDCControllerClient::setCurrentControlMode(comm_id_t server_id, bool* result) {
   // Create new packet
   Packet* packet = new WritePacket(server_id, COMM_REG_VOL_CTRL_MODE, sizeof(COMM_CTRL_MODE), reinterpret_cast<char*> (new uint8_t(COMM_CTRL_MODE)));
   queuePacket(server_id, packet);
@@ -51,7 +51,7 @@ void BLDCControllerClient::setCurrentControlMode(uint8_t server_id, bool* result
 }
 
 
-void BLDCControllerClient::setZeroAngle(uint8_t server_id, uint16_t value, bool* result) {
+void BLDCControllerClient::setZeroAngle(comm_id_t server_id, uint16_t value, bool* result) {
   // Create new packet
   Packet* packet = new WritePacket(server_id, COMM_REG_CAL_REV_START, sizeof(value), reinterpret_cast<char*> (&value));
   queuePacket(server_id, packet);
@@ -59,7 +59,7 @@ void BLDCControllerClient::setZeroAngle(uint8_t server_id, uint16_t value, bool*
   // TODO: Generate Receive Packet
 }
 
-void BLDCControllerClient::setERevsPerMRev(uint8_t server_id, uint8_t value, bool* result) {
+void BLDCControllerClient::setERevsPerMRev(comm_id_t server_id, uint8_t value, bool* result) {
   // Create new packet
   Packet* packet = new WritePacket(server_id, COMM_REG_CAL_EREVS_PER_MREV, sizeof(value), reinterpret_cast<char*> (&value));
   queuePacket(server_id, packet);
@@ -67,7 +67,7 @@ void BLDCControllerClient::setERevsPerMRev(uint8_t server_id, uint8_t value, boo
   // TODO: Generate Receive Packet
 }
 
-void BLDCControllerClient::setInvertPhases(uint8_t server_id, uint8_t value, bool* result) {
+void BLDCControllerClient::setInvertPhases(comm_id_t server_id, uint8_t value, bool* result) {
   // Create new packet
   Packet* packet = new WritePacket(server_id, COMM_REG_CAL_INV_PHASES, sizeof(value), reinterpret_cast<char*> (&value));
   queuePacket(server_id, packet);
@@ -75,7 +75,7 @@ void BLDCControllerClient::setInvertPhases(uint8_t server_id, uint8_t value, boo
   // TODO: Generate Receive Packet
 }
 
-void BLDCControllerClient::setCommand(uint8_t server_id, float value, bool* result) {
+void BLDCControllerClient::setCommand(comm_id_t server_id, float value, bool* result) {
   // Create new packet
   Packet* packet = new WritePacket(server_id, COMM_REG_VOL_DI_COMM, sizeof(value), reinterpret_cast<char*> (&value));
   queuePacket(server_id, packet);
@@ -83,7 +83,7 @@ void BLDCControllerClient::setCommand(uint8_t server_id, float value, bool* resu
   // TODO: Generate Receive Packet
 }
 
-void BLDCControllerClient::setCommandAndGetRotorPosition(uint8_t server_id, float value, float* result) {
+void BLDCControllerClient::setCommandAndGetRotorPosition(comm_id_t server_id, float value, float* result) {
   // Generate Transmit Packet
   Packet* packet = new ReadWritePacket (server_id, 
     COMM_REG_RO_ROTOR_P, sizeof(*result),                                   // Read
@@ -99,7 +99,7 @@ void BLDCControllerClient::exchange() {
 
 /* Private members */
 
-void BLDCControllerClient::queuePacket(uint8_t server_id, Packet* packet) {
+void BLDCControllerClient::queuePacket(comm_id_t server_id, Packet* packet) {
   if (packet_queue_[server_id] != nullptr) {
     std::string error = "A packet is already queued for motor " + std::to_string((int) server_id);
     throw comms_error(error);
@@ -206,7 +206,7 @@ uint16_t BLDCControllerClient::computeCRC( std::string message ) {
 }
 
 /*
-ByteBuf BLDCControllerClient::readResponse_(uint8_t server_id, uint8_t func_code) {
+ByteBuf BLDCControllerClient::readResponse_(comm_id_t server_id, uint8_t func_code) {
   ByteBuf empty(0);
   uint8_t sync = 1;
   uint8_t test = 0xFF;

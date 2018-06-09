@@ -42,17 +42,12 @@ class WritePacket : public Packet {
     std::string dump();
 };
 
-class WritePacket : public Packet {
+class JumpToAddrPacket : public Packet {
   private:
-    comm_addr_t write_start_addr_;
-    uint8_t write_count_;
-    std::stringstream write_data_;
+    uint32_t jump_addr_;
   public:
-    WritePacket (comm_id_t id, comm_addr_t addr, uint8_t count, char* data) : 
-      Packet( id, COMM_FC_REG_WRITE ), write_start_addr_( addr ), write_count_( count )
-    {
-      write_data_.write(data, write_count_); 
-    }
+    JumpToAddrPacket (comm_id_t id, uint32_t jump_addr) : 
+      Packet( id, COMM_FC_JUMP_TO_ADDR ), jump_addr_(jump_addr) {}
 
     std::string dump();
 };
