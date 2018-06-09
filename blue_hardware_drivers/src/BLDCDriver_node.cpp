@@ -113,7 +113,7 @@ void initMaps(std::map<uint8_t, std::string>& joint_mapping,
   /*   angle_mapping[id] = angle; */
   /* } */
 }
-
+/*
 int main(int argc, char **argv) {
   ros::init(argc, argv, "jointInterface", ros::init_options::AnonymousName);
 
@@ -216,3 +216,4 @@ int main(int argc, char **argv) {
 
   return 0;
 }
+*/

@@ -1,12 +1,13 @@
+#include "blue_hardware_drivers/BLDCControllerClient.h"
+
 #include <ros/ros.h>
 #include <serial/serial.h>
 #include <iostream>
 #include <string>
 #include <stdio.h>
 
-#include "blue_hardware_drivers/comms.h"
-#include "blue_hardware_drivers/BLDCControllerClient.h"
-
+#include "blue_hardware_drivers/comms_defs.h"
+#include "blue_hardware_drivers/Packets.h"
 
 BLDCControllerClient::BLDCControllerClient() {
 }
@@ -17,106 +18,196 @@ BLDCControllerClient::BLDCControllerClient(std::string port) {
 
 void BLDCControllerClient::init(std::string port) {
   ser_.setPort(port);
-  ser_.setBaudrate(1000000);
+  ser_.setBaudrate(COMM_DEFAULT_BAUD_RATE);
   ser_.setTimeout(serial::Timeout::max(), 20, 0, 20, 0);
   ser_.open();
 }
 
-float BLDCControllerClient::getRotorPosition(uint8_t server_id) {
-  bytebuf_t message = BLDCControllerClient::readRegisters_(server_id, 0x3000, 1);
-
-  uint8_t temp[4];
-  temp[0] = message.at(0);
-  temp[1] = message.at(1);
-  temp[2] = message.at(2);
-  temp[3] = message.at(3);
-
-  return *reinterpret_cast<float*>(temp);
-}
-
-bool BLDCControllerClient::setCurrentControlMode(uint8_t server_id) {
-  uint8_t zero = 0; // this feels wrong
-  return BLDCControllerClient::writeRegisters_(server_id, 0x2000, 1, &zero, 1);
-}
-
-bool BLDCControllerClient::setZeroAngle(uint8_t server_id, uint16_t value) {
-  return BLDCControllerClient::writeRegisters_(server_id, 0x1000, 1, (uint8_t*) &value, 2);
-}
-
-bool BLDCControllerClient::setERevsPerMRev(uint8_t server_id, uint8_t value) {
-  return BLDCControllerClient::writeRegisters_(server_id, 0x1001, 1, (uint8_t*) &value, 1);
-}
-
-bool BLDCControllerClient::setInvertPhases(uint8_t server_id, uint8_t value) {
-  return BLDCControllerClient::writeRegisters_(server_id, 0x1002, 1, (uint8_t*) &value, 1);
-}
-
-bool BLDCControllerClient::leaveBootloader(uint8_t server_id, uint32_t jump_addr) {
+void BLDCControllerClient::leaveBootloader(uint8_t server_id, uint32_t jump_addr) {
   if (jump_addr == 0) {
     jump_addr = COMM_FIRMWARE_OFFSET;
   }
 
-  uint8_t* src = (uint8_t*) &jump_addr;
-  bytebuf_t buffer;
-  buffer.insert(buffer.end(), 5, 0);
-  buffer.push_back(src[0]);
-  buffer.push_back(src[1]);
-  buffer.push_back(src[2]);
-  buffer.push_back(src[3]);
-  BLDCControllerClient::writeRequest_(server_id, COMM_FC_JUMP_TO_ADDR, buffer);
+  Packet* packet = new WritePacket(server_id, COMM_FC_JUMP_TO_ADDR, sizeof(jump_addr), reinterpret_cast<char*> (&jump_addr));
+  queuePacket(server_id, packet);
 
-  uint8_t dumping = 0;
-  while (ser_.read(&dumping, 1)){};
-
-  ser_.flush();
-
-  return true;
+  // TODO: Generate Receive Packet
 }
 
-bool BLDCControllerClient::setCommand(uint8_t server_id, float value) {
-  return BLDCControllerClient::writeRegisters_(server_id, 0x2001, 1, reinterpret_cast<uint8_t*>(&value), 4);
+void BLDCControllerClient::getRotorPosition(uint8_t server_id, float* result) {
+  // Generate Transmit Packet
+  Packet* packet = new ReadPacket(server_id, COMM_REG_RO_ROTOR_P, sizeof(*result));
+  queuePacket(server_id, packet);
+
+  // TODO: Generate Receive Packet
 }
 
-float BLDCControllerClient::setCommandAndGetRotorPosition(uint8_t server_id, float value) {
+void BLDCControllerClient::setCurrentControlMode(uint8_t server_id, bool* result) {
+  // Create new packet
+  Packet* packet = new WritePacket(server_id, COMM_REG_VOL_CTRL_MODE, sizeof(COMM_CTRL_MODE), reinterpret_cast<char*> (new uint8_t(COMM_CTRL_MODE)));
+  queuePacket(server_id, packet);
 
-  bytebuf_t message = BLDCControllerClient::readWriteRegisters_(
-    server_id,
-    0x3000,
-    1,
-    0x2001,
-    1,
-    reinterpret_cast<uint8_t*>(&value),
-    4
-  );
+  // TODO: Generate Receive Packet
+}
 
-  uint8_t temp[4];
-  temp[0] = message.at(0);
-  temp[1] = message.at(1);
-  temp[2] = message.at(2);
-  temp[3] = message.at(3);
 
-  return *reinterpret_cast<float*>(temp);
+void BLDCControllerClient::setZeroAngle(uint8_t server_id, uint16_t value, bool* result) {
+  // Create new packet
+  Packet* packet = new WritePacket(server_id, COMM_REG_CAL_REV_START, sizeof(value), reinterpret_cast<char*> (&value));
+  queuePacket(server_id, packet);
 
+  // TODO: Generate Receive Packet
+}
+
+void BLDCControllerClient::setERevsPerMRev(uint8_t server_id, uint8_t value, bool* result) {
+  // Create new packet
+  Packet* packet = new WritePacket(server_id, COMM_REG_CAL_EREVS_PER_MREV, sizeof(value), reinterpret_cast<char*> (&value));
+  queuePacket(server_id, packet);
+
+  // TODO: Generate Receive Packet
+}
+
+void BLDCControllerClient::setInvertPhases(uint8_t server_id, uint8_t value, bool* result) {
+  // Create new packet
+  Packet* packet = new WritePacket(server_id, COMM_REG_CAL_INV_PHASES, sizeof(value), reinterpret_cast<char*> (&value));
+  queuePacket(server_id, packet);
+
+  // TODO: Generate Receive Packet
+}
+
+void BLDCControllerClient::setCommand(uint8_t server_id, float value, bool* result) {
+  // Create new packet
+  Packet* packet = new WritePacket(server_id, COMM_REG_VOL_DI_COMM, sizeof(value), reinterpret_cast<char*> (&value));
+  queuePacket(server_id, packet);
+
+  // TODO: Generate Receive Packet
+}
+
+void BLDCControllerClient::setCommandAndGetRotorPosition(uint8_t server_id, float value, float* result) {
+  // Generate Transmit Packet
+  Packet* packet = new ReadWritePacket (server_id, 
+    COMM_REG_RO_ROTOR_P, sizeof(*result),                                   // Read
+    COMM_REG_VOL_DI_COMM, sizeof(value), reinterpret_cast<char*>(&value));  // Write
+  queuePacket(server_id, packet);
+}
+
+// Sends packets to boards and collects data
+void BLDCControllerClient::exchange() {
+  transmit();
+  receive();
 }
 
 /* Private members */
 
-void BLDCControllerClient::writeRequest_(uint8_t server_id, uint8_t func_code, bytebuf_t& data) {
-  data.at(0) = 0xFF; // Sync flag
-  data.at(1) = 0xFF; // Protocol version
-  data.at(2) = data.size() - 4; // Add length field, which excludes the sync, version, & length bytes
-  data.at(3) = 0;
-  data.at(4) = server_id;
-  data.at(5) = func_code;
-
-  //TODO: Make this return CRC
-  data.push_back(0);
-  data.push_back(0);
-  ser_.write(data);
+void BLDCControllerClient::queuePacket(uint8_t server_id, Packet* packet) {
+  if (packet_queue_[server_id] != nullptr) {
+    std::string error = "A packet is already queued for motor " + std::to_string((int) server_id);
+    throw comms_error(error);
+  }
+  packet_queue_[server_id] = packet;
 }
 
-bytebuf_t BLDCControllerClient::readResponse_(uint8_t server_id, uint8_t func_code) {
-  bytebuf_t empty(0);
+void BLDCControllerClient::transmit() {
+  // Transmission buffer
+  std::stringstream tx_buf;
+  // Add Header
+  tx_buf.write(reinterpret_cast<char*> (new uint8_t(COMM_SYNC_FLAG)), sizeof(COMM_SYNC_FLAG));
+  tx_buf.write(reinterpret_cast<char*> (new uint8_t(COMM_VERSION)), sizeof(COMM_VERSION));
+  tx_buf.write(reinterpret_cast<char*> (new comm_fg_t(COMM_FG_COMP)), sizeof(COMM_FG_COMP));
+
+  // Generate Payload
+  std::stringstream payload;
+  for (auto it = packet_queue_.begin(); it != packet_queue_.end(); it++) {
+    // Acquire packet byte format
+    auto packet = it->second; // Get packet pointer (value in key pair)
+    std::string msg = packet->dump();
+
+    for (unsigned char c : msg)
+      printf("%02x:", c);
+    std::cout << std::endl;
+
+    comm_msg_len_t sub_msg_len = msg.size(); 
+    payload.write(reinterpret_cast<char*> (&sub_msg_len), sizeof(sub_msg_len));
+    payload << msg;
+    delete packet;
+  }
+  // Add total packet length
+  std::string payload_str = payload.str();
+  comm_msg_len_t payload_len = payload_str.size();
+  tx_buf.write(reinterpret_cast<char*> (&payload_len), sizeof(payload_len));
+  tx_buf << payload_str;
+
+  // Adding CRC
+  uint16_t crc = computeCRC(payload_str);
+  tx_buf.write(reinterpret_cast<char*> (&crc), sizeof(crc));
+
+  std::string tx_str = tx_buf.str();
+
+  for (unsigned char c : tx_str)
+    printf("%02x:", c);
+  std::cout << std::endl;
+  
+  // Send Packet!
+  ser_.write(tx_str);
+  // Empty the queue
+  packet_queue_.clear();
+}
+
+void BLDCControllerClient::receive() {
+  // TODO: Write board receive code!
+}
+
+uint16_t BLDCControllerClient::computeCRC( std::string message ) {
+  const char* buf = message.c_str();
+  size_t len = message.size();
+  uint16_t out = 0;
+  uint16_t bits_read = 0, bit_flag;
+
+  /* Sanity check */
+  if (buf == nullptr)
+    return 0;
+
+  while (len > 0) {
+    bit_flag = out >> 15;
+
+    /* Get next bit: */
+    out <<= 1;
+    out |= (*buf >> bits_read) & 1; // item a) work from the least significant bits
+    
+    /* Increment bit counter: */
+    bits_read++;
+    if(bits_read > 7) {
+      bits_read = 0;
+      buf++;
+      len--;
+    }
+    
+    /* Cycle check: */
+    if(bit_flag) out ^= crc_16_ibm;
+  }
+
+  // item b) "push out" the last 16 bits
+  int i;
+  for (i = 0; i < 16; ++i) {
+    bit_flag = out >> 15;
+    out <<= 1;
+    if(bit_flag) out ^= crc_16_ibm;
+  }
+
+  // item c) reverse the bits
+  uint16_t crc = 0;
+  i = 0x8000;
+  int j = 0x0001;
+  for (; i != 0; i >>=1, j <<= 1) {
+    if (i & out) crc |= j;
+  }
+
+  return crc;
+}
+
+/*
+ByteBuf BLDCControllerClient::readResponse_(uint8_t server_id, uint8_t func_code) {
+  ByteBuf empty(0);
   uint8_t sync = 1;
   uint8_t test = 0xFF;
   ser_.read(&sync, 1);
@@ -133,7 +224,7 @@ bytebuf_t BLDCControllerClient::readResponse_(uint8_t server_id, uint8_t func_co
   }
 
   uint16_t length = 0;
-  ser_.read(reinterpret_cast<uint8_t*>(&length), 2);
+  ser_.read(reinterpret_cast<char*>(&length), 2);
 
   if (length == 0) {
     std::cout << "length was zero\n";
@@ -176,7 +267,7 @@ bytebuf_t BLDCControllerClient::readResponse_(uint8_t server_id, uint8_t func_co
     return empty;
   }
 
-  bytebuf_t message;
+  ByteBuf message;
 
   if (length - 4 == 0 || ser_.read(message, length - 4) < (size_t) (length - 4)) {
     std::cerr << "message length was not long enough\n";
@@ -184,10 +275,10 @@ bytebuf_t BLDCControllerClient::readResponse_(uint8_t server_id, uint8_t func_co
     return empty;
   }
 
-  /* uint8_t crc_bytesh = 0; */
-  /* uint8_t crc_bytesl = 0; */
+  // uint8_t crc_bytesh = 0; 
+  // uint8_t crc_bytesl = 0; 
   uint16_t crc_bytes = 0;
-  if (ser_.read(reinterpret_cast<uint8_t*>(&crc_bytes), 2) < 2) {
+  if (ser_.read(reinterpret_cast<char*>(&crc_bytes), 2) < 2) {
     std::cout << "crc bytes not read properly\n";
     ser_.flushInput();
     return empty;
@@ -197,72 +288,7 @@ bytebuf_t BLDCControllerClient::readResponse_(uint8_t server_id, uint8_t func_co
 
   return message;
 }
+*/
 
-bytebuf_t BLDCControllerClient::doTransaction_(uint8_t server_id, uint8_t func_code, bytebuf_t& data) {
-  writeRequest_(server_id, func_code, data);
-  ser_.flush();
-  return readResponse_(server_id, func_code);
-}
 
-bool BLDCControllerClient::writeRegisters_(uint8_t server_id, uint32_t start_addr, uint8_t count, uint8_t* data, size_t size) {
-  bytebuf_t buffer;
-  buffer.insert(buffer.end(), 6, 0);
-  buffer.push_back(start_addr & 0xFF);
-  buffer.push_back(start_addr >> 8);
-  buffer.push_back(count);
-  for (size_t i = 0; i < size; i++) {
-    buffer.push_back(data[i]);
-  }
-  bytebuf_t message = BLDCControllerClient::doTransaction_(server_id, COMM_FC_REG_WRITE, buffer);
-  if (message.size() == 0) {
-    return false;
-  }
-  return true;
-}
-
-bytebuf_t BLDCControllerClient::readRegisters_(uint8_t server_id, uint32_t start_addr, uint8_t count) {
-  bytebuf_t buffer;
-  buffer.insert(buffer.end(), 6, 0);
-  buffer.push_back(start_addr & 0xFF);
-  buffer.push_back(start_addr >> 8);
-  buffer.push_back(count);
-
-  bytebuf_t data = BLDCControllerClient::doTransaction_(server_id, COMM_FC_REG_READ, buffer);
-  if (data.size() == 0) {
-    std::cerr << "Register read failed\n";
-    throw;
-  }
-  return data;
-}
-
-bytebuf_t BLDCControllerClient::readWriteRegisters_(
-  uint8_t server_id,
-  uint32_t read_start_addr,
-  uint8_t read_count,
-  uint32_t write_start_addr,
-  uint8_t write_count,
-  uint8_t* write_data,
-  size_t write_size
-) {
-  bytebuf_t buffer;
-  buffer.insert(buffer.end(), 6, 0);
-
-  buffer.push_back(read_start_addr & 0xFF);
-  buffer.push_back(read_start_addr >> 8);
-  buffer.push_back(read_count);
-
-  buffer.push_back(write_start_addr & 0xFF);
-  buffer.push_back(write_start_addr >> 8);
-  buffer.push_back(write_count);
-  for (size_t i = 0; i < write_size; i++) {
-    buffer.push_back(write_data[i]);
-  }
-
-  bytebuf_t data = BLDCControllerClient::doTransaction_(server_id, COMM_FC_REG_READ_WRITE, buffer);
-  if (data.size() == 0) {
-    std::cerr << "Register read failed\n";
-    throw;
-  }
-  return data;
-}
 

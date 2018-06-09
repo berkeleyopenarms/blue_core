@@ -33,76 +33,10 @@ void initMapsTest(std::map<uint8_t, std::string>& joint_mapping,
     std::map<uint8_t, uint16_t>& angle_mapping,
     std::map<uint8_t, uint8_t>& invert_mapping,
     std::map<uint8_t, uint8_t>& erevs_mapping) {
-  joint_mapping[3] = "base_roll_motor";
-  angle_mapping[3] = 12164;
-  invert_mapping[3] = true;
-  erevs_mapping[3] = 14;
-}
-
-void initMaps(std::map<uint8_t, std::string>& joint_mapping,
-    std::map<uint8_t, uint16_t>& angle_mapping,
-    std::map<uint8_t, uint8_t>& invert_mapping,
-    std::map<uint8_t, uint8_t>& erevs_mapping) {
-    joint_mapping[15] = "base_roll_motor";
-    joint_mapping[11] = "right_motor1";
-    joint_mapping[12] = "left_motor1";
-    joint_mapping[14] = "right_motor2";
-    joint_mapping[16] = "left_motor2";
-    joint_mapping[21] = "right_motor3";
-    joint_mapping[19] = "left_motor3";
-    //joint_mapping[17] = "left_motor3";
-    //joint_mapping[13] = "base_roll_motor";
-
-    angle_mapping[15] = 13002;
-    angle_mapping[11] = 2164;
-    angle_mapping[12] = 1200;
-    angle_mapping[14] = 4484;
-    angle_mapping[16] = 2373;
-    angle_mapping[21] = 5899;
-    angle_mapping[19] = 2668;
-    //angle_mapping[17] = 10720;
-    //angle_mapping[13] = 11839;
-
-    invert_mapping[15] = 0;
-    invert_mapping[11] = 0;
-    invert_mapping[12] = 0;
-    invert_mapping[14] = 0;
-    invert_mapping[16] = 0;
-    invert_mapping[21] = 0;
-    invert_mapping[19] = 0;
-    //invert_mapping[17] = 1;
-    //invert_mapping[13] = 1;
-
-    erevs_mapping[15] = 14;
-    erevs_mapping[11] = 14;
-    erevs_mapping[12] = 14;
-    erevs_mapping[14] = 14;
-    erevs_mapping[16] = 14;
-    erevs_mapping[21] = 21;
-    erevs_mapping[19] = 21;
-    //erevs_mapping[17] = 14;
-    //erevs_mapping[13] = 14;
-
-  /* joint_mapping[1] = "left_motor"; */
-  /* joint_mapping[2] = "right_motor"; */
-  /* joint_mapping[3] = "right_motor2"; */
-  /* joint_mapping[4] = "left_motor2"; */
-//  joint_mapping[10] = "test_motor";
-//  angle_mapping[10] = 7568;
-  /* std::map<std::string, int> angles; */
-  /* ros::param::get("/blue_hardware_drivers/calibrations", angles); */
-  /* if (angles.size() < 5) { */
-  /*   std::cerr << "did not get correct map, size " << angles.size() << "\n"; */
-  /* } */
-
-  /* for(std::map<std::string, int>::iterator it = angles.begin(); it != angles.end(); it++) { */
-  /*   uint16_t angle = (uint16_t) it->second; */
-  /*   uint8_t id = atoi(it->first.c_str()); */
-  /*   if (id == 0) { */
-  /*     return; */
-  /*   } */
-  /*   angle_mapping[id] = angle; */
-  /* } */
+  joint_mapping[52] = "base_roll_motor";
+  angle_mapping[52] = 12164;
+  invert_mapping[52] = true;
+  erevs_mapping[52] = 14;
 }
 
 int main(int argc, char **argv) {
@@ -114,14 +48,15 @@ int main(int argc, char **argv) {
   std::map<uint8_t, std::vector<double> > velocity_history_mapping;
   std::map<uint8_t, uint8_t> invert_mapping;
   std::map<uint8_t, uint8_t> erevs_mapping;
-  std::map<uint8_t, double> angle_zero;
+  std::map<uint8_t, float> angle_zero;
   // initMaps(joint_mapping, angle_mapping, invert_mapping, erevs_mapping);
   initMapsTest(joint_mapping, angle_mapping, invert_mapping, erevs_mapping);
 
   char* port = argv[1];
-  ROS_ERROR("c1");
-  BLDCControllerClient device(port);
-  ROS_ERROR("c2");
+  BLDCControllerClient device;
+  try {
+    device.init(port);
+  } catch (std::exception& e) { ROS_ERROR(e.what()); }
 
   ros::Rate r(CONTROL_LOOP_FREQ);
 
@@ -130,21 +65,25 @@ int main(int argc, char **argv) {
     ROS_ERROR("c21");
     device.leaveBootloader(it->first, 0);
   }
+  device.exchange();
+
   ROS_ERROR("c3");
   ros::Duration(0.5).sleep();
 
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
     ROS_ERROR("c41, id: %d", it->first);
-    angle_zero[it->first] = device.getRotorPosition(it->first);
+    device.getRotorPosition(it->first, &(angle_zero[it->first]));
     ROS_ERROR("c42");
   }
 
+  device.exchange();
+
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
     // uint8_t* angle = (uint8_t*) &it2->second;
-    device.setZeroAngle(it2->first, it2->second);
-    device.setERevsPerMRev(it2->first, erevs_mapping[it2->first]);
-    device.setInvertPhases(it2->first, invert_mapping[it2->first]);
-    device.setCurrentControlMode(it2->first);
+    device.setZeroAngle(it2->first, it2->second, nullptr);
+    device.setERevsPerMRev(it2->first, erevs_mapping[it2->first], nullptr);
+    device.setInvertPhases(it2->first, invert_mapping[it2->first], nullptr);
+    device.setCurrentControlMode(it2->first, nullptr);
   }
   ROS_ERROR("c6");
 
@@ -158,7 +97,7 @@ int main(int argc, char **argv) {
       for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
         uint8_t id = it->first;
         try {
-          device.setCommandAndGetRotorPosition(id, 0.2);
+          device.setCommandAndGetRotorPosition(id, 0.2, nullptr);
           // device.getRotorPosition(id);
         } catch(...) {
           ROS_ERROR("reg read failed");
