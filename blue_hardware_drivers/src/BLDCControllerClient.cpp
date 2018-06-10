@@ -36,7 +36,7 @@ void BLDCControllerClient::leaveBootloader(comm_id_t server_id, uint32_t jump_ad
 
 void BLDCControllerClient::getRotorPosition(comm_id_t server_id, float* result) {
   // Generate Transmit Packet
-  Packet* packet = new ReadPacket(server_id, COMM_REG_RO_ROTOR_P, sizeof(*result));
+  Packet* packet = new ReadRegPacket(server_id, COMM_REG_RO_ROTOR_P, sizeof(*result));
   queuePacket(server_id, packet);
 
   // TODO: Generate Receive Packet
@@ -44,7 +44,7 @@ void BLDCControllerClient::getRotorPosition(comm_id_t server_id, float* result) 
 
 void BLDCControllerClient::setCurrentControlMode(comm_id_t server_id, bool* result) {
   // Create new packet
-  Packet* packet = new WritePacket(server_id, COMM_REG_VOL_CTRL_MODE, sizeof(COMM_CTRL_MODE), reinterpret_cast<char*> (new uint8_t(COMM_CTRL_MODE)));
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_CTRL_MODE, sizeof(COMM_CTRL_MODE), reinterpret_cast<char*> (new uint8_t(COMM_CTRL_MODE)));
   queuePacket(server_id, packet);
 
   // TODO: Generate Receive Packet
@@ -53,7 +53,7 @@ void BLDCControllerClient::setCurrentControlMode(comm_id_t server_id, bool* resu
 
 void BLDCControllerClient::setZeroAngle(comm_id_t server_id, uint16_t value, bool* result) {
   // Create new packet
-  Packet* packet = new WritePacket(server_id, COMM_REG_CAL_REV_START, sizeof(value), reinterpret_cast<char*> (&value));
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_REV_START, sizeof(value), reinterpret_cast<char*> (&value));
   queuePacket(server_id, packet);
 
   // TODO: Generate Receive Packet
@@ -61,7 +61,7 @@ void BLDCControllerClient::setZeroAngle(comm_id_t server_id, uint16_t value, boo
 
 void BLDCControllerClient::setERevsPerMRev(comm_id_t server_id, uint8_t value, bool* result) {
   // Create new packet
-  Packet* packet = new WritePacket(server_id, COMM_REG_CAL_EREVS_PER_MREV, sizeof(value), reinterpret_cast<char*> (&value));
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EREVS_PER_MREV, sizeof(value), reinterpret_cast<char*> (&value));
   queuePacket(server_id, packet);
 
   // TODO: Generate Receive Packet
@@ -69,7 +69,7 @@ void BLDCControllerClient::setERevsPerMRev(comm_id_t server_id, uint8_t value, b
 
 void BLDCControllerClient::setInvertPhases(comm_id_t server_id, uint8_t value, bool* result) {
   // Create new packet
-  Packet* packet = new WritePacket(server_id, COMM_REG_CAL_INV_PHASES, sizeof(value), reinterpret_cast<char*> (&value));
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_INV_PHASES, sizeof(value), reinterpret_cast<char*> (&value));
   queuePacket(server_id, packet);
 
   // TODO: Generate Receive Packet
@@ -77,7 +77,7 @@ void BLDCControllerClient::setInvertPhases(comm_id_t server_id, uint8_t value, b
 
 void BLDCControllerClient::setCommand(comm_id_t server_id, float value, bool* result) {
   // Create new packet
-  Packet* packet = new WritePacket(server_id, COMM_REG_VOL_DI_COMM, sizeof(value), reinterpret_cast<char*> (&value));
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_DI_COMM, sizeof(value), reinterpret_cast<char*> (&value));
   queuePacket(server_id, packet);
 
   // TODO: Generate Receive Packet
@@ -85,7 +85,7 @@ void BLDCControllerClient::setCommand(comm_id_t server_id, float value, bool* re
 
 void BLDCControllerClient::setCommandAndGetRotorPosition(comm_id_t server_id, float value, float* result) {
   // Generate Transmit Packet
-  Packet* packet = new ReadWritePacket (server_id, 
+  Packet* packet = new ReadWriteRegPacket (server_id, 
     COMM_REG_RO_ROTOR_P, sizeof(*result),                                   // Read
     COMM_REG_VOL_DI_COMM, sizeof(value), reinterpret_cast<char*>(&value));  // Write
   queuePacket(server_id, packet);

@@ -16,7 +16,7 @@ class Packet {
     virtual std::string dump();
 };
 
-class ReadPacket : public Packet {
+class ReadRegPacket : public Packet {
   private:
     comm_addr_t read_start_addr_;
     uint8_t read_count_;
@@ -27,7 +27,7 @@ class ReadPacket : public Packet {
     std::string dump();
 };
 
-class WritePacket : public Packet {
+class WriteRegPacket : public Packet {
   private:
     comm_addr_t write_start_addr_;
     uint8_t write_count_;
@@ -52,7 +52,7 @@ class JumpToAddrPacket : public Packet {
     std::string dump();
 };
 
-class ReadWritePacket : public Packet {
+class ReadWriteRegPacket : public Packet {
   private:
     comm_addr_t read_start_addr_;
     uint8_t read_count_;
