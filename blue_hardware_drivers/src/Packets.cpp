@@ -12,7 +12,7 @@ std::string Packet::dump() {
   return buffer.str();
 }
 
-std::string ReadPacket::dump() {
+std::string ReadRegPacket::dump() {
   std::stringstream buffer;  
   buffer << Packet::dump();
   buffer.write(reinterpret_cast<char*> (&read_start_addr_), sizeof(read_start_addr_));
@@ -20,7 +20,7 @@ std::string ReadPacket::dump() {
   return buffer.str();
 }
 
-std::string WritePacket::dump() {
+std::string WriteRegPacket::dump() {
   std::stringstream buffer;
   buffer << Packet::dump();
   buffer.write(reinterpret_cast<char*> (&write_start_addr_), sizeof(write_start_addr_));
@@ -41,7 +41,7 @@ std::string JumpToAddrPacket::dump() {
   return buffer.str();
 }
 
-std::string ReadWritePacket::dump() {
+std::string ReadWriteRegPacket::dump() {
   std::stringstream buffer;
   buffer << Packet::dump();
   buffer.write(reinterpret_cast<char*> (&read_start_addr_), sizeof(read_start_addr_));
