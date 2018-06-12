@@ -86,8 +86,9 @@ void BLDCDriver::init(std::vector<double>* in_pos, std::vector<double>* in_vel, 
   device.init(port); // TODO: likely candidate for the frequency issues
 
   std::map<uint8_t, std::string>::iterator it;
+  bool result;
   for (it = motor_mapping.begin(); it != motor_mapping.end(); it++) {
-    device.leaveBootloader(it->first, 0);
+    device.leaveBootloader(it->first, 0, &result);
   }
 
   // Init angle

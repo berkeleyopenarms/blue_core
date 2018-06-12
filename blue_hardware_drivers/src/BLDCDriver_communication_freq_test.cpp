@@ -60,10 +60,11 @@ int main(int argc, char **argv) {
 
   ros::Rate r(CONTROL_LOOP_FREQ);
 
+  bool result;
   std::map<uint8_t, std::string>::iterator it;
   for (it = joint_mapping.begin(); it != joint_mapping.end(); it++) {
     ROS_ERROR("c21");
-    device.leaveBootloader(it->first, 0);
+    device.leaveBootloader(it->first, 0, &result);
   }
   device.exchange();
 
@@ -77,6 +78,7 @@ int main(int argc, char **argv) {
   }
 
   device.exchange();
+  ROS_ERROR(std::to_string(angle_zero[52]).c_str());
 
   for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
     // uint8_t* angle = (uint8_t*) &it2->second;

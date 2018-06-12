@@ -15,11 +15,10 @@
 
 #include "blue_hardware_drivers/comms_defs.h"
 #include "blue_hardware_drivers/Packets.h"
+#include "blue_hardware_drivers/crc16.h"
 
 class BLDCControllerClient {
   public:
-    static constexpr uint16_t crc_16_ibm = 0x8005;
-    
     BLDCControllerClient(); //requires init afterwards
     BLDCControllerClient(std::string port);
     void init(std::string port);
@@ -28,7 +27,7 @@ class BLDCControllerClient {
 
     void queuePacket(comm_id_t server_id, Packet* packet);
 
-    void leaveBootloader(comm_id_t server_id, uint32_t jump_addr);
+    void leaveBootloader(comm_id_t server_id, uint32_t jump_addr, bool* result);
 
     void setCurrentControlMode(comm_id_t server_id, bool* result);
     void setZeroAngle(comm_id_t server_id, uint16_t value, bool* result);
@@ -44,9 +43,9 @@ class BLDCControllerClient {
     std::map<uint8_t, Packet*> packet_queue_;
 
     void transmit();
-    void receive();
+    bool receive( comm_id_t server_id );
 
-    uint16_t computeCRC(std::string message);
+    crc16_t computeCRC(std::string message);
 };
 
 class comms_error : public std::exception {

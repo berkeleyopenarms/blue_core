@@ -4,9 +4,13 @@
 // Defined here: https://github.com/berkeley-open-robotics/bldc-controller/docs/
 // Current Protocol = Version 3
 
+#define DEBUG_TRANSMIT
+#define DEBUG_RECEIVE
+
 constexpr uint8_t COMM_SYNC_FLAG = 0xFF;
 // Reverse index from 0xFF (Protocol V1 and V2 use FF)
-constexpr uint8_t COMM_VERSION = 0xFE;
+using comm_protocol_t = uint8_t;
+constexpr comm_protocol_t COMM_VERSION = 0xFE;
 
 constexpr uint8_t COMM_CTRL_MODE = 0x00;
 
@@ -108,4 +112,5 @@ constexpr uint32_t COMM_DEFAULT_BAUD_RATE = 1000000;
 constexpr size_t COMM_SINGLE_PROGRAM_LENGTH = 128;
 constexpr size_t COMM_SINGLE_READ_LENGTH = 128;
 constexpr size_t COMM_SINGLE_VERIFY_LENGTH = 128;
+
 #endif /* COMMS_H */

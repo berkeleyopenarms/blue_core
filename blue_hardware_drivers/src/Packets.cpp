@@ -12,6 +12,13 @@ std::string Packet::dump() {
   return buffer.str();
 }
 
+void Packet::parse( std::stringstream & stream ) {
+  if (result_ == nullptr)
+    return;
+
+  stream.read(result_, result_size_);
+}
+
 std::string ReadRegPacket::dump() {
   std::stringstream buffer;  
   buffer << Packet::dump();
