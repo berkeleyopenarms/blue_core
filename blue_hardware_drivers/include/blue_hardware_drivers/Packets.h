@@ -5,61 +5,44 @@
 #include <stdint.h>
 
 #include "blue_hardware_drivers/comms_defs.h"
+#include "blue_hardware_drivers/Buffer.h"
 
 class Packet {
   private: 
     uint8_t server_id_;
     comm_fc_t func_code_;
-    char* result_;
-    size_t result_size_;
   public:
-    template <typename T>
-    Packet (comm_id_t id, comm_fc_t fc, T result) : server_id_( id ), func_code_ (fc){
-      result_ = reinterpret_cast<char*>(result);
-      result_size_ = sizeof(result_);
-    }
+    Packet (comm_id_t id, comm_fc_t fc) : server_id_( id ), func_code_ (fc){}
 
-    virtual std::string dump();
-    virtual void parse(std::stringstream & stream);
+    virtual void dump(Buffer& buf);
 };
 
+/* Virtual Register Mutator/Accessor Packets */
 class ReadRegPacket : public Packet {
   private:
     comm_addr_t read_start_addr_;
     uint8_t read_count_;
   public:
-    template <typename T>
-    ReadRegPacket (comm_id_t id, comm_addr_t addr, uint8_t count, T result) : 
-      Packet( id, COMM_FC_REG_READ, result ), read_start_addr_( addr ), read_count_( count ){}
+    ReadRegPacket (comm_id_t id, comm_addr_t addr, uint8_t count) : 
+      Packet( id, COMM_FC_REG_READ ), read_start_addr_( addr ), read_count_( count ){}
 
-    std::string dump();
+    void dump(Buffer& buf);
 };
 
 class WriteRegPacket : public Packet {
   private:
     comm_addr_t write_start_addr_;
     uint8_t write_count_;
-    std::stringstream write_data_;
+    Buffer write_data_;
   public:
-    template <typename T>
-    WriteRegPacket (comm_id_t id, comm_addr_t addr, uint8_t count, char* data, T result) : 
-      Packet( id, COMM_FC_REG_WRITE, result ), write_start_addr_( addr ), write_count_( count )
+    WriteRegPacket (comm_id_t id, comm_addr_t addr, uint8_t count, uint8_t* data) : 
+      Packet( id, COMM_FC_REG_WRITE ), write_start_addr_( addr ), write_count_( count )
     {
+      write_data_.init(write_count_);
       write_data_.write(data, write_count_); 
     }
 
-    std::string dump();
-};
-
-class JumpToAddrPacket : public Packet {
-  private:
-    uint32_t jump_addr_;
-  public:
-    template <typename T>
-    JumpToAddrPacket (comm_id_t id, uint32_t jump_addr, T result) : 
-      Packet( id, COMM_FC_JUMP_TO_ADDR, result ), jump_addr_(jump_addr) {}
-
-    std::string dump();
+    void dump(Buffer& buf);
 };
 
 class ReadWriteRegPacket : public Packet {
@@ -68,19 +51,45 @@ class ReadWriteRegPacket : public Packet {
     uint8_t read_count_;
     comm_addr_t write_start_addr_;
     uint8_t write_count_;
-    std::stringstream write_data_;
+    Buffer write_data_;
   public:
-    template <typename T>
     ReadWriteRegPacket (comm_id_t id, comm_addr_t r_addr, uint8_t r_count, 
-                                 comm_addr_t w_addr, uint8_t w_count, char* data, T result) : 
-                     Packet( id, COMM_FC_REG_READ_WRITE, result ), 
+                                 comm_addr_t w_addr, uint8_t w_count, uint8_t* data) : 
+                    Packet( id, COMM_FC_REG_READ_WRITE ), 
                         read_start_addr_( r_addr ), read_count_( r_count ), 
                         write_start_addr_( w_addr ), write_count_( w_count )
     {
+      write_data_.init(write_count_);
       write_data_.write(data, write_count_); 
     }
 
-    std::string dump();
+    void dump(Buffer& buf);
 };
+/* End of Virtual Register Mutator/Accessor Packets */
+
+/* Flash Mutator/Accessor Packets */
+class ReadFlashPacket : public Packet {
+  private:
+    comm_full_addr_t read_start_addr_;
+    uint32_t read_count_; 
+  public:
+    ReadFlashPacket (comm_id_t id, comm_full_addr_t addr, uint32_t count) : 
+      Packet( id, COMM_FC_FLASH_READ ), read_start_addr_( addr ), read_count_( count ){}
+
+    void dump(Buffer& buf);
+};
+
+/* Move Instruction Pointer (Use for switching out of bootloader) */
+class JumpToAddrPacket : public Packet {
+  private:
+    comm_full_addr_t jump_addr_;
+  public:
+    JumpToAddrPacket (comm_id_t id, comm_full_addr_t jump_addr) : 
+      Packet( id, COMM_FC_JUMP_TO_ADDR ), jump_addr_(jump_addr) {}
+
+    void dump(Buffer& buf);
+};
+
+
 
 #endif
