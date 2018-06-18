@@ -46,6 +46,9 @@ class BLDCControllerClient {
     
     // Send queued packets and receive from boards
     void exchange();
+    
+    // Remove all items currently in the queue
+    void clearQueue(); 
 
     // Result Commands
     void resultGetRotorPosition(comm_id_t server_id, float* result);
