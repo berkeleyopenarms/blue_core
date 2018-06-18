@@ -24,7 +24,6 @@ void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& 
   ser_.setBaudrate(COMM_DEFAULT_BAUD_RATE);
   ser_.setTimeout(serial::Timeout::max(), 2, 0, 2, 0);
   ser_.open();
-  ser_.flushInput();
 
   tx_buf_.init(COMM_MAX_BUF);
   sub_packet_buf_.init(COMM_MAX_BUF);
@@ -106,7 +105,7 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
   uint32_t len = 0;
   std::string data;
 
-  ser_.flushInput();
+  ser_.flushOutput();
 
   readFlash(server_id, COMM_NVPARAMS_OFFSET+1, 2, data);
 #ifdef DEBUG_CALIBRATION_DATA
@@ -157,10 +156,22 @@ void BLDCControllerClient::exchange() {
   // Receive data from each board in order
   for (auto it = packet_queue_.begin(); it != packet_queue_.end(); it++) {
     if (!receive(it->first)) { // Get server id (key in [key, value] pair)
-      ser_.flushInput();
+      ser_.flushOutput();
+      break;
     }
   }
   // Empty the queue
+  packet_queue_.clear();
+}
+
+void BLDCControllerClient::clearQueue() {
+  for (auto it = packet_queue_.begin(); it != packet_queue_.end(); it++) {
+    auto packet = it->second; // Get packet pointer (value in [key, value] pair)
+    if (packet != nullptr) {
+      delete packet;
+    }
+  }
+  ser_.flushOutput();
   packet_queue_.clear();
 }
 
@@ -211,6 +222,7 @@ void BLDCControllerClient::transmit() {
     payload_buf_.addBuf(sub_packet_buf_);
 
     delete packet;
+    it->second = nullptr;
   }
   // Add total packet length
   comm_msg_len_t payload_len = payload_buf_.size();
@@ -235,6 +247,10 @@ void BLDCControllerClient::transmit() {
 }
 
 bool BLDCControllerClient::receive( comm_id_t server_id ) {
+
+#ifdef DEBUG_RECEIVE
+  std::cout << "Receiving packet from board " << (int) server_id << std::endl;
+#endif
 
   uint8_t sync = 0;
   ser_.read(&sync, sizeof(sync));
@@ -262,7 +278,7 @@ bool BLDCControllerClient::receive( comm_id_t server_id ) {
 #endif
   
   rx_bufs_[server_id].clear();
-  ;
+  
   if (!rx_bufs_[server_id].addHead(packet_len))
     throw comms_error("rx buffer too small for message"); 
   ser_.read(rx_bufs_[server_id].ptr(), packet_len);

@@ -13,7 +13,7 @@
 
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 /* const double MAX_CURRENT = 2.8; */
-const unsigned int CONTROL_LOOP_FREQ = 5000000;
+const unsigned int CONTROL_LOOP_FREQ = 1000;
 const unsigned int BAUD_RATE = 1000000;
 
 ros::Time last_time;
@@ -66,27 +66,27 @@ int main(int argc, char **argv) {
   int counter = 0;
   ros::Rate r(CONTROL_LOOP_FREQ);
 
-  while (1) {
+  while (ros::ok()) {
     // dt = get_period();
     // ROS_ERROR("slept: %f", dt);
     for (int i = 0; i < 10; i ++) { // "low pass filter"
       for (auto id : board_list) {
         float pos = 0;
         try {
-          device.queueSetCommandAndGetRotorPosition(id, 0.3);
+          device.queueSetCommandAndGetRotorPosition(id, 0);
 
           device.exchange();
 
           device.resultGetRotorPosition(id, &pos);
-          // device.getRotorPosition(id);
+          //std::cout << "Position: " << pos << std::endl;
         } catch(comms_error e) {
           ROS_ERROR(e.what());
+          device.clearQueue();
         }
-        //std::cout << pos << std::endl;
       }
     }
     dt = get_period() / 10.0;
-    ROS_ERROR("comm time: dt: %f, freq: %f", dt, 1.0 / dt);
+    ROS_INFO("comm time: dt: %f, freq: %f", dt, 1.0 / dt);
   }
   r.sleep();
 
