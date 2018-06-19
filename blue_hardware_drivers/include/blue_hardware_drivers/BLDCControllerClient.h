@@ -65,6 +65,8 @@ class BLDCControllerClient {
     Buffer tx_buf_;
     std::map<comm_id_t, Buffer> rx_bufs_;
     
+    // Checks to make sure serial read succeeded
+    void ser_read_check(uint8_t * data, size_t len); 
 
     void transmit();
     bool receive( comm_id_t server_id );

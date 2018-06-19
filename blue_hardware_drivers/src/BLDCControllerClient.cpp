@@ -22,7 +22,7 @@ BLDCControllerClient::BLDCControllerClient(std::string port, const std::vector<c
 void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& boards) {
   ser_.setPort(port);
   ser_.setBaudrate(COMM_DEFAULT_BAUD_RATE);
-  ser_.setTimeout(serial::Timeout::max(), 2, 0, 2, 0);
+  ser_.setTimeout(serial::Timeout::max(), 5, 0, 5, 0);
   ser_.open();
 
   tx_buf_.init(COMM_MAX_BUF);
@@ -105,8 +105,6 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
   uint32_t len = 0;
   std::string data;
 
-  ser_.flushOutput();
-
   readFlash(server_id, COMM_NVPARAMS_OFFSET+1, 2, data);
 #ifdef DEBUG_CALIBRATION_DATA
   for (unsigned char c : data)
@@ -155,10 +153,10 @@ void BLDCControllerClient::exchange() {
   transmit();
   // Receive data from each board in order
   for (auto it = packet_queue_.begin(); it != packet_queue_.end(); it++) {
-    if (!receive(it->first)) { // Get server id (key in [key, value] pair)
-      ser_.flushOutput();
-      break;
-    }
+#ifdef DEBUG_RECEIVE
+    std::cout << "Expected packet from board " << (int) id << std::endl;
+#endif
+    while (!receive(it->first)); // Get server id (key in [key, value] pair)
   }
   // Empty the queue
   packet_queue_.clear();
@@ -169,14 +167,18 @@ void BLDCControllerClient::clearQueue() {
     auto packet = it->second; // Get packet pointer (value in [key, value] pair)
     if (packet != nullptr) {
       delete packet;
+      it->second = nullptr;
     }
   }
-  ser_.flushOutput();
+  //ser_.flush();
   packet_queue_.clear();
 }
 
 /* Private Flash Accessor/Mutator Members */
 void BLDCControllerClient::readFlash(comm_id_t server_id, comm_full_addr_t addr, uint32_t count, std::string& buffer){
+  std::vector<comm_id_t> board;
+  board.push_back(server_id);
+
   for (size_t i = 0; i < count; i += std::min(count - i, COMM_SINGLE_READ_LENGTH)) {
     queuePacket(server_id, new ReadFlashPacket(server_id, addr, count)); 
     exchange(); // This can error which means when running flash commands make sure to try/catch comm_error!   
@@ -211,7 +213,7 @@ void BLDCControllerClient::transmit() {
 #ifdef DEBUG_TRANSMIT
     // Print Sub-message packet
     std::string msg = sub_packet_buf_.str();
-    std::cout << "Sub-packet for " << (int) it->first << ": ";
+    std::cout << "Sub-packet for " << (int) id << ": ";
     for (unsigned char c : msg)
       printf("%02x:", c);
     std::cout << std::endl;
@@ -243,35 +245,49 @@ void BLDCControllerClient::transmit() {
 #endif
   
   // Send Packet!
-  ser_.write(tx_buf_.ptr(), tx_buf_.size());
+  size_t write_len = ser_.write(tx_buf_.ptr(), tx_buf_.size());
+  ser_.flushOutput();
+  if (write_len != tx_buf_.size()) {
+    throw comms_error("Failed to transmit full packet");
+  }
+}
+
+void BLDCControllerClient::ser_read_check(uint8_t * data, size_t len) {
+  int read_len = 0;  size_t tries = 0;
+  do { 
+    read_len = ser_.read(data, len);
+  } while (read_len != len && read_len != -1 && tries++ < COMM_MAX_RETRIES);
+
+  if (read_len == -1) {
+    throw comms_error("Serial Port Closed");
+  }
+  if (read_len != len) {
+    std::string msg = "Not enough data received. Expected " + std::to_string(len) + " got " + std::to_string(read_len);
+    throw comms_error(msg);
+  }
 }
 
 bool BLDCControllerClient::receive( comm_id_t server_id ) {
-
-#ifdef DEBUG_RECEIVE
-  std::cout << "Receiving packet from board " << (int) server_id << std::endl;
-#endif
-
   uint8_t sync = 0;
-  ser_.read(&sync, sizeof(sync));
+  ser_read_check(&sync, sizeof(sync));
   if (sync != COMM_SYNC_FLAG) {
     return false;
   }
 
   comm_protocol_t protocol_version = 0;
-  ser_.read(reinterpret_cast<uint8_t*>(&protocol_version), sizeof(protocol_version)); 
+  ser_read_check(reinterpret_cast<uint8_t*>(&protocol_version), sizeof(protocol_version)); 
   if (protocol_version != COMM_VERSION) {
     return false;
   }
 
   comm_fg_t flags = 0;
-  ser_.read(reinterpret_cast<uint8_t*>(&flags), sizeof(flags));
+  ser_read_check(reinterpret_cast<uint8_t*>(&flags), sizeof(flags));
   if ((flags & COMM_FG_BOARD) != COMM_FG_BOARD) {
     return false;
   }
 
   comm_msg_len_t packet_len = 0;
-  ser_.read(reinterpret_cast<uint8_t*>(&packet_len), sizeof(packet_len));
+  ser_read_check(reinterpret_cast<uint8_t*>(&packet_len), sizeof(packet_len));
 
 #ifdef DEBUG_RECEIVE
   std::cout << "Received packet length: " << (int) packet_len << std::endl;
@@ -281,7 +297,7 @@ bool BLDCControllerClient::receive( comm_id_t server_id ) {
   
   if (!rx_bufs_[server_id].addHead(packet_len))
     throw comms_error("rx buffer too small for message"); 
-  ser_.read(rx_bufs_[server_id].ptr(), packet_len);
+  ser_read_check(rx_bufs_[server_id].ptr(), packet_len);
 
 #ifdef DEBUG_RECEIVE
   // print message 
@@ -293,7 +309,7 @@ bool BLDCControllerClient::receive( comm_id_t server_id ) {
 #endif
   
   crc16_t crc = 0;
-  ser_.read(reinterpret_cast<uint8_t*>(&crc), sizeof(crc));
+  ser_read_check(reinterpret_cast<uint8_t*>(&crc), 2);
   
   crc16_t computed_crc = computeCRC(rx_bufs_[server_id].ptr(), rx_bufs_[server_id].size());
 
@@ -343,6 +359,8 @@ bool BLDCControllerClient::receive( comm_id_t server_id ) {
     }
   }
   */
+
+  return true;
 }
 
 crc16_t BLDCControllerClient::computeCRC( const uint8_t* buf, size_t len ) {
