@@ -62,7 +62,7 @@ extern "C" {
  *
  * This type must be big enough to contain at least 16 bits.
  */
-typedef uint_fast16_t crc16_t;
+typedef uint16_t crc16_t;
 
 
 /**
