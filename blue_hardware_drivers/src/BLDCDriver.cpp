@@ -34,25 +34,28 @@ void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, 
     success = false; // set to false to initialize boards_ (doing this because some test boards_ are not calibrated)
     while (!success) {
       // Initialize the motor
-      try { device_.initMotor(id); }
+      try { 
+        device_.initMotor(id); 
+        success = true;
+      }
       catch (comms_error e) {
         ROS_ERROR(e.what());
         ROS_ERROR("Could not initialize motor %d, retrying...", id);
       }
-      success = true;
     }
     // Set motor timeout to 1 second
+    success = false;
     while (!success) {
       // Initialize the motor
       try { 
         device_.queueSetTimeout(id, 1000);
         device_.exchange();
+        success = true;
       }
       catch (comms_error e) {
         ROS_ERROR(e.what());
         ROS_ERROR("Could not initialize motor %d, retrying...", id);
       }
-      success = true;
     }
     ROS_DEBUG("Initialized board: %d", id);
   }
