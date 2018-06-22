@@ -1,14 +1,16 @@
 #include <controller_manager/controller_manager.h>
 #include <ros/console.h>
 #include <thread>
+#include <queue>
 
 #include "blue_controller_manager/blue_hardware_interface.h"
+
 /*
-void commsThread(BlueHW & robot) {
+void commsThread() {
   ros::Rate comms_rate(1000);
   while (ros::ok())
   {
-    robot.updateComms();
+    comms.updateComms();
     comms_rate.sleep();
   }
 }

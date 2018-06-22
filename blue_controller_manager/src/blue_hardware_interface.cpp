@@ -401,35 +401,32 @@ void BlueHW::write() {
       std_msgs::Float64 commandMsg;
       commandMsg.data = motor_current;
       motor_cmd_publishers_[i].publish(commandMsg);
-      commands[i] = motor_current;
+      commands.push_back(motor_current);
     }
     
-    ROS_ERROR("Free!");
-
     int index;
-    //comms_mtx_.lock();
+    comms_mtx_.lock();
     index = 0;
-    std::cout << "Command: ";
     for (auto id : boards_) {
       commands_[id] = commands[index++];
-      std::cout << commands_[id] << ", ";
     }
-    std::cout << std::endl;
-    //comms_mtx_.unlock();
+    comms_mtx_.unlock();
   }
 }
 
 void BlueHW::updateComms() {
-  //std::map<comm_id_t, float> next_cmds;
-  //comms_mtx_.lock();
-  //next_cmds = commands_; 
-  //comms_mtx_.unlock();
-  read_from_motors_ = true;
-  try {
-    bldc_.update(commands_);
-  } catch (comms_error e) {
-    ROS_ERROR(e.what());
-    read_from_motors_ = false;
+  std::map<comm_id_t, float> next_cmds;
+  comms_mtx_.lock();
+  next_cmds = commands_; 
+  comms_mtx_.unlock();
+  if (is_calibrated_) {
+    read_from_motors_ = true;
+    try {
+      bldc_.update(next_cmds);
+    } catch (comms_error e) {
+      ROS_ERROR(e.what());
+      read_from_motors_ = false;
+    }
   }
 }
 
