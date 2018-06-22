@@ -1,158 +1,137 @@
-#include <blue_hardware_drivers/BLDCDriver.h>
+#include "blue_hardware_drivers/BLDCDriver.h"
 
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 /* const double MAX_CURRENT = 2.8; */
 const unsigned int CONTROL_LOOP_FREQ = 1000;
 const unsigned int BAUD_RATE = 1000000;
 
-void initMaps(std::vector<uint8_t>& angle_id_mapping, 
-    std::map<uint8_t, std::string>& motor_mapping,
-    std::map<uint8_t, uint16_t>& angle_mapping,
-    std::map<uint8_t, uint8_t>& invert_mapping,
-    std::map<uint8_t, uint8_t>& erevs_mapping) { // TODO: make this read from config
+void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, MotorState>* states) {
 
-    angle_id_mapping.push_back(15);
-    angle_id_mapping.push_back(11);
-    angle_id_mapping.push_back(12);
-    angle_id_mapping.push_back(14);
-    angle_id_mapping.push_back(16);
-    angle_id_mapping.push_back(21);
-    angle_id_mapping.push_back(19);
+  std::string port = "/dev/ttyUSB0"; // TODO: read from launch/config
 
-    motor_mapping[15] = "base_roll_motor";
-    motor_mapping[11] = "right_motor1";
-    motor_mapping[12] = "left_motor1";
-    motor_mapping[14] = "right_motor2";
-    motor_mapping[16] = "left_motor2";
-    motor_mapping[21] = "right_motor3";
-    motor_mapping[19] = "left_motor3";
+  states_ = states;
+  boards_ = boards;
 
-    angle_mapping[15] = 13002;
-    angle_mapping[11] = 2164;
-    angle_mapping[12] = 1200;
-    angle_mapping[14] = 4484;
-    angle_mapping[16] = 2373;
-    angle_mapping[21] = 5899;
-    angle_mapping[19] = 2668;
+  device_.init(port, boards);
 
-    invert_mapping[15] = 0;
-    invert_mapping[11] = 0;
-    invert_mapping[12] = 0;
-    invert_mapping[14] = 0;
-    invert_mapping[16] = 0;
-    invert_mapping[21] = 0;
-    invert_mapping[19] = 0;
-
-    erevs_mapping[15] = 14;
-    erevs_mapping[11] = 14;
-    erevs_mapping[12] = 14;
-    erevs_mapping[14] = 14;
-    erevs_mapping[16] = 14;
-    erevs_mapping[21] = 21;
-    erevs_mapping[19] = 21;
-
-  /* joint_mapping[1] = "left_motor"; */
-  /* joint_mapping[2] = "right_motor"; */
-  /* joint_mapping[3] = "right_motor2"; */
-  /* joint_mapping[4] = "left_motor2"; */
-//  joint_mapping[10] = "test_motor";
-//  angle_mapping[10] = 7568;
-  /* std::map<std::string, int> angles; */
-  /* ros::param::get("/blue_hardware_drivers/calibrations", angles); */
-  /* if (angles.size() < 5) { */
-  /*   std::cerr << "did not get correct map, size " << angles.size() << "\n"; */
-  /* } */
-
-  /* for(std::map<std::string, int>::iterator it = angles.begin(); it != angles.end(); it++) { */
-  /*   uint16_t angle = (uint16_t) it->second; */
-  /*   uint8_t id = atoi(it->first.c_str()); */
-  /*   if (id == 0) { */
-  /*     return; */
-  /*   } */
-  /*   angle_mapping[id] = angle; */
-  /* } */
-}
-
-void BLDCDriver::init(std::vector<double>* in_pos, std::vector<double>* in_vel, std::vector<double>* in_eff, const std::vector<double>* in_cmd) {
-  // Init comms/data structures
-  pos = in_pos;
-  vel = in_vel;
-  eff = in_eff;
-  cmd = in_cmd;
-
-  initMaps(angle_id_mapping, motor_mapping, angle_mapping, invert_mapping, erevs_mapping);
-
-  std::string port = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NO9F-if00-port0"; // TODO: read from launch/config
-  device.init(port); // TODO: likely candidate for the frequency issues
-
-  std::map<uint8_t, std::string>::iterator it;
-  bool result;
-  for (it = motor_mapping.begin(); it != motor_mapping.end(); it++) {
-    device.leaveBootloader(it->first, 0, &result);
+  // Kick all boards_ out of bootloader!
+  bool success;
+  for (auto id : boards_) {
+    success = false;
+    while (!success) {
+      try {
+        device_.queueLeaveBootloader(id, 0);
+        device_.exchange();
+        success = true;
+      } catch (comms_error e) {
+        ROS_ERROR(e.what());
+        ROS_ERROR("Could not kick board %d out of bootloader, retrying...", id);
+      }
+    }
   }
 
+  for (auto id : boards_) {
+    success = false; // set to false to initialize boards_ (doing this because some test boards_ are not calibrated)
+    while (!success) {
+      // Initialize the motor
+      try { device_.initMotor(id); }
+      catch (comms_error e) {
+        ROS_ERROR(e.what());
+        ROS_ERROR("Could not initialize motor %d, retrying...", id);
+      }
+      success = true;
+    }
+    // Set motor timeout to 1 second
+    while (!success) {
+      // Initialize the motor
+      try { 
+        device_.queueSetTimeout(id, 1000);
+        device_.exchange();
+      }
+      catch (comms_error e) {
+        ROS_ERROR(e.what());
+        ROS_ERROR("Could not initialize motor %d, retrying...", id);
+      }
+      success = true;
+    }
+    ROS_DEBUG("Initialized board: %d", id);
+  }
+
+  for (auto id : boards_) {
+    success = false;
+    while (!success) {
+      try {
+        device_.queueGetState(id);
+        device_.exchange();
+        success = true;
+      } catch (comms_error e) {
+        ROS_ERROR(e.what());
+        ROS_ERROR("Could not get initial state of board %d, retrying...", id);
+      }
+    }
+  }
   // Init angle
-  float* angles = new float[angle_id_mapping.size()];
-  size_t index = 0;
-  for (it = motor_mapping.begin(); it != motor_mapping.end(); it++, index++) {
-    device.getRotorPosition(it->first, &angles[index]);
-  }
-  
-  device.exchange();
-
-  index = 0;
-  for (it = motor_mapping.begin(); it != motor_mapping.end(); it++, index++) {
-    angle_zero[it->first] = angles[index]; 
-  }
-
-
-  // Init driver firmware data structures
-  for(std::map<uint8_t, uint16_t>::iterator it2 = angle_mapping.begin(); it2 != angle_mapping.end(); it2++) {
-    uint8_t* angle = (uint8_t*) &it2->second;
-    // device.writeRegisters(it2->first, 0x101, 1, angle, 2);
-    // uint8_t r = 0;
-    // device.writeRegisters(it2->first, 0x102, 1, &r, 1);
-    // device.writeRegisters(it2->first, 0x109, 1, &invert_mapping[it2->first], 1);
-    // device.writeRegisters(it2->first, 0x10A, 1, &erevs_mapping[it2->first], 1);
+  for (auto id : boards_) {
+    device_.resultGetState(id
+        , &(*states_)[id].position
+        , &(*states_)[id].velocity
+        , &(*states_)[id].di
+        , &(*states_)[id].qi
+        , &(*states_)[id].voltage
+        , &(*states_)[id].temp
+        , &(*states_)[id].acc_x
+        , &(*states_)[id].acc_y
+        , &(*states_)[id].acc_z
+        );
+    zero_angles_[id] = (*states)[id].position;
   }
 }
 
 BLDCDriver::BLDCDriver(){
-  pos = NULL;
-  vel = NULL;
-  eff = NULL;
-  cmd = NULL;
+  states_ = nullptr;
+  stop_motors_ = false;
+  loop_count_ = 0;
 }
 
-
-void BLDCDriver::read(){
-  float* angles = new float[angle_id_mapping.size()];
-  for (int i = 0; i < angle_id_mapping.size(); i++) {
-      uint8_t id = angle_id_mapping[i];
-
-      device.getRotorPosition(id, &angles[i]);
+void BLDCDriver::update(std::map<comm_id_t, float>& commands){
+ 
+  if (!stop_motors_) {
+    // Send next motor current command
+    for (auto id : boards_) {
+        device_.queueSetCommandAndGetState(id, commands[id]);
+    }
+  } else {
+    // If one of the motors is too hot, we still want to grab the state 
+    for (auto id : boards_) {
+        device_.queueGetState(id);
+    }
   }
 
-  device.exchange();
+  // Run the communication with each board
+  device_.exchange();
     
-  for (int i = 0; i < angle_id_mapping.size(); i++) {
-    (*pos)[i] =  angles[i] - angle_zero[i];
-    (*vel)[i] = 0.0; // TODO: onboard velocity estimate (need kalman?)
-    (*eff)[i] = 0.0; // TODO: current estimate retrieval
-  } 
-  delete angles;
-}
-
-void BLDCDriver::write(){
-  for (int i = 0; i < angle_id_mapping.size(); i++) {
-      uint8_t id = angle_id_mapping[i];
-
-      const double cmd_i = (*cmd)[i];
-      
-      bool success = false;
-      device.setCommand(id, (float)cmd_i, &success);
+  // Get the state of the each board
+  for (auto id : boards_) {
+    device_.resultGetState(id
+        , &(*states_)[id].position
+        , &(*states_)[id].velocity
+        , &(*states_)[id].di
+        , &(*states_)[id].qi
+        , &(*states_)[id].voltage
+        , &(*states_)[id].temp
+        , &(*states_)[id].acc_x
+        , &(*states_)[id].acc_y
+        , &(*states_)[id].acc_z
+        );
+    if ((*states_)[id].temp > MAX_TEMP_SHUTOFF) {
+      stop_motors_ = true;
+      ROS_ERROR("Motor %d is too hot! Shutting off system.", id);
+    }
+    else if ((*states_)[id].temp > MAX_TEMP_WARNING) {
+      ROS_ERROR("Motor %d is warm, currently at %fC", id, (*states_)[id].temp);
+    }
   }
 
-  device.exchange();
+  loop_count_++;
 }
 

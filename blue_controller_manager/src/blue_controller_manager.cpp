@@ -1,6 +1,18 @@
 #include <controller_manager/controller_manager.h>
 #include <ros/console.h>
+#include <thread>
+
 #include "blue_controller_manager/blue_hardware_interface.h"
+/*
+void commsThread(BlueHW & robot) {
+  ros::Rate comms_rate(1000);
+  while (ros::ok())
+  {
+    robot.updateComms();
+    comms_rate.sleep();
+  }
+}
+*/
 
 int main(int argc, char** argv)
 {
@@ -18,12 +30,14 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh("");
   BlueHW robot(nh);
-  controller_manager::ControllerManager cm(&robot, nh);
+  //controller_manager::ControllerManager cm(&robot, nh);
 
-  ros::Rate loop_rate(200);
+  ros::Rate loop_rate(1000);
 
   ros::AsyncSpinner spinner(4);
   spinner.start();
+
+  //std::thread comms(commsThread, robot);
 
   ros::Time prev_time = ros::Time::now();
   while (ros::ok())
@@ -31,11 +45,15 @@ int main(int argc, char** argv)
     robot.read();
 
     ros::Time current_time = ros::Time::now();
-    cm.update(current_time, current_time - prev_time);
+    //cm.update(current_time, current_time - prev_time);
     prev_time = current_time;
 
     robot.write();
 
+    robot.updateComms();
+
     loop_rate.sleep();
   }
+
+  //comms.join();
 }

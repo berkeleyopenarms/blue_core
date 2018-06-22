@@ -43,6 +43,8 @@ class BLDCControllerClient {
     void queueSetCommand(comm_id_t server_id, float value);
     void queueGetRotorPosition(comm_id_t server_id);
     void queueSetCommandAndGetRotorPosition(comm_id_t server_id, float value);
+    void queueGetState(comm_id_t server_id);
+    void queueSetCommandAndGetState(comm_id_t server_id, float value);
     
     // Send queued packets and receive from boards
     void exchange();
@@ -52,6 +54,7 @@ class BLDCControllerClient {
 
     // Result Commands
     void resultGetRotorPosition(comm_id_t server_id, float* result);
+    void resultGetState(comm_id_t server_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, uint32_t* acc_x, uint32_t* acc_y, uint32_t* acc_z); 
   
     // Setup/Programming Commands
     void initMotor(comm_id_t server_id);

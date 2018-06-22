@@ -22,7 +22,8 @@ blue_hardware:
     softstop_torque_limit: 95.0
 
     ### Motor configuration
-    serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NOKG-if00-port0
+    #serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NOKG-if00-port0
+    serial_port: /dev/ttyUSB0
     motor_names:
         - base_roll_motor
         - right_motor1
@@ -32,7 +33,7 @@ blue_hardware:
         - right_motor3
         - left_motor3
         - gripper_motor
-    motor_ids: [1, 43, 38, 17, 10, 19, 21, 34]
+    motor_ids: [40, 43, 38, 16, 33, 41, 42, 52]
     # motor_current_limits: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 0.3]
     # motor_current_limits: [3.0, 2.5, 2.5, 2.5, 2.5, 1.5, 1.5]
