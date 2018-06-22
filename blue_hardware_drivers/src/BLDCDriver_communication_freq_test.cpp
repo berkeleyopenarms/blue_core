@@ -13,7 +13,7 @@
 
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 /* const double MAX_CURRENT = 2.8; */
-const unsigned int CONTROL_LOOP_FREQ = 400;
+const unsigned int CONTROL_LOOP_FREQ = 1000;
 const unsigned int BAUD_RATE = 1000000;
 
 ros::Time last_time;
@@ -35,9 +35,15 @@ int main(int argc, char **argv) {
   ros::NodeHandle n;
   std::vector<comm_id_t> board_list;
   std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
-  board_list.push_back(45);
+  board_list.push_back(40); // BASE
+  board_list.push_back(43);
+  board_list.push_back(38);
+  board_list.push_back(16);
+  board_list.push_back(33);
+  board_list.push_back(41);
+  board_list.push_back(42);
   board_list.push_back(52);
-
+  
   char* port = argv[1];
   BLDCControllerClient device;
   try {
@@ -45,29 +51,37 @@ int main(int argc, char **argv) {
   } catch (std::exception& e) { ROS_ERROR(e.what()); }
 
   // Kick all boards out of bootloader!
-  bool success = false;
+  bool success;
   for (auto id : board_list) {
+    success = false;
     while (!success) {
       try {
         device.queueLeaveBootloader(id, 0);
         device.exchange();
         success = true;
-      } catch (...) {}
+      } catch (comms_error e) {
+        ROS_ERROR(e.what());
+        ROS_ERROR("Could not kick board %d out of bootloader, retrying...", id);
+      }
     }
   }
 
-  success = false;
   for (auto id : board_list) {
+    success = false; // set to false to initialize boards (doing this because some test boards are not calibrated)
     while (!success) {
       // Initialize the motor
       try { device.initMotor(id); }
-      catch (...) {}
+      catch (comms_error e) {
+        ROS_ERROR(e.what());
+        ROS_ERROR("Could not initialize motor %d, retrying...", id);
+      }
       success = true;
     }
     // Set motor timeout to 1 second
     device.queueSetTimeout(id, 1000);
     device.exchange();
     ROS_DEBUG("Initialized board: %d", id);
+    
   }
 
   last_time = get_time(); 
@@ -75,10 +89,11 @@ int main(int argc, char **argv) {
   int counter = 0;
   ros::Rate r(CONTROL_LOOP_FREQ);
 
+  int num_packets_per_log = 100;
+  int errors = 0;
+  int num_packets = 0;
   while (ros::ok()) {
-    // dt = get_period();
-    // ROS_ERROR("slept: %f", dt);
-    for (int i = 0; i < 100; i ++) { // "low pass filter"
+    for (int i = 0; i < num_packets_per_log; i ++) { // "low pass filter"
       for (auto id : board_list) {
         device.queueSetCommandAndGetRotorPosition(id, 0);
       }
@@ -86,6 +101,7 @@ int main(int argc, char **argv) {
       catch(comms_error e) {
         ROS_ERROR(e.what());
         device.clearQueue();
+        errors++;
         continue;
       }
       float pos = 0;
@@ -94,7 +110,8 @@ int main(int argc, char **argv) {
         //std::cout << "Position: " << pos << std::endl;
       }
     }
-    dt = get_period() / 100.0;
+    num_packets += num_packets_per_log;
+    dt = get_period() / (float) num_packets_per_log;
     ROS_INFO("comm time: dt: %f, freq: %f", dt, 1.0 / dt);
   }
   r.sleep();

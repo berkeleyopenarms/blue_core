@@ -1,9 +1,14 @@
 #ifndef KOKO_HARDWARE_INTERFACE_H
 #define KOKO_HARDWARE_INTERFACE_H
 
+#include "blue_controller_manager/blue_hardware_interface.h"
+
 #include <ros/ros.h>
 #include <vector>
 #include <string>
+#include <thread>
+#include <mutex>
+#include <iostream>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
@@ -19,21 +24,25 @@
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/segment.hpp>
 
+#include "blue_hardware_drivers/BLDCDriver.h"
+
 namespace ti = transmission_interface;
 
 class BlueHW: public hardware_interface::RobotHW
 {
+mutable std::mutex comms_mtx_;
 
 public:
   BlueHW(ros::NodeHandle &nh);
   void read();
   void write();
+  void updateComms();
 
 private:
 
   template <typename TParam>
   void getRequiredParam(ros::NodeHandle &nh, const std::string name, TParam &dest);
-  void motorStateCallback(const blue_hardware_drivers::MotorState::ConstPtr& msg);
+  void motorStateCallback();
   void calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
   void gravityVectorCallback(const geometry_msgs::Vector3ConstPtr& grav);
   void setReadGravityVector();
@@ -57,6 +66,9 @@ private:
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::EffortJointInterface joint_effort_interface_;
 
+  // Comms controller
+  BLDCDriver bldc_;
+
   // Publishers and subscribers
   ros::Subscriber motor_state_sub_;
   std::vector<ros::Publisher> motor_cmd_publishers_;
@@ -66,6 +78,7 @@ private:
   // Parameters read in from configuration
   std::vector<std::string> joint_names_;
   std::vector<std::string> motor_names_;
+  std::vector<int> motor_ids_;
   std::vector<double> gear_ratios_;
   std::vector<double> current_to_torque_ratios_;
   std::vector<int> differential_pairs_;
@@ -100,6 +113,11 @@ private:
   std::vector<ti::ActuatorData> actuator_commands_;
   std::vector<ti::JointData> joint_states_;
   std::vector<ti::JointData> joint_commands_;
+
+  // Motor State Map
+  std::map<comm_id_t, MotorState> states_;
+  std::map<comm_id_t, float> commands_;
+  std::vector<comm_id_t> boards_;
 
   // Owned by our ActuatorData and JointData objects
   std::vector<double> actuator_pos_;

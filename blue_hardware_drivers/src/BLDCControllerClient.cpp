@@ -22,7 +22,7 @@ BLDCControllerClient::BLDCControllerClient(std::string port, const std::vector<c
 void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& boards) {
   ser_.setPort(port);
   ser_.setBaudrate(COMM_DEFAULT_BAUD_RATE);
-  ser_.setTimeout(serial::Timeout::max(), 5, 0, 5, 0);
+  ser_.setTimeout(serial::Timeout::max(), 3, 0, 3, 0);
   ser_.open();
 
   tx_buf_.init(COMM_MAX_BUF);
@@ -101,6 +101,32 @@ void BLDCControllerClient::queueSetCommandAndGetRotorPosition(comm_id_t server_i
   queuePacket(server_id, packet);
 }
 
+void BLDCControllerClient::queueGetState(comm_id_t server_id) {
+  // Generate Transmit Packet
+  Packet* packet = new ReadRegPacket (server_id, COMM_REG_RO_ROTOR_P, 9);  
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::resultGetState(comm_id_t server_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, uint32_t* acc_x, uint32_t* acc_y, uint32_t* acc_z) {
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(position), sizeof(*position));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(velocity), sizeof(*velocity));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(di), sizeof(*di));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(qi), sizeof(*qi));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(voltage), sizeof(*voltage));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(temp), sizeof(*temp));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(acc_x), sizeof(*acc_x));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(acc_y), sizeof(*acc_y));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(acc_z), sizeof(*acc_z));
+}
+
+void BLDCControllerClient::queueSetCommandAndGetState(comm_id_t server_id, float value) {
+  // Generate Transmit Packet
+  Packet* packet = new ReadWriteRegPacket (server_id, 
+    COMM_REG_RO_ROTOR_P, 9,                                          // Read
+    COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*>(&value));  // Write
+  queuePacket(server_id, packet);
+}
+
 void BLDCControllerClient::initMotor(comm_id_t server_id){
   uint32_t len = 0;
   std::string data;
@@ -154,7 +180,7 @@ void BLDCControllerClient::exchange() {
   // Receive data from each board in order
   for (auto it = packet_queue_.begin(); it != packet_queue_.end(); it++) {
 #ifdef DEBUG_RECEIVE
-    std::cout << "Expected packet from board " << (int) id << std::endl;
+    std::cout << "Expected packet from board " << (int) it->first << std::endl;
 #endif
     while (!receive(it->first)); // Get server id (key in [key, value] pair)
   }
@@ -253,10 +279,11 @@ void BLDCControllerClient::transmit() {
 }
 
 void BLDCControllerClient::ser_read_check(uint8_t * data, size_t len) {
-  int read_len = 0;  size_t tries = 0;
+  int read_len = 0;  
+  size_t tries = 0;
   do { 
     read_len = ser_.read(data, len);
-  } while (read_len != len && read_len != -1 && tries++ < COMM_MAX_RETRIES);
+  } while (read_len == 0 && read_len != -1 && tries++ < COMM_MAX_RETRIES);
 
   if (read_len == -1) {
     throw comms_error("Serial Port Closed");

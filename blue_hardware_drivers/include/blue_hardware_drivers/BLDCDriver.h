@@ -4,35 +4,41 @@
 #include "std_msgs/Float64.h"
 #include "std_msgs/Float32.h"
 #include "sensor_msgs/JointState.h"
-#include "blue_hardware_drivers/BLDCControllerClient.h"
 #include <vector>
 #include <string>
 #include "math.h"
 #include "time.h"
 
+#include "blue_hardware_drivers/BLDCControllerClient.h"
+
+constexpr int MAX_TEMP_WARNING = 60;
+constexpr int MAX_TEMP_SHUTOFF = 70;
+
+struct MotorState {
+  float position;
+  float velocity;
+  float di;
+  float qi;
+  float temp;
+  float voltage;
+  uint32_t acc_x, acc_y, acc_z;
+};
+
 class BLDCDriver {
-  private:
-    serial::Serial ser;
-
-    std::vector<uint8_t> angle_id_mapping;
-    std::map<uint8_t, std::string> motor_mapping;
-    std::map<uint8_t, uint16_t> angle_mapping;
-    std::map<uint8_t, uint8_t> invert_mapping;
-    std::map<uint8_t, uint8_t> erevs_mapping;
-
-    std::map<uint8_t, double> angle_zero;
-    BLDCControllerClient device;
-
-    std::vector<double>* pos;
-    std::vector<double>* vel;
-    std::vector<double>* eff;
-    const std::vector<double>* cmd;
-
   public:
-    void init(std::vector<double>* in_pos, std::vector<double>* in_vel, std::vector<double>* in_eff, const std::vector<double>* in_cmd);
-    void read();
-    void write();
+    void init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, MotorState>* states);
+    void update(std::map<comm_id_t, float>& commands);
     BLDCDriver();
+  
+  private:
+    std::map<comm_id_t, MotorState>* states_;
+    std::map<comm_id_t, float> zero_angles_;
+    std::vector<comm_id_t> boards_;
 
+    serial::Serial ser_;
+    BLDCControllerClient device_;
+
+    unsigned int loop_count_;
+    bool stop_motors_;
 };
 

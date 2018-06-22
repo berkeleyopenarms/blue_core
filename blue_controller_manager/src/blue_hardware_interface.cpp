@@ -1,6 +1,7 @@
 #include <std_msgs/Float64.h>
 #include <urdf/model.h>
 #include <math.h>
+
 #include "blue_controller_manager/blue_hardware_interface.h"
 
 namespace ti = transmission_interface;
@@ -15,6 +16,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   getRequiredParam(nh, "robot_description", robot_desc_string);
   getRequiredParam(nh, "blue_hardware/joint_names", joint_names_);
   getRequiredParam(nh, "blue_hardware/motor_names", motor_names_);
+  getRequiredParam(nh, "blue_hardware/motor_ids", motor_ids_);
   getRequiredParam(nh, "blue_hardware/gear_ratios", gear_ratios_);
   getRequiredParam(nh, "blue_hardware/joint_torque_directions", joint_torque_directions_);
   getRequiredParam(nh, "blue_hardware/current_to_torque_ratios", current_to_torque_ratios_);
@@ -71,7 +73,6 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
     exit(1);
   }
   buildDynamicChain(chain);
-
 
   // initalizing variables
 
@@ -250,11 +251,17 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   ROS_INFO("Finished setting up transmissions");
 
   joint_state_tracker_sub_ = nh.subscribe("joint_state_tracker", 1, &BlueHW::calibrationStateCallback, this);
-  motor_state_sub_ = nh.subscribe("blue_hardware/motor_states", 1, &BlueHW::motorStateCallback, this);
   for (int i = 0; i < motor_names_.size(); i++) {
     motor_cmd_publishers_[i] = nh.advertise<std_msgs::Float64>("blue_hardware/" + motor_names_[i] + "_cmd", 1);
   }
   ROS_INFO("Finished setting up subscribers and publisher");
+
+  for(auto id : motor_ids_) {
+    boards_.push_back(id);
+  }
+  bldc_.init(boards_, &states_);
+  read_from_motors_ = true;
+  ROS_INFO("Finished setting up Serial Driver");
 
   ros::Duration(0.444).sleep();
 }
@@ -341,16 +348,13 @@ void BlueHW::getRequiredParam(ros::NodeHandle &nh, const std::string name, TPara
 }
 
 void BlueHW::read() {
-  // Empty because our hardware interface reads motor states asynchronously via ROS
-  // This should be changed in the future
+  if (read_from_motors_) 
+    motorStateCallback();
 }
 
 void BlueHW::write() {
-  if(!read_from_motors_)
-    // waits for an intial read from motors to get state information
-    // before publishing commands
-    return;
   if (is_calibrated_) {
+    std::vector<float> commands;
     // load in inverse dynamics values
     computeInverseDynamics();
     for (int i = 0; i < num_joints_; i++) {
@@ -395,9 +399,37 @@ void BlueHW::write() {
       }
 
       std_msgs::Float64 commandMsg;
-      commandMsg.data =  motor_current;
+      commandMsg.data = motor_current;
       motor_cmd_publishers_[i].publish(commandMsg);
+      commands[i] = motor_current;
     }
+    
+    ROS_ERROR("Free!");
+
+    int index;
+    //comms_mtx_.lock();
+    index = 0;
+    std::cout << "Command: ";
+    for (auto id : boards_) {
+      commands_[id] = commands[index++];
+      std::cout << commands_[id] << ", ";
+    }
+    std::cout << std::endl;
+    //comms_mtx_.unlock();
+  }
+}
+
+void BlueHW::updateComms() {
+  //std::map<comm_id_t, float> next_cmds;
+  //comms_mtx_.lock();
+  //next_cmds = commands_; 
+  //comms_mtx_.unlock();
+  read_from_motors_ = true;
+  try {
+    bldc_.update(commands_);
+  } catch (comms_error e) {
+    ROS_ERROR(e.what());
+    read_from_motors_ = false;
   }
 }
 
@@ -443,39 +475,29 @@ void BlueHW::computeInverseDynamics() {
   int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques_);
 }
 
-void BlueHW::motorStateCallback(const blue_hardware_drivers::MotorState::ConstPtr& msg) {
-  for (int i = 0; i < msg->name.size(); i++) {
-    int index = -1;
+void BlueHW::motorStateCallback() {
 
-    // searches for the joint index from the message name (ros message comes in an arbitrary order)
-    for (int j = 0; j < motor_names_.size(); j++) {
-      if (msg->name[i].compare(motor_names_[j]) == 0){
-        index = j;
-      }
-    }
-
-    if (index == -1){
-      ROS_ERROR("Motor callback error, msg name %s, with %d joints", msg->name[i].c_str(), num_joints_);
-    }
-
+  int index = 0;
+  for (auto id : boards_) {
     if (is_calibrated_ != 1 || !read_from_motors_) {
-      actuator_pos_initial_[index] = msg->position[i];
+      actuator_pos_initial_[index] = states_[id].position;
       KDL::Vector accel_vect;
-      accel_vect.data[0] = msg->accel[i].x;
-      accel_vect.data[1] = msg->accel[i].y;
-      accel_vect.data[2] = msg->accel[i].z;
+      accel_vect.data[0] = states_[id].acc_x;
+      accel_vect.data[1] = states_[id].acc_y;
+      accel_vect.data[2] = states_[id].acc_z;
       actuator_accel_.at(index) = accel_vect;
     } else if (is_calibrated_ == 1){
       // add calibration angle to raw actuator reading
-      actuator_pos_[index] = msg->position[i] - actuator_pos_initial_[index] * is_hardstop_calibrate_ + 2.0 * M_PI * actuator_revolution_constant_[index];
+      actuator_pos_[index] = states_[id].position - actuator_pos_initial_[index] * is_hardstop_calibrate_ + 2.0 * M_PI * actuator_revolution_constant_[index];
       KDL::Vector accel_vect;
-      accel_vect.data[0] = msg->accel[i].x;
-      accel_vect.data[1] = msg->accel[i].y;
-      accel_vect.data[2] = msg->accel[i].z;
+      accel_vect.data[0] = states_[id].acc_x;
+      accel_vect.data[1] = states_[id].acc_y;
+      accel_vect.data[2] = states_[id].acc_z;
       actuator_accel_.at(index) = accel_vect;
-      actuator_vel_[index] = msg->velocity[i];
-      actuator_eff_[index] = msg->direct_current[i];
+      actuator_vel_[index] = states_[id].velocity;
+      actuator_eff_[index] = states_[id].di;
     }
+    index++;
   }
 
   // Propagate actuator information to joint information
