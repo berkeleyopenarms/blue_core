@@ -22,7 +22,7 @@ BLDCControllerClient::BLDCControllerClient(std::string port, const std::vector<c
 void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& boards) {
   ser_.setPort(port);
   ser_.setBaudrate(COMM_DEFAULT_BAUD_RATE);
-  ser_.setTimeout(serial::Timeout::max(), 3, 0, 3, 0);
+  ser_.setTimeout(serial::Timeout::max(), 3, 1, 3, 1);
   ser_.open();
 
   tx_buf_.init(COMM_MAX_BUF);

@@ -6,8 +6,6 @@
 #include <ros/ros.h>
 #include <vector>
 #include <string>
-#include <thread>
-#include <mutex>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
@@ -29,8 +27,6 @@ namespace ti = transmission_interface;
 
 class BlueHW: public hardware_interface::RobotHW
 {
-mutable std::mutex comms_mtx_;
-
 public:
   BlueHW(ros::NodeHandle &nh);
   void read();
