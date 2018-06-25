@@ -104,9 +104,9 @@ void BLDCDriver::update(std::map<comm_id_t, float>& commands){
         device_.queueSetCommandAndGetState(id, commands[id]);
     }
   } else {
-    // If one of the motors is too hot, we still want to grab the state 
+    // If one of the motors is too hot, we still want to grab the state and set effort to 0
     for (auto id : boards_) {
-        device_.queueGetState(id);
+        device_.queueSetCommandAndGetState(id, 0.0);
     }
   }
 
