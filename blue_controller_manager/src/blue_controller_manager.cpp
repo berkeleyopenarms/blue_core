@@ -43,6 +43,7 @@ int main(int argc, char** argv)
     if ((count++%100) == 0) {
       ROS_ERROR("Communications took %f seconds", (ros::Time::now() - temp_time).toSec());
     }
+
     loop_rate.sleep();
   }
 }

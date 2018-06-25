@@ -37,6 +37,7 @@
       pkg="blue_controller_manager"
       type="blue_controller_manager"
       output="screen" />
+    <!--
     <node
       name="$(anon blue_controller_spawner)"
       pkg="blue_controller_manager"
@@ -46,6 +47,7 @@
         - blue_controllers/joint_state_controller
       </rosparam>
     </node>
+    -->
 
     <!-- Joint calibration -->
     <node
