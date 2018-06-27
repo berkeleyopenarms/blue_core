@@ -28,6 +28,7 @@ int main(int argc, char** argv)
 
   ros::Time prev_time = ros::Time::now();
   int count = 0;
+  float frequency = 0;
   while (ros::ok())
   {
     robot.read();
@@ -40,8 +41,10 @@ int main(int argc, char** argv)
 
     ros::Time temp_time = ros::Time::now();
     robot.updateComms();
+    frequency += (ros::Time::now() - temp_time).toSec();
     if ((count++%100) == 0) {
-      ROS_ERROR("Communications took %f seconds", (ros::Time::now() - temp_time).toSec());
+      ROS_INFO("Communication frequency is %fHz", (1/(frequency/100)));
+      frequency = 0;
     }
 
     loop_rate.sleep();
