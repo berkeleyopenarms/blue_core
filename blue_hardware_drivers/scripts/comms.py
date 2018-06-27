@@ -365,6 +365,7 @@ class BLDCControllerClient:
         return success, message[4:]
 
     def _computeCRC(self, values):
+        return 0;
         crc = crcmod.predefined.Crc('crc-16')
         crc.update(values)
         return crc.crcValue
