@@ -67,6 +67,7 @@ private:
   // Publishers and subscribers
   ros::Subscriber motor_state_sub_;
   std::vector<ros::Publisher> motor_cmd_publishers_;
+  std::vector<ros::Publisher> motor_pos_publishers_;
   ros::Subscriber joint_state_tracker_sub_;
   ros::Subscriber gravity_vector_sub_;
 

@@ -255,7 +255,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   joint_state_tracker_sub_ = nh.subscribe("joint_state_tracker", 1, &BlueHW::calibrationStateCallback, this);
   for (int i = 0; i < motor_names_.size(); i++) {
     motor_cmd_publishers_[i] = nh.advertise<std_msgs::Float64>("blue_hardware/" + motor_names_[i] + "_cmd", 1);
-    //motor_state_publishers_[i] = nh.advertise<std_msgs::Float64>("blue_hardware/" + motor_names_[i] + "_state", 1);
+    motor_pos_publishers_[i] = nh.advertise<std_msgs::Float64>("blue_hardware/" + motor_names_[i] + "_pos", 1);
   }
   ROS_INFO("Finished setting up subscribers and publisher");
 
@@ -492,6 +492,11 @@ void BlueHW::motorStateCallback() {
       actuator_vel_[index] = states_[id].velocity;
       actuator_eff_[index] = states_[id].di;
     }
+
+    std_msgs::Float64 positionMsg;
+    positionMsg.data = states_[id].position;
+    motor_pos_publishers_[index].publish(positionMsg);
+
     index++;
   }
 
