@@ -101,8 +101,8 @@ private:
   std::vector<ti::SimpleTransmission *> simple_transmissions_;
   std::vector<ti::DifferentialTransmission *> differential_transmissions_;
   int num_diff_actuators_;
-  bool is_base_;
-  bool is_gripper_;
+  bool has_base_;
+  bool has_gripper_;
 
   // Actuator and joint space data
   std::vector<ti::ActuatorData> actuator_states_;

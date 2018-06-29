@@ -41,17 +41,17 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
     ros::shutdown();
     exit(1);
   }
-  is_base_ = false;
+  has_base_ = false;
   if (!(std::find(differential_pairs_.begin(), differential_pairs_.end(), 0) != differential_pairs_.end())){
-    is_base_ = true;
+    has_base_ = true;
     ROS_INFO("Robot Configured with Base");
   } else {
     ROS_INFO("Robot Configured with No Base");
   }
 
-  is_gripper_ = false;
+  has_gripper_ = false;
   if (!(std::find(differential_pairs_.begin(), differential_pairs_.end(), num_joints_ - 1) != differential_pairs_.end())){
-    is_gripper_ = true;
+    has_gripper_ = true;
     ROS_INFO("Robot Configured with Gripper");
   } else {
     ROS_INFO("Robot Configured with No Gripper");
@@ -91,6 +91,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   actuator_pos_initial_.resize(num_joints_, 0.0);
   actuator_revolution_constant_.resize(num_joints_, 0.0);
   motor_cmd_publishers_.resize(num_joints_);
+  motor_pos_publishers_.resize(num_joints_);
   actuator_states_.resize(num_actuators);
   actuator_commands_.resize(num_actuators);
   joint_states_.resize(num_actuators);
@@ -273,7 +274,7 @@ void BlueHW::setReadGravityVector() {
   // function that updates gravity vector of robot (including base)
   int start_ind = 0;
   int error_val = 0;
-  if (is_base_ == true) {
+  if (has_base_ == true) {
     // Apply base gravity transform (rotates base gravtiy vector to be axis aligned)
     KDL::Rotation base_rot_z;
     base_rot_z.DoRotZ(-4.301 - M_PI);
@@ -323,7 +324,7 @@ void BlueHW::setReadGravityVector() {
     read_gravity_vector_[start_ind + i] = raw * 9.81 / raw.Norm();
   }
   // TODO: Find Gripper link transform
-  if(is_gripper_) {
+  if(has_gripper_) {
     // apply gripper rotation
     KDL::Rotation grip_rot_z;
     grip_rot_z.DoRotZ(2 * M_PI);
@@ -362,7 +363,7 @@ void BlueHW::write() {
     computeInverseDynamics();
     for (int i = 0; i < num_joints_; i++) {
       // add inverse dynamics joint gain for non gripper joints
-      if ( !(is_gripper_ && i == num_joints_ - 1) ) {
+      if ( !(has_gripper_ && i == num_joints_ - 1) ) {
         joint_cmd_[i] = raw_joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
       } else {
         joint_cmd_[i] = raw_joint_cmd_[i];
@@ -451,7 +452,7 @@ void BlueHW::buildDynamicChain(KDL::Chain &chain){
 
 void BlueHW::computeInverseDynamics() {
   int id_joints = num_joints_;
-  if (is_gripper_) {
+  if (has_gripper_) {
     id_joints -= 1;
   }
   KDL::JntArray jointPositions(id_joints);
