@@ -424,7 +424,7 @@ void BlueHW::updateComms() {
   try {
     bldc_.update(commands_);
   } catch (comms_error e) {
-    ROS_ERROR(e.what());
+    ROS_ERROR("%s\n", e.what());
     read_from_motors_ = false;
   }
 }
