@@ -18,7 +18,7 @@ void ReadRegPacket::dump(Buffer& buf) {
 void WriteRegPacket::dump(Buffer& buf) {
   Packet::dump(buf);
   buf.write(reinterpret_cast<uint8_t*> (&write_start_addr_), sizeof(write_start_addr_));
-  buf.write(reinterpret_cast<uint8_t*> (&write_count_), sizeof(write_count_));
+  buf.write(reinterpret_cast<uint8_t*> (&num_reg_), sizeof(num_reg_));
   buf.addBuf(write_data_);
 }
 
@@ -27,7 +27,7 @@ void ReadWriteRegPacket::dump(Buffer& buf) {
   buf.write(reinterpret_cast<uint8_t*> (&read_start_addr_), sizeof(read_start_addr_));
   buf.write(reinterpret_cast<uint8_t*> (&read_count_), sizeof(read_count_));
   buf.write(reinterpret_cast<uint8_t*> (&write_start_addr_), sizeof(write_start_addr_));
-  buf.write(reinterpret_cast<uint8_t*> (&write_count_), sizeof(write_count_));
+  buf.write(reinterpret_cast<uint8_t*> (&num_reg_), sizeof(num_reg_));
   buf.addBuf(write_data_);
 }
 

@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   BLDCControllerClient device;
   try {
     device.init(port, board_list);
-  } catch (std::exception& e) { ROS_ERROR(e.what()); }
+  } catch (std::exception& e) { ROS_ERROR("%s\n", e.what()); }
 
   // Kick all boards out of bootloader!
   bool success;
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
         device.exchange();
         success = true;
       } catch (comms_error e) {
-        ROS_ERROR(e.what());
+        ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not kick board %d out of bootloader, retrying...", id);
       }
     }
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
       // Initialize the motor
       try { device.initMotor(id); }
       catch (comms_error e) {
-        ROS_ERROR(e.what());
+        ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not initialize motor %d, retrying...", id);
       }
       success = true;
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
       }
       try { device.exchange(); }
       catch(comms_error e) {
-        ROS_ERROR(e.what());
+        ROS_ERROR("%s\n", e.what());
         device.clearQueue();
         errors++;
         continue;

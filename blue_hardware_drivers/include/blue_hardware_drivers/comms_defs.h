@@ -113,7 +113,7 @@ constexpr comm_full_addr_t COMM_FIRMWARE_OFFSET = 0x08008000;
 constexpr comm_full_addr_t COMM_DEFAULT_BAUD_RATE = 1000000;
 
 constexpr size_t COMM_MAX_BUF = 256;
-constexpr size_t COMM_MAX_RETRIES = 5;
+constexpr size_t COMM_MAX_RETRIES = 6;
 constexpr size_t COMM_SINGLE_PROGRAM_LENGTH = 128;
 constexpr size_t COMM_SINGLE_READ_LENGTH = 128;
 constexpr size_t COMM_SINGLE_VERIFY_LENGTH = 128;

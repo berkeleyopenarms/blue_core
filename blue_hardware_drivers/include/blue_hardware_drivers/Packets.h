@@ -34,9 +34,10 @@ class WriteRegPacket : public Packet {
     comm_addr_t write_start_addr_;
     uint8_t write_count_;
     Buffer write_data_;
+    uint8_t num_reg_;
   public:
-    WriteRegPacket (comm_id_t id, comm_addr_t addr, uint8_t count, uint8_t* data) : 
-      Packet( id, COMM_FC_REG_WRITE ), write_start_addr_( addr ), write_count_( count )
+    WriteRegPacket (comm_id_t id, comm_addr_t addr, uint8_t count, uint8_t* data, uint8_t num_reg = 1) : 
+      Packet( id, COMM_FC_REG_WRITE ), write_start_addr_( addr ), write_count_( count ), num_reg_( num_reg)
     {
       write_data_.init(write_count_);
       write_data_.write(data, write_count_); 
@@ -52,12 +53,13 @@ class ReadWriteRegPacket : public Packet {
     comm_addr_t write_start_addr_;
     uint8_t write_count_;
     Buffer write_data_;
+    uint8_t num_reg_;
   public:
     ReadWriteRegPacket (comm_id_t id, comm_addr_t r_addr, uint8_t r_count, 
-                                 comm_addr_t w_addr, uint8_t w_count, uint8_t* data) : 
+                                 comm_addr_t w_addr, uint8_t w_count, uint8_t* data, uint8_t num_reg = 1) : 
                     Packet( id, COMM_FC_REG_READ_WRITE ), 
                         read_start_addr_( r_addr ), read_count_( r_count ), 
-                        write_start_addr_( w_addr ), write_count_( w_count )
+                        write_start_addr_( w_addr ), write_count_( w_count ), num_reg_( num_reg)
     {
       write_data_.init(write_count_);
       write_data_.write(data, write_count_); 

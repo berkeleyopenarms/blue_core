@@ -22,7 +22,7 @@ BLDCControllerClient::BLDCControllerClient(std::string port, const std::vector<c
 void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& boards) {
   ser_.setPort(port);
   ser_.setBaudrate(COMM_DEFAULT_BAUD_RATE);
-  ser_.setTimeout(serial::Timeout::max(), 3, 1, 3, 1);
+  ser_.setTimeout(serial::Timeout::max(), 4, 1, 4, 1);
   ser_.open();
 
   tx_buf_.init(COMM_MAX_BUF);
@@ -153,23 +153,38 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
   reader.parse(data, calibrations);
 
 #ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Zero Angle: " << calibrations["angle"].asUInt() << std::endl
-            << "Invert Phases: " << calibrations["inv"].asUInt() << std::endl
-            << "Encoder Revs Per Magnetic Revolution: " << calibrations["epm"].asUInt() << std::endl
-            << "Torque Constant: " << calibrations["torque"].asFloat() << std::endl
-            << "Position Offset: " << calibrations["zero"].asFloat() << std::endl;
+  std::cout << "Zero Angle: " << calibrations["angle"].asUInt() << std::endl;
 #endif
-
   queueSetZeroAngle(server_id, (uint16_t) calibrations["angle"].asUInt());
   exchange(); 
+
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Invert Phases: " << calibrations["inv"].asUInt() << std::endl;
+#endif
   queueSetInvertPhases(server_id, (uint8_t) calibrations["inv"].asUInt());
   exchange(); 
+
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Encoder Revs Per Magnetic Revolution: " << calibrations["epm"].asUInt() << std::endl;
+#endif
   queueSetERevsPerMRev(server_id, (uint8_t) calibrations["epm"].asUInt());
   exchange(); 
+
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Torque Constant: " << calibrations["torque"].asFloat() << std::endl;
+#endif
   queueSetTorqueConstant(server_id, calibrations["torque"].asFloat());
   exchange(); 
+
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Position Offset: " << calibrations["zero"].asFloat() << std::endl;
+#endif
   queueSetPositionOffset(server_id, calibrations["zero"].asFloat());
   exchange(); 
+  
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Setting control mode" << std::endl;
+#endif
   queueSetCurrentControlMode(server_id);
   exchange(); 
 }
@@ -239,7 +254,7 @@ void BLDCControllerClient::transmit() {
 #ifdef DEBUG_TRANSMIT
     // Print Sub-message packet
     std::string msg = sub_packet_buf_.str();
-    std::cout << "Sub-packet for " << (int) id << ": ";
+    std::cout << "Sub-packet for " << (int) it->first << ": ";
     for (unsigned char c : msg)
       printf("%02x:", c);
     std::cout << std::endl;
@@ -367,25 +382,23 @@ bool BLDCControllerClient::receive( comm_id_t server_id ) {
   comm_errors_t errors = 0;
   rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(&errors), sizeof(errors));
  
-  /* 
   if (errors) {
     if (errors & COMM_ERRORS_OP_FAILED) {
-      ROS_ERROR("operation failed\n");
+      throw comms_error("operation failed");
     }
     if (errors & COMM_ERRORS_MALFORMED) {
-      std::cout << "malformed request\n";
+      throw comms_error("malformed request");
     }
     if (errors & COMM_ERRORS_INVALID_FC) {
-      std::cout << "invalid function code\n";
+      throw comms_error("invalid function code");
     }
     if (errors & COMM_ERRORS_INVALID_ARGS) {
-      std::cout << "invalid arguments\n";
+      throw comms_error("invalid arguments");
     }
     if (errors & COMM_ERRORS_BUF_LEN_MISMATCH) {
-      std::cout << "buffer length mismatch\n";
+      throw comms_error("buffer length mismatch");
     }
   }
-  */
 
   return true;
 }

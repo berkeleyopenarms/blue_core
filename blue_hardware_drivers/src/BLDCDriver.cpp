@@ -18,34 +18,36 @@ void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, 
   bool success;
   for (auto id : boards_) {
     success = false;
-    while (!success) {
+    while (!success && ros::ok()) {
       try {
         device_.queueLeaveBootloader(id, 0);
         device_.exchange();
         success = true;
       } catch (comms_error e) {
-        ROS_ERROR(e.what());
+        ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not kick board %d out of bootloader, retrying...", id);
+        ros::Duration(0.2).sleep();
       }
     }
   }
 
   for (auto id : boards_) {
     success = false; // set to false to initialize boards_ (doing this because some test boards_ are not calibrated)
-    while (!success) {
+    while (!success && ros::ok()) {
       // Initialize the motor
       try { 
         device_.initMotor(id); 
         success = true;
       }
       catch (comms_error e) {
-        ROS_ERROR(e.what());
+        ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not initialize motor %d, retrying...", id);
+        ros::Duration(0.2).sleep();
       }
     }
     // Set motor timeout to 1 second
     success = false;
-    while (!success) {
+    while (!success && ros::ok()) {
       // Initialize the motor
       try { 
         device_.queueSetTimeout(id, 1000);
@@ -53,8 +55,9 @@ void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, 
         success = true;
       }
       catch (comms_error e) {
-        ROS_ERROR(e.what());
-        ROS_ERROR("Could not initialize motor %d, retrying...", id);
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not set timeout on motor %d, retrying...", id);
+        ros::Duration(0.2).sleep();
       }
     }
     ROS_DEBUG("Initialized board: %d", id);
@@ -62,14 +65,15 @@ void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, 
 
   for (auto id : boards_) {
     success = false;
-    while (!success) {
+    while (!success && ros::ok()) {
       try {
         device_.queueGetState(id);
         device_.exchange();
         success = true;
       } catch (comms_error e) {
-        ROS_ERROR(e.what());
+        ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not get initial state of board %d, retrying...", id);
+        ros::Duration(0.2).sleep();
       }
     }
   }
