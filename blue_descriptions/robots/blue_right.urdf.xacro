@@ -12,4 +12,14 @@
   <xacro:blue_link_v0 side="right" stage="elbow" child="wrist_roll_link" reflect="1" />
   <xacro:blue_link_v0 side="right" stage="wrist" child="end_roll_link" reflect="0" wrist="1"/>
   <xacro:blue_end_effector_v0 side="right" name="end_roll_link"/>
+
+  <xacro:if value="${is_gazebo}">
+    <gazebo>
+      <plugin
+        name="gazebo_ros_control"
+        filename="libgazebo_ros_control.so">
+        <robotNamespace>/right_arm</robotNamespace>
+      </plugin>
+    </gazebo>
+  </xacro:if>
 </robot>
