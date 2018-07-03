@@ -107,7 +107,7 @@ void BLDCControllerClient::queueGetState(comm_id_t server_id) {
   queuePacket(server_id, packet);
 }
 
-void BLDCControllerClient::resultGetState(comm_id_t server_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, uint32_t* acc_x, uint32_t* acc_y, uint32_t* acc_z) {
+void BLDCControllerClient::resultGetState(comm_id_t server_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, int32_t* acc_x, int32_t* acc_y, int32_t* acc_z) {
   rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(position), sizeof(*position));
   rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(velocity), sizeof(*velocity));
   rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(di), sizeof(*di));

@@ -421,11 +421,6 @@ void BlueHW::write() {
     commands_[id] = commands[index++];
   }
 
-  geometry_msgs::Vector3 gravityMsg;
-  gravityMsg.x = gravity_vector_[0];
-  gravityMsg.y = gravity_vector_[1];
-  gravityMsg.z = gravity_vector_[2];
-  gravity_publisher_.publish(gravityMsg);
 }
 
 void BlueHW::updateComms() {
@@ -481,6 +476,12 @@ void BlueHW::computeInverseDynamics() {
     motor_pos_publishers_[i].publish(positionMsg);
 
   }
+
+  geometry_msgs::Vector3 gravityMsg;
+  gravityMsg.x = gravity_vector_[0];
+  gravityMsg.y = gravity_vector_[1];
+  gravityMsg.z = gravity_vector_[2];
+  gravity_publisher_.publish(gravityMsg);
 
   KDL::ChainIdSolver_RNE chainIdSolver(kdl_chain_, gravity_vector_);
   int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques_);

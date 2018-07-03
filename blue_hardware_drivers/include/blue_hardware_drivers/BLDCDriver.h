@@ -21,7 +21,7 @@ struct MotorState {
   float qi;
   float temp;
   float voltage;
-  uint32_t acc_x, acc_y, acc_z;
+  int32_t acc_x, acc_y, acc_z;
 };
 
 class BLDCDriver {

@@ -54,7 +54,7 @@ class BLDCControllerClient {
 
     // Result Commands
     void resultGetRotorPosition(comm_id_t server_id, float* result);
-    void resultGetState(comm_id_t server_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, uint32_t* acc_x, uint32_t* acc_y, uint32_t* acc_z); 
+    void resultGetState(comm_id_t server_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, int32_t* acc_x, int32_t* acc_y, int32_t* acc_z); 
   
     // Setup/Programming Commands
     void initMotor(comm_id_t server_id);
