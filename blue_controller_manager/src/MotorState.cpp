@@ -38,7 +38,7 @@ void MotorState::publishMessage(ros::Publisher *pub_message)
  * Callback function for subscriber.
  *------------------------------------------------------------------*/
 
-void MotorState::messageCallback(const node_example::node_example_data::ConstPtr &msg)
+void MotorState::messageCallback(const MotorState::node_example_data::ConstPtr &msg)
 {
   message = msg->message;
   a = msg->a;

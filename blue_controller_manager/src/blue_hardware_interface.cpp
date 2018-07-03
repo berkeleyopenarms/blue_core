@@ -13,6 +13,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   std::string baselink;
   std::string endlink;
   std::string robot_desc_string;
+  std::string port;
 
   // load in robot parameters from parameter server
   getRequiredParam(nh, "robot_description", robot_desc_string);
@@ -29,6 +30,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   getRequiredParam(nh, "blue_hardware/softstop_tolerance", softstop_tolerance_);
   getRequiredParam(nh, "blue_hardware/motor_current_limits", motor_current_limits_);
   getRequiredParam(nh, "blue_hardware/id_torque_gains", id_gains_);
+  getRequiredParam(nh, "blue_hardware/serial_port", port);
   getRequiredParam(nh, "blue_hardware/baselink", baselink);
   getRequiredParam(nh, "blue_hardware/endlink", endlink);
 
@@ -111,7 +113,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   is_calibrated_ = false;
   gravity_vector_.data[0] = 0;
   gravity_vector_.data[1] = 0;
-  gravity_vector_.data[2] = -9.81;
+  gravity_vector_.data[2] = 0; //-9.81;
   for (int i = 0; i < num_joints_; i++) {
     joint_pos_initial_[i] = 0.0;
   }
@@ -258,12 +260,13 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
     motor_cmd_publishers_[i] = nh.advertise<std_msgs::Float64>("blue_hardware/" + motor_names_[i] + "_cmd", 1);
     motor_pos_publishers_[i] = nh.advertise<std_msgs::Float64>("blue_hardware/" + motor_names_[i] + "_pos", 1);
   }
+  gravity_publisher_ = nh.advertise<geometry_msgs::Vector3>("blue_hardware/gravity", 1);
   ROS_INFO("Finished setting up subscribers and publisher");
 
   for(auto id : motor_ids_) {
     boards_.push_back(id);
   }
-  bldc_.init(boards_, &states_);
+  bldc_.init(boards_, &states_, port);
   read_from_motors_ = true;
   ROS_INFO("Finished setting up Serial Driver");
 
@@ -417,6 +420,12 @@ void BlueHW::write() {
   for (auto id : boards_) {
     commands_[id] = commands[index++];
   }
+
+  geometry_msgs::Vector3 gravityMsg;
+  gravityMsg.x = gravity_vector_[0];
+  gravityMsg.y = gravity_vector_[1];
+  gravityMsg.z = gravity_vector_[2];
+  gravity_publisher_.publish(gravityMsg);
 }
 
 void BlueHW::updateComms() {
@@ -424,7 +433,8 @@ void BlueHW::updateComms() {
   try {
     bldc_.update(commands_);
   } catch (comms_error e) {
-    ROS_ERROR("%s\n", e.what());
+    // TODO: Return false if error
+    //ROS_ERROR("%s\n", e.what());
     read_from_motors_ = false;
   }
 }
@@ -465,6 +475,11 @@ void BlueHW::computeInverseDynamics() {
     jointVelocities(i) = joint_vel_[i];
     jointAccelerations(i) = 0.0;
     f_ext.push_back(KDL::Wrench());
+ 
+    std_msgs::Float64 positionMsg;
+    positionMsg.data = joint_pos_[i];
+    motor_pos_publishers_[i].publish(positionMsg);
+
   }
 
   KDL::ChainIdSolver_RNE chainIdSolver(kdl_chain_, gravity_vector_);
@@ -493,11 +508,6 @@ void BlueHW::motorStateCallback() {
       actuator_vel_[index] = states_[id].velocity;
       actuator_eff_[index] = states_[id].di;
     }
-
-    std_msgs::Float64 positionMsg;
-    positionMsg.data = states_[id].position;
-    motor_pos_publishers_[index].publish(positionMsg);
-
     index++;
   }
 
@@ -507,7 +517,6 @@ void BlueHW::motorStateCallback() {
   for(int i = 0; i < num_joints_; i++) {
     joint_pos_[i] = joint_pos_[i] + joint_pos_initial_[i];
   }
-  read_from_motors_ = true;
   setReadGravityVector();
 }
 

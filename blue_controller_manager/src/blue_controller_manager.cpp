@@ -40,7 +40,12 @@ int main(int argc, char** argv)
     robot.write();
 
     ros::Time temp_time = ros::Time::now();
+
+    // TODO: Count number of errors by making updateComs return bool for success
+    // If above a threshold, print the number out of 100 or whatever that are bad.
     robot.updateComms();
+
+
     frequency += (ros::Time::now() - temp_time).toSec();
     if ((count++%100) == 0) {
       ROS_INFO("Communication frequency is %fHz", (1/(frequency/100)));

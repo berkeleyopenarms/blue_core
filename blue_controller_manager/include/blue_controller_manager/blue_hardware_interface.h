@@ -13,6 +13,7 @@
 #include <transmission_interface/differential_transmission.h>
 #include <transmission_interface/transmission_interface.h>
 #include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Vector3.h>
 #include <blue_hardware_drivers/MotorState.h>
 
 #include <geometry_msgs/Vector3.h>
@@ -68,6 +69,7 @@ private:
   ros::Subscriber motor_state_sub_;
   std::vector<ros::Publisher> motor_cmd_publishers_;
   std::vector<ros::Publisher> motor_pos_publishers_;
+  ros::Publisher gravity_publisher_;
   ros::Subscriber joint_state_tracker_sub_;
   ros::Subscriber gravity_vector_sub_;
 

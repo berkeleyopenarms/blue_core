@@ -26,7 +26,7 @@ struct MotorState {
 
 class BLDCDriver {
   public:
-    void init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, MotorState>* states);
+    void init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, MotorState>* states, std::string port);
     void update(std::map<comm_id_t, float>& commands);
     BLDCDriver();
   

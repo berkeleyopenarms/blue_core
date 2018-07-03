@@ -5,9 +5,7 @@ const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 const unsigned int CONTROL_LOOP_FREQ = 1000;
 const unsigned int BAUD_RATE = 1000000;
 
-void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, MotorState>* states) {
-
-  std::string port = "/dev/ttyUSB0"; // TODO: read from launch/config
+void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, MotorState>* states, std::string port) {
 
   states_ = states;
   boards_ = boards;
@@ -132,10 +130,10 @@ void BLDCDriver::update(std::map<comm_id_t, float>& commands){
         );
     if ((*states_)[id].temp > MAX_TEMP_SHUTOFF) {
       stop_motors_ = true;
-      ROS_ERROR("Motor %d is too hot! Shutting off system.", id);
+      ROS_ERROR_THROTTLE(1, "Motor %d is too hot! Shutting off system.", id);
     }
     else if ((*states_)[id].temp > MAX_TEMP_WARNING) {
-      ROS_ERROR("Motor %d is warm, currently at %fC", id, (*states_)[id].temp);
+      ROS_WARN_THROTTLE(1, "Motor %d is warm, currently at %fC", id, (*states_)[id].temp);
     }
   }
 
