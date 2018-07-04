@@ -4,44 +4,42 @@
 #include <sstream>
 #include <iostream>
 
-std::string Packet::dump() {
-  std::stringstream buffer;
-  buffer.write(reinterpret_cast<char*> (&server_id_), sizeof(server_id_));
-  buffer.write(reinterpret_cast<char*> (&func_code_), sizeof(func_code_));
-
-  std::cout << std::hex << (int) func_code_ << std::endl;
-  
-  for (unsigned char c : buffer.str())
-    printf("%02x:", c);
-  std::cout << std::endl;
-
-  return buffer.str();
+void Packet::dump(Buffer& buf) {
+  buf.write(reinterpret_cast<uint8_t*> (&server_id_), sizeof(server_id_));
+  buf.write(reinterpret_cast<uint8_t*> (&func_code_), sizeof(func_code_));
 }
 
-std::string ReadPacket::dump() {
-  std::stringstream buffer;  
-  buffer << Packet::dump();
-  buffer.write(reinterpret_cast<char*> (&read_start_addr_), sizeof(read_start_addr_));
-  buffer.write(reinterpret_cast<char*> (&read_count_), sizeof(read_count_));
-  return buffer.str();
+void ReadRegPacket::dump(Buffer& buf) {
+  Packet::dump(buf);
+  buf.write(reinterpret_cast<uint8_t*> (&read_start_addr_), sizeof(read_start_addr_));
+  buf.write(reinterpret_cast<uint8_t*> (&read_count_), sizeof(read_count_));
 }
 
-std::string WritePacket::dump() {
-  std::stringstream buffer;
-  buffer << Packet::dump();
-  buffer.write(reinterpret_cast<char*> (&write_start_addr_), sizeof(write_start_addr_));
-  buffer.write(reinterpret_cast<char*> (&write_count_), sizeof(write_count_));
-  buffer << write_data_.str(); 
-  return buffer.str();
+void WriteRegPacket::dump(Buffer& buf) {
+  Packet::dump(buf);
+  buf.write(reinterpret_cast<uint8_t*> (&write_start_addr_), sizeof(write_start_addr_));
+  buf.write(reinterpret_cast<uint8_t*> (&num_reg_), sizeof(num_reg_));
+  buf.addBuf(write_data_);
 }
 
-std::string ReadWritePacket::dump() {
-  std::stringstream buffer;
-  buffer << Packet::dump();
-  buffer.write(reinterpret_cast<char*> (&read_start_addr_), sizeof(read_start_addr_));
-  buffer.write(reinterpret_cast<char*> (&read_count_), sizeof(read_count_));
-  buffer.write(reinterpret_cast<char*> (&write_start_addr_), sizeof(write_start_addr_));
-  buffer.write(reinterpret_cast<char*> (&write_count_), sizeof(write_count_));
-  buffer << write_data_.str(); 
-  return buffer.str();
+void ReadWriteRegPacket::dump(Buffer& buf) {
+  Packet::dump(buf);
+  buf.write(reinterpret_cast<uint8_t*> (&read_start_addr_), sizeof(read_start_addr_));
+  buf.write(reinterpret_cast<uint8_t*> (&read_count_), sizeof(read_count_));
+  buf.write(reinterpret_cast<uint8_t*> (&write_start_addr_), sizeof(write_start_addr_));
+  buf.write(reinterpret_cast<uint8_t*> (&num_reg_), sizeof(num_reg_));
+  buf.addBuf(write_data_);
 }
+
+void ReadFlashPacket::dump(Buffer& buf) {
+  Packet::dump(buf);
+  buf.write(reinterpret_cast<uint8_t*> (&read_start_addr_), sizeof(read_start_addr_));
+  buf.write(reinterpret_cast<uint8_t*> (&read_count_), sizeof(read_count_));
+}
+
+void JumpToAddrPacket::dump(Buffer& buf) {
+  Packet::dump(buf);
+  buf.write(reinterpret_cast<uint8_t*> (&jump_addr_), sizeof(jump_addr_));
+}
+
+

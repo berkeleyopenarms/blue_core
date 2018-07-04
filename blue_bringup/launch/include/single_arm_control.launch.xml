@@ -17,6 +17,7 @@
       command="load" />
 
     <!-- Motor driver communication -->
+    <!--
     <node
       name="motor_interface"
       pkg="blue_hardware_drivers"
@@ -24,6 +25,7 @@
       ns="blue_hardware"
       required="true"
       output="screen" />
+    -->
 
     <!-- Start the control stack -->
     <!-- http://wiki.ros.org/ros_control -->

@@ -17,12 +17,13 @@ blue_hardware:
     id_torque_gains: [1.12, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     # id_torque_gains: [1.38, 1.27, 1.27, 1.27, 1.27, 1.0, 1.0]
     softstop_min_angles: [-3.3, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -1.45]
-    softstop_max_angles: [2.2, -0.3, 2.6, -0.3, 2.6, 0.2, 2.6, 1.45]
+    softstop_max_angles: [2.2, 0.5, 2.6, 0.5, 2.6, 0.2, 2.6, 1.45]
     softstop_tolerance: 0.19
     softstop_torque_limit: 95.0
 
     ### Motor configuration
-    serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NOKG-if00-port0
+    #serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NOKG-if00-port0
+    serial_port: /dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0
     motor_names:
         - base_roll_motor
         - right_motor1
@@ -32,7 +33,7 @@ blue_hardware:
         - right_motor3
         - left_motor3
         - gripper_motor
-    motor_ids: [1, 17, 10, 23, 22, 19, 21, 52]
+    motor_ids: [1, 17, 10, 23, 22, 41, 53, 2]
     # motor_current_limits: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 0.3]
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0, 1.0]

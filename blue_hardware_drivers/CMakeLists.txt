@@ -37,21 +37,24 @@ add_library(${PROJECT_NAME}
   src/BLDCControllerClient.cpp
   src/BLDCDriver.cpp
   src/Packets.cpp
+  src/crc16.cpp
+  src/Buffer.cpp
+  json_src/json.cpp
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-#add_executable(BLDCDriver_node src/BLDCDriver_node.cpp)
-#target_link_libraries(BLDCDriver_node
+#add_executable(BLDCDriver src/BLDCDriver.cpp)
+#target_link_libraries(BLDCDriver
 #  ${PROJECT_NAME}
 #  ${catkin_LIBRARIES}
 #)
 
-add_executable(BLDCControllerTest src/BLDCControllerTest.cpp)
-target_link_libraries(BLDCControllerTest
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
+#add_executable(BLDCControllerTest src/BLDCControllerTest.cpp)
+#target_link_libraries(BLDCControllerTest
+#  ${PROJECT_NAME}
+#  ${catkin_LIBRARIES}
+#)
 
 add_executable(BLDCDriver_communication_freq_test src/BLDCDriver_communication_freq_test.cpp)
 target_link_libraries(BLDCDriver_communication_freq_test
@@ -61,7 +64,7 @@ target_link_libraries(BLDCDriver_communication_freq_test
 
 
 ## Mark executables and/or libraries for installation
-#install(TARGETS BLDCDriver_node
+#install(TARGETS BLDCDriver
 #  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

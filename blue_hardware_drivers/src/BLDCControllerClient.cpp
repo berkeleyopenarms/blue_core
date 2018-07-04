@@ -8,98 +8,227 @@
 
 #include "blue_hardware_drivers/comms_defs.h"
 #include "blue_hardware_drivers/Packets.h"
+#include "blue_hardware_drivers/crc16.h"
+#include "blue_hardware_drivers/Buffer.h"
+#include "json/json.h"
 
 BLDCControllerClient::BLDCControllerClient() {
 }
 
-BLDCControllerClient::BLDCControllerClient(std::string port) {
-  init(port);
+BLDCControllerClient::BLDCControllerClient(std::string port, const std::vector<comm_id_t>& boards) {
+  init(port, boards);
 }
 
-void BLDCControllerClient::init(std::string port) {
+void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& boards) {
   ser_.setPort(port);
   ser_.setBaudrate(COMM_DEFAULT_BAUD_RATE);
-  ser_.setTimeout(serial::Timeout::max(), 20, 0, 20, 0);
+  ser_.setTimeout(serial::Timeout::max(), 4, 1, 4, 1);
   ser_.open();
+
+  tx_buf_.init(COMM_MAX_BUF);
+  sub_packet_buf_.init(COMM_MAX_BUF);
+  payload_buf_.init(COMM_MAX_BUF);
+
+  for (auto id : boards) {
+    rx_bufs_[id].init(COMM_MAX_BUF);
+  }
 }
 
-void BLDCControllerClient::leaveBootloader(uint8_t server_id, uint32_t jump_addr) {
+void BLDCControllerClient::queueLeaveBootloader(comm_id_t server_id, uint32_t jump_addr) {
   if (jump_addr == 0) {
     jump_addr = COMM_FIRMWARE_OFFSET;
   }
 
-  Packet* packet = new WritePacket(server_id, COMM_FC_JUMP_TO_ADDR, sizeof(jump_addr), reinterpret_cast<char*> (&jump_addr));
+  Packet* packet = new JumpToAddrPacket(server_id, jump_addr);
   queuePacket(server_id, packet);
-
-  // TODO: Generate Receive Packet
 }
 
-void BLDCControllerClient::getRotorPosition(uint8_t server_id, float* result) {
+void BLDCControllerClient::queueSetCurrentControlMode(comm_id_t server_id) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_CTRL_MODE, sizeof(COMM_CTRL_MODE), reinterpret_cast<uint8_t*> (new uint8_t(COMM_CTRL_MODE)));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetTimeout(comm_id_t server_id, uint16_t value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_WATCHDOG, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetZeroAngle(comm_id_t server_id, uint16_t value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_REV_START, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetERevsPerMRev(comm_id_t server_id, uint8_t value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EREVS_PER_MREV, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetInvertPhases(comm_id_t server_id, uint8_t value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_INV_PHASES, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetTorqueConstant(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_MOTOR_T, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetPositionOffset(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_POS_OFFSET, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetCommand(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueGetRotorPosition(comm_id_t server_id) {
   // Generate Transmit Packet
-  Packet* packet = new ReadPacket(server_id, COMM_REG_RO_ROTOR_P, sizeof(*result));
+  Packet* packet = new ReadRegPacket(server_id, COMM_REG_RO_ROTOR_P, 1);
   queuePacket(server_id, packet);
-
-  // TODO: Generate Receive Packet
 }
 
-void BLDCControllerClient::setCurrentControlMode(uint8_t server_id, bool* result) {
-  // Create new packet
-  Packet* packet = new WritePacket(server_id, COMM_REG_VOL_CTRL_MODE, sizeof(COMM_CTRL_MODE), reinterpret_cast<char*> (new uint8_t(COMM_CTRL_MODE)));
-  queuePacket(server_id, packet);
-
-  // TODO: Generate Receive Packet
+void BLDCControllerClient::resultGetRotorPosition(comm_id_t server_id, float* position) {
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(position), sizeof(*position));
 }
 
-
-void BLDCControllerClient::setZeroAngle(uint8_t server_id, uint16_t value, bool* result) {
-  // Create new packet
-  Packet* packet = new WritePacket(server_id, COMM_REG_CAL_REV_START, sizeof(value), reinterpret_cast<char*> (&value));
-  queuePacket(server_id, packet);
-
-  // TODO: Generate Receive Packet
-}
-
-void BLDCControllerClient::setERevsPerMRev(uint8_t server_id, uint8_t value, bool* result) {
-  // Create new packet
-  Packet* packet = new WritePacket(server_id, COMM_REG_CAL_EREVS_PER_MREV, sizeof(value), reinterpret_cast<char*> (&value));
-  queuePacket(server_id, packet);
-
-  // TODO: Generate Receive Packet
-}
-
-void BLDCControllerClient::setInvertPhases(uint8_t server_id, uint8_t value, bool* result) {
-  // Create new packet
-  Packet* packet = new WritePacket(server_id, COMM_REG_CAL_INV_PHASES, sizeof(value), reinterpret_cast<char*> (&value));
-  queuePacket(server_id, packet);
-
-  // TODO: Generate Receive Packet
-}
-
-void BLDCControllerClient::setCommand(uint8_t server_id, float value, bool* result) {
-  // Create new packet
-  Packet* packet = new WritePacket(server_id, COMM_REG_VOL_DI_COMM, sizeof(value), reinterpret_cast<char*> (&value));
-  queuePacket(server_id, packet);
-
-  // TODO: Generate Receive Packet
-}
-
-void BLDCControllerClient::setCommandAndGetRotorPosition(uint8_t server_id, float value, float* result) {
+void BLDCControllerClient::queueSetCommandAndGetRotorPosition(comm_id_t server_id, float value) {
   // Generate Transmit Packet
-  Packet* packet = new ReadWritePacket (server_id, 
-    COMM_REG_RO_ROTOR_P, sizeof(*result),                                   // Read
-    COMM_REG_VOL_DI_COMM, sizeof(value), reinterpret_cast<char*>(&value));  // Write
+  Packet* packet = new ReadWriteRegPacket (server_id, 
+    COMM_REG_RO_ROTOR_P, 1,                                          // Read
+    COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*>(&value));  // Write
   queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueGetState(comm_id_t server_id) {
+  // Generate Transmit Packet
+  Packet* packet = new ReadRegPacket (server_id, COMM_REG_RO_ROTOR_P, 9);  
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::resultGetState(comm_id_t server_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, int32_t* acc_x, int32_t* acc_y, int32_t* acc_z) {
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(position), sizeof(*position));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(velocity), sizeof(*velocity));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(di), sizeof(*di));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(qi), sizeof(*qi));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(voltage), sizeof(*voltage));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(temp), sizeof(*temp));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(acc_x), sizeof(*acc_x));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(acc_y), sizeof(*acc_y));
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(acc_z), sizeof(*acc_z));
+}
+
+void BLDCControllerClient::queueSetCommandAndGetState(comm_id_t server_id, float value) {
+  // Generate Transmit Packet
+  Packet* packet = new ReadWriteRegPacket (server_id, 
+    COMM_REG_RO_ROTOR_P, 9,                                          // Read
+    COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*>(&value));  // Write
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::initMotor(comm_id_t server_id){
+  uint32_t len = 0;
+  std::string data;
+
+  readFlash(server_id, COMM_NVPARAMS_OFFSET+1, 2, data);
+#ifdef DEBUG_CALIBRATION_DATA
+  for (unsigned char c : data)
+    printf("%02x:", c);
+  std::cout << std::endl;
+#endif
+
+  std::stringstream buf;
+  buf << data;
+  buf.read(reinterpret_cast<char*>(&len), sizeof(len));
+
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << len << std::endl;
+#endif
+  data = "";
+  readFlash(server_id, COMM_NVPARAMS_OFFSET+3, len, data); 
+
+  Json::Reader reader;
+  Json::Value calibrations;
+  reader.parse(data, calibrations);
+
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Zero Angle: " << calibrations["angle"].asUInt() << std::endl;
+#endif
+  queueSetZeroAngle(server_id, (uint16_t) calibrations["angle"].asUInt());
+  exchange(); 
+
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Invert Phases: " << calibrations["inv"].asUInt() << std::endl;
+#endif
+  queueSetInvertPhases(server_id, (uint8_t) calibrations["inv"].asUInt());
+  exchange(); 
+
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Encoder Revs Per Magnetic Revolution: " << calibrations["epm"].asUInt() << std::endl;
+#endif
+  queueSetERevsPerMRev(server_id, (uint8_t) calibrations["epm"].asUInt());
+  exchange(); 
+
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Torque Constant: " << calibrations["torque"].asFloat() << std::endl;
+#endif
+  queueSetTorqueConstant(server_id, calibrations["torque"].asFloat());
+  exchange(); 
+
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Position Offset: " << calibrations["zero"].asFloat() << std::endl;
+#endif
+  queueSetPositionOffset(server_id, calibrations["zero"].asFloat());
+  exchange(); 
+  
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Setting control mode" << std::endl;
+#endif
+  queueSetCurrentControlMode(server_id);
+  exchange(); 
 }
 
 // Sends packets to boards and collects data
 void BLDCControllerClient::exchange() {
   transmit();
-  receive();
+  // Receive data from each board in order
+  for (auto it = packet_queue_.begin(); it != packet_queue_.end(); it++) {
+#ifdef DEBUG_RECEIVE
+    std::cout << "Expected packet from board " << (int) it->first << std::endl;
+#endif
+    while (!receive(it->first)); // Get server id (key in [key, value] pair)
+  }
+  // Empty the queue
+  packet_queue_.clear();
 }
 
-/* Private members */
+void BLDCControllerClient::clearQueue() {
+  for (auto it = packet_queue_.begin(); it != packet_queue_.end(); it++) {
+    auto packet = it->second; // Get packet pointer (value in [key, value] pair)
+    if (packet != nullptr) {
+      delete packet;
+      it->second = nullptr;
+    }
+  }
+  //ser_.flush();
+  packet_queue_.clear();
+}
 
-void BLDCControllerClient::queuePacket(uint8_t server_id, Packet* packet) {
+/* Private Flash Accessor/Mutator Members */
+void BLDCControllerClient::readFlash(comm_id_t server_id, comm_full_addr_t addr, uint32_t count, std::string& buffer){
+  std::vector<comm_id_t> board;
+  board.push_back(server_id);
+
+  for (size_t i = 0; i < count; i += std::min(count - i, COMM_SINGLE_READ_LENGTH)) {
+    queuePacket(server_id, new ReadFlashPacket(server_id, addr, count)); 
+    exchange(); // This can error which means when running flash commands make sure to try/catch comm_error!   
+    buffer.append(rx_bufs_[server_id].remain_str()); 
+  }
+}
+
+/* Private Transmission Members */
+void BLDCControllerClient::queuePacket(comm_id_t server_id, Packet* packet) {
   if (packet_queue_[server_id] != nullptr) {
     std::string error = "A packet is already queued for motor " + std::to_string((int) server_id);
     throw comms_error(error);
@@ -108,187 +237,175 @@ void BLDCControllerClient::queuePacket(uint8_t server_id, Packet* packet) {
 }
 
 void BLDCControllerClient::transmit() {
-  // Transmission buffer
-  std::stringstream tx_buf;
+  tx_buf_.clear();
   // Add Header
-  tx_buf.write(reinterpret_cast<char*> (new uint8_t(COMM_SYNC_FLAG)), sizeof(COMM_SYNC_FLAG));
-  tx_buf.write(reinterpret_cast<char*> (new uint8_t(COMM_VERSION)), sizeof(COMM_VERSION));
-  tx_buf.write(reinterpret_cast<char*> (new comm_fg_t(COMM_FG_COMP)), sizeof(COMM_FG_COMP));
+  tx_buf_.write(reinterpret_cast<uint8_t*> (new uint8_t(COMM_SYNC_FLAG)), sizeof(COMM_SYNC_FLAG));
+  tx_buf_.write(reinterpret_cast<uint8_t*> (new uint8_t(COMM_VERSION)), sizeof(COMM_VERSION));
+  tx_buf_.write(reinterpret_cast<uint8_t*> (new comm_fg_t(COMM_FG_COMP)), sizeof(COMM_FG_COMP));
 
   // Generate Payload
-  std::stringstream payload;
+  payload_buf_.clear();
   for (auto it = packet_queue_.begin(); it != packet_queue_.end(); it++) {
+    sub_packet_buf_.clear();
     // Acquire packet byte format
-    auto packet = it->second; // Get packet pointer (value in key pair)
-    std::string msg = packet->dump();
+    auto packet = it->second; // Get packet pointer (value in [key, value] pair)
+    packet->dump(sub_packet_buf_);
 
+#ifdef DEBUG_TRANSMIT
+    // Print Sub-message packet
+    std::string msg = sub_packet_buf_.str();
+    std::cout << "Sub-packet for " << (int) it->first << ": ";
     for (unsigned char c : msg)
       printf("%02x:", c);
     std::cout << std::endl;
+#endif
 
-    comm_msg_len_t sub_msg_len = msg.size(); 
-    payload.write(reinterpret_cast<char*> (&sub_msg_len), sizeof(sub_msg_len));
-    payload << msg;
+    comm_msg_len_t sub_msg_len = sub_packet_buf_.size(); 
+    payload_buf_.write(reinterpret_cast<uint8_t*> (&sub_msg_len), sizeof(sub_msg_len));
+    payload_buf_.addBuf(sub_packet_buf_);
+
     delete packet;
+    it->second = nullptr;
   }
   // Add total packet length
-  std::string payload_str = payload.str();
-  comm_msg_len_t payload_len = payload_str.size();
-  tx_buf.write(reinterpret_cast<char*> (&payload_len), sizeof(payload_len));
-  tx_buf << payload_str;
+  comm_msg_len_t payload_len = payload_buf_.size();
+  tx_buf_.write(reinterpret_cast<uint8_t*> (&payload_len), sizeof(payload_len));
+  tx_buf_.addBuf(payload_buf_);
 
   // Adding CRC
-  uint16_t crc = computeCRC(payload_str);
-  tx_buf.write(reinterpret_cast<char*> (&crc), sizeof(crc));
+  uint16_t crc = computeCRC(payload_buf_.ptr(), payload_buf_.size());
+  tx_buf_.write(reinterpret_cast<uint8_t*> (&crc), sizeof(crc));
 
-  std::string tx_str = tx_buf.str();
-
-  for (unsigned char c : tx_str)
+#ifdef DEBUG_TRANSMIT
+  // print total packet
+  std::string msg = tx_buf_.str();
+  std::cout << "Transmitting: ";
+  for (unsigned char c : msg)
     printf("%02x:", c);
   std::cout << std::endl;
+#endif
   
   // Send Packet!
-  ser_.write(tx_str);
-  // Empty the queue
-  packet_queue_.clear();
+  size_t write_len = ser_.write(tx_buf_.ptr(), tx_buf_.size());
+  ser_.flushOutput();
+  if (write_len != tx_buf_.size()) {
+    throw comms_error("Failed to transmit full packet");
+  }
 }
 
-void BLDCControllerClient::receive() {
-  // TODO: Write board receive code!
+void BLDCControllerClient::ser_read_check(uint8_t * data, size_t len) {
+  int read_len = 0;  
+  size_t tries = 0;
+  do { 
+    read_len = ser_.read(data, len);
+  } while (read_len == 0 && read_len != -1 && tries++ < COMM_MAX_RETRIES);
+
+  if (read_len == -1) {
+    throw comms_error("Serial Port Closed");
+  }
+  if (read_len != len) {
+    std::string msg = "Not enough data received. Expected " + std::to_string(len) + " got " + std::to_string(read_len);
+    throw comms_error(msg);
+  }
 }
 
-uint16_t BLDCControllerClient::computeCRC( std::string message ) {
-  const char* buf = message.c_str();
-  size_t len = message.size();
-  uint16_t out = 0;
-  uint16_t bits_read = 0, bit_flag;
-
-  /* Sanity check */
-  if (buf == nullptr)
-    return 0;
-
-  while (len > 0) {
-    bit_flag = out >> 15;
-
-    /* Get next bit: */
-    out <<= 1;
-    out |= (*buf >> bits_read) & 1; // item a) work from the least significant bits
-    
-    /* Increment bit counter: */
-    bits_read++;
-    if(bits_read > 7) {
-      bits_read = 0;
-      buf++;
-      len--;
-    }
-    
-    /* Cycle check: */
-    if(bit_flag) out ^= crc_16_ibm;
+bool BLDCControllerClient::receive( comm_id_t server_id ) {
+  uint8_t sync = 0;
+  ser_read_check(&sync, sizeof(sync));
+  if (sync != COMM_SYNC_FLAG) {
+    return false;
   }
 
-  // item b) "push out" the last 16 bits
-  int i;
-  for (i = 0; i < 16; ++i) {
-    bit_flag = out >> 15;
-    out <<= 1;
-    if(bit_flag) out ^= crc_16_ibm;
+  comm_protocol_t protocol_version = 0;
+  ser_read_check(reinterpret_cast<uint8_t*>(&protocol_version), sizeof(protocol_version)); 
+  if (protocol_version != COMM_VERSION) {
+    return false;
   }
 
-  // item c) reverse the bits
-  uint16_t crc = 0;
-  i = 0x8000;
-  int j = 0x0001;
-  for (; i != 0; i >>=1, j <<= 1) {
-    if (i & out) crc |= j;
+  comm_fg_t flags = 0;
+  ser_read_check(reinterpret_cast<uint8_t*>(&flags), sizeof(flags));
+  if ((flags & COMM_FG_BOARD) != COMM_FG_BOARD) {
+    return false;
   }
 
-  return crc;
-}
+  comm_msg_len_t packet_len = 0;
+  ser_read_check(reinterpret_cast<uint8_t*>(&packet_len), sizeof(packet_len));
 
-/*
-ByteBuf BLDCControllerClient::readResponse_(uint8_t server_id, uint8_t func_code) {
-  ByteBuf empty(0);
-  uint8_t sync = 1;
-  uint8_t test = 0xFF;
-  ser_.read(&sync, 1);
-  if (sync != 0xFF) {
-    ser_.flushInput();
-    return empty;
+#ifdef DEBUG_RECEIVE
+  std::cout << "Received packet length: " << (int) packet_len << std::endl;
+#endif
+  
+  rx_bufs_[server_id].clear();
+  
+  if (!rx_bufs_[server_id].addHead(packet_len))
+    throw comms_error("rx buffer too small for message"); 
+  ser_read_check(rx_bufs_[server_id].ptr(), packet_len);
+
+#ifdef DEBUG_RECEIVE
+  // print message 
+  std::string message = rx_bufs_[server_id].str();
+  std::cout << "Receiving: ";
+  for (unsigned char c : message)
+    printf("%02x:", c);
+  std::cout << std::endl;
+#endif
+  
+  crc16_t crc = 0;
+  ser_read_check(reinterpret_cast<uint8_t*>(&crc), 2);
+  
+  crc16_t computed_crc = computeCRC(rx_bufs_[server_id].ptr(), rx_bufs_[server_id].size());
+
+#ifdef DEBUG_RECEIVE_CRC
+  // Print the two CRCs
+  std::cout << "Received CRC: " << std::hex << crc << std::endl;
+
+  std::cout << "Calculated CRC: " << std::hex << computed_crc << std::endl;
+#endif
+
+  if (computed_crc != crc) {
+    throw comms_error("Incorrect crc!");
   }
 
-  uint8_t protocol_version = 0;
-  ser_.read(&protocol_version, 1);
-  if (protocol_version != 0xFF) {
-    ser_.flushInput();
-    return empty;
+  // Parse message
+  comm_msg_len_t sub_msg_len = 0;
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(&sub_msg_len), sizeof(sub_msg_len));
+  
+  comm_id_t id = 0;
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(&id), sizeof(id));
+  if (id != server_id) {
+    throw comms_error("Incorrect server id, expected: " + std::to_string((int)server_id) + ", got: " + std::to_string((int)id));
   }
 
-  uint16_t length = 0;
-  ser_.read(reinterpret_cast<char*>(&length), 2);
+  comm_fc_t func_code = 0;
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(&func_code), sizeof(func_code));
 
-  if (length == 0) {
-    std::cout << "length was zero\n";
-    ser_.flushInput();
-    return empty;
-  }
-
-  comm_id_t message_server_id = 0;
-  comm_fc_t message_func_code = 0;
-  uint8_t errorsh = 0;
-  uint8_t errorsl = 0;
-
-  bool complete_read = true;
-  complete_read &= ser_.read(&message_server_id, 1);
-  complete_read &= ser_.read(&message_func_code, 1);
-  complete_read &= ser_.read(&errorsl, 1);
-  complete_read &= ser_.read(&errorsh, 1);
-
-  comm_errors_t errors = errorsl + (errorsh << 8);
-  if (!complete_read || message_server_id != server_id || message_func_code != func_code) {
-    std::cerr << "Incomplete serial read or received unexpected server ID or function code\n";
-    throw;
-  }
+  comm_errors_t errors = 0;
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(&errors), sizeof(errors));
+ 
   if (errors) {
     if (errors & COMM_ERRORS_OP_FAILED) {
-      std::cout << "operation failed\n";
+      throw comms_error("operation failed");
     }
     if (errors & COMM_ERRORS_MALFORMED) {
-      std::cout << "malformed request\n";
+      throw comms_error("malformed request");
     }
     if (errors & COMM_ERRORS_INVALID_FC) {
-      std::cout << "invalid function code\n";
+      throw comms_error("invalid function code");
     }
     if (errors & COMM_ERRORS_INVALID_ARGS) {
-      std::cout << "invalid arguments\n";
+      throw comms_error("invalid arguments");
     }
     if (errors & COMM_ERRORS_BUF_LEN_MISMATCH) {
-      std::cout << "buffer length mismatch\n";
+      throw comms_error("buffer length mismatch");
     }
-    return empty;
   }
 
-  ByteBuf message;
-
-  if (length - 4 == 0 || ser_.read(message, length - 4) < (size_t) (length - 4)) {
-    std::cerr << "message length was not long enough\n";
-    ser_.flushInput();
-    return empty;
-  }
-
-  // uint8_t crc_bytesh = 0; 
-  // uint8_t crc_bytesl = 0; 
-  uint16_t crc_bytes = 0;
-  if (ser_.read(reinterpret_cast<char*>(&crc_bytes), 2) < 2) {
-    std::cout << "crc bytes not read properly\n";
-    ser_.flushInput();
-    return empty;
-  }
-
-  // TODO: CRC check
-
-  return message;
+  return true;
 }
-*/
 
-
+crc16_t BLDCControllerClient::computeCRC( const uint8_t* buf, size_t len ) {
+  crc16_t crc = crc16_init();
+  crc = crc16_update(crc, buf, len);
+  return crc16_finalize(crc);
+}
 
