@@ -6,6 +6,22 @@
   Relevant Github issues:
     https://github.com/ros/ros_comm/issues/1051
     https://github.com/ros/ros_comm/pull/1354
+
+      $(arg side)_base_roll_joint:
+        pid: {p: 20, i: 0, d: 2.5, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_shoulder_lift_joint:
+        pid: {p: 20, i: 0, d: 2.5, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_shoulder_roll_joint:
+        pid: {p: 20, i: 0, d: 2.5, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_elbow_lift_joint:
+        pid: {p: 20, i: 0, d: 2.5, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_elbow_roll_joint:
+        pid: {p: 20, i: 0, d: 2.5, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_wrist_lift_joint:
+        pid: {p: 5, i: 0, d: 0.5, i_clamp_min: -1, i_clamp_max: 1}
+      $(arg side)_wrist_roll_joint:
+        pid: {p: 5, i: 0, d: 0.5, i_clamp_min: -1, i_clamp_max: 1}
+
 -->
 
 <launch>
