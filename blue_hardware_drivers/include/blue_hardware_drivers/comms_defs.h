@@ -81,6 +81,10 @@ constexpr comm_addr_t COMM_REG_CAL_MOTOR_H = 0x1021; // Inductance
 constexpr comm_addr_t COMM_REG_CAL_MOTOR_T = 0x1022; // Torque Constant
 constexpr comm_addr_t COMM_REG_CAL_WATCHDOG = 0x1030;
 constexpr comm_addr_t COMM_REG_CAL_V_FILTER = 0x1040;
+constexpr comm_addr_t COMM_REG_CAL_EAC_SCALE = 0x1100;
+constexpr comm_addr_t COMM_REG_CAL_EAC_OFFSET = 0x1101;
+constexpr comm_addr_t COMM_REG_CAL_EAC_TABLE = 0x1200;
+
 // Volatile Registers (0x2***)
 constexpr comm_addr_t COMM_REG_VOL_CTRL_MODE = 0x2000;
 constexpr comm_addr_t COMM_REG_VOL_DI_COMM = 0x2001;
@@ -119,5 +123,6 @@ constexpr size_t COMM_MAX_RETRIES = 6;
 constexpr size_t COMM_SINGLE_PROGRAM_LENGTH = 128;
 constexpr size_t COMM_SINGLE_READ_LENGTH = 128;
 constexpr size_t COMM_SINGLE_VERIFY_LENGTH = 128;
+constexpr size_t COMM_SINGLE_SET_EAC_TABLE_LENGTH = 64;
 
 #endif /* COMMS_H */
