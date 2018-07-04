@@ -78,6 +78,21 @@ void BLDCControllerClient::queueSetPositionOffset(comm_id_t server_id, float val
   queuePacket(server_id, packet);
 }
 
+void BLDCControllerClient::queueSetEACScale(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EAC_SCALE, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetEACOffset(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EAC_OFFSET, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetEACTable(comm_id_t server_id, size_t start_index, uint8_t *values, size_t count) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EAC_TABLE + start_index, sizeof(*values) * count, values, count);
+  queuePacket(server_id, packet);
+}
+
 void BLDCControllerClient::queueSetCommand(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
@@ -156,37 +171,74 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
   std::cout << "Zero Angle: " << calibrations["angle"].asUInt() << std::endl;
 #endif
   queueSetZeroAngle(server_id, (uint16_t) calibrations["angle"].asUInt());
-  exchange(); 
+  exchange();
 
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Invert Phases: " << calibrations["inv"].asUInt() << std::endl;
 #endif
   queueSetInvertPhases(server_id, (uint8_t) calibrations["inv"].asUInt());
-  exchange(); 
+  exchange();
 
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Encoder Revs Per Magnetic Revolution: " << calibrations["epm"].asUInt() << std::endl;
 #endif
   queueSetERevsPerMRev(server_id, (uint8_t) calibrations["epm"].asUInt());
-  exchange(); 
+  exchange();
 
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Torque Constant: " << calibrations["torque"].asFloat() << std::endl;
 #endif
   queueSetTorqueConstant(server_id, calibrations["torque"].asFloat());
-  exchange(); 
+  exchange();
 
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Position Offset: " << calibrations["zero"].asFloat() << std::endl;
 #endif
   queueSetPositionOffset(server_id, calibrations["zero"].asFloat());
-  exchange(); 
-  
+  exchange();
+
+  if (calibrations.isMember("eac_type")) {
+    std::string eac_type = calibrations["eac_type"].asString();
+
+    if (string::compare(eac_type, "int8") == 0) {
+#ifdef DEBUG_CALIBRATION_DATA
+      std::cout << "EAC calibration available" << std::endl;
+#endif
+
+      Json::Value eac_table = calibrations["eac_table"];
+      if (eac_table.isArray()) {
+        size_t eac_table_len = eac_table.size();
+
+        // Copy the table values into a contiguous block of memory
+        std::vector<uint8_t> eac_table_values(eac_table_len);
+        for (size_t i = 0; i < eac_table_len; i++) {
+          eac_table_values[i] = eac_table[i].asUInt();
+        }
+
+        size_t slice_len = COMM_SINGLE_SET_EAC_TABLE_LENGTH;
+        for (size_t i = 0; i < eac_table_len; i += slice_len) {
+          queueSetEACTable(server_id, i, &eac_table_values[i], std::min(slice_len, eac_table_len - i));
+          exchange();
+        }
+      }
+
+      queueSetEACOffset(server_id, calibrations["eac_offset"].asFloat());
+      exchange();
+
+      queueSetEACScale(server_id, calibrations["eac_scale"].asFloat());
+      exchange();
+    } else {
+#ifdef DEBUG_CALIBRATION_DATA
+      std::cout << "Unsupported EAC type \"" << eac_type << "\", ignoring" << std::endl;
+#endif
+    }
+  }
+
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Setting control mode" << std::endl;
 #endif
   queueSetCurrentControlMode(server_id);
-  exchange(); 
+  exchange();
 }
 
 // Sends packets to boards and collects data
