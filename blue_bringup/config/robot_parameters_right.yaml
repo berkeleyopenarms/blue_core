@@ -37,6 +37,7 @@ blue_hardware:
         - left_motor3
         - gripper_motor
     motor_ids: [40, 17, 10, 23, 22, 41, 53, 2]
+    #motor_ids: [85,74,75,78,67,61,59,86]
     # motor_current_limits: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0]
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.67, 1.67, 1.67]

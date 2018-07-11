@@ -143,7 +143,7 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
   buf.read(reinterpret_cast<char*>(&len), sizeof(len));
 
 #ifdef DEBUG_CALIBRATION_DATA
-  std::cout << len << std::endl;
+  std::cout << "Calibration length: " << len << std::endl;
 #endif
   data = "";
   readFlash(server_id, COMM_NVPARAMS_OFFSET+3, len, data); 
@@ -221,7 +221,8 @@ void BLDCControllerClient::readFlash(comm_id_t server_id, comm_full_addr_t addr,
   board.push_back(server_id);
 
   for (size_t i = 0; i < count; i += std::min(count - i, COMM_SINGLE_READ_LENGTH)) {
-    queuePacket(server_id, new ReadFlashPacket(server_id, addr, count)); 
+	size_t num_bytes = std::min(count - i, COMM_SINGLE_READ_LENGTH);
+    queuePacket(server_id, new ReadFlashPacket(server_id, addr, num_bytes)); 
     exchange(); // This can error which means when running flash commands make sure to try/catch comm_error!   
     buffer.append(rx_bufs_[server_id].remain_str()); 
   }

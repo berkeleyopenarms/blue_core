@@ -14,19 +14,16 @@ blue_hardware:
     differential_pairs: [1, 2, 3, 4, 5, 6]
     gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 14.4]
     joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    #id_torque_gains: [1.12, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    id_torque_gains: [1.6, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]
+    id_torque_gains: [1.45, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]
     # id_torque_gains: [1.38, 1.27, 1.27, 1.27, 1.27, 1.0, 1.0]
-    #softstop_min_angles: [-10.0, -10.0, -10.0, -10.0, -10.0, -10.0, -10.0, -10.0]
-    softstop_min_angles: [-4.1, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -1.45]
-    #softstop_max_angles: [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0]
-    softstop_max_angles: [1.1, 0.22, 2.6, 0.22, 2.6, 0.2, 2.6, 1.45]
+    softstop_min_angles: [-3.3, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -1.45]
+    softstop_max_angles: [2.2, 0.5, 2.6, 0.5, 2.6, 0.2, 2.6, 1.45]
     softstop_tolerance: 0.19
     softstop_torque_limit: 95.0
 
     ### Motor configuration
     #serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NOKG-if00-port0
-    serial_port: /dev/ttyUSB0
+    serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NOIG-if00-port0
     motor_names:
         - base_roll_motor
         - right_motor1
@@ -42,7 +39,7 @@ blue_hardware:
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.0, 1.0, 1.0]
 
     ### Calibration configuration
-    hardstop_start_angles: [-0.6647, -2.1294, 0.8929, -2.1951, -2.0915, -0.5770, 0.0274, 0.0]
+    hardstop_start_angles: [0.785398, -2.19, 1.570796, 0.0, -1.570796, -0.23, 0.0, 0.0]
     calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0, 0.0] # for vive calibration
 
     ### Posture control parameters for gradient descent ik pose controller
