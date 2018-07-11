@@ -146,6 +146,10 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
   uint32_t len = 0;
   std::string data;
 
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Calibrating board: " << (int) server_id << std::endl;
+#endif
+
   readFlash(server_id, COMM_NVPARAMS_OFFSET+1, 2, data);
 #ifdef DEBUG_CALIBRATION_DATA
   for (unsigned char c : data)
@@ -200,19 +204,24 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
   if (calibrations.isMember("eac_type")) {
     std::string eac_type = calibrations["eac_type"].asString();
 
-    if (string::compare(eac_type, "int8") == 0) {
+    if (eac_type.compare("int8") == 0) {
 #ifdef DEBUG_CALIBRATION_DATA
       std::cout << "EAC calibration available" << std::endl;
 #endif
 
       Json::Value eac_table = calibrations["eac_table"];
+
+#ifdef DEBUG_CALIBRATION_DATA
+      std::cout << eac_table << std::endl;
+#endif
+
       if (eac_table.isArray()) {
         size_t eac_table_len = eac_table.size();
 
         // Copy the table values into a contiguous block of memory
         std::vector<uint8_t> eac_table_values(eac_table_len);
         for (size_t i = 0; i < eac_table_len; i++) {
-          eac_table_values[i] = eac_table[i].asUInt();
+          eac_table_values[i] = eac_table[(unsigned int) i].asInt();
         }
 
         size_t slice_len = COMM_SINGLE_SET_EAC_TABLE_LENGTH;
