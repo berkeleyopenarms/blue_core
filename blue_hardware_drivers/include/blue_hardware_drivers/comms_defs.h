@@ -14,12 +14,14 @@ constexpr uint8_t COMM_SYNC_FLAG = 0xFF;
 using comm_protocol_t = uint8_t;
 constexpr comm_protocol_t COMM_VERSION = 0xFE;
 
-constexpr uint8_t COMM_CTRL_MODE = 0x00;
+using comm_ctrl_mode_t = uint8_t;
+constexpr comm_ctrl_mode_t COMM_CTRL_MODE_CURRENT = 0x00;
+constexpr comm_ctrl_mode_t COMM_CTRL_MODE_RAW_PWM = 0x01;
 
 // Message lengths are stored at 2 bytes
 using comm_msg_len_t = uint16_t;
 
-// Erros Definitions
+// Errors Definitions
 using comm_errors_t = uint16_t;
 constexpr comm_errors_t COMM_ERRORS_NONE = 0;
 constexpr comm_errors_t COMM_ERRORS_OP_FAILED = 1;

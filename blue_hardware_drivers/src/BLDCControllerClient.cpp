@@ -43,8 +43,8 @@ void BLDCControllerClient::queueLeaveBootloader(comm_id_t server_id, uint32_t ju
   queuePacket(server_id, packet);
 }
 
-void BLDCControllerClient::queueSetCurrentControlMode(comm_id_t server_id) {
-  Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_CTRL_MODE, sizeof(COMM_CTRL_MODE), reinterpret_cast<uint8_t*> (new uint8_t(COMM_CTRL_MODE)));
+void BLDCControllerClient::queueSetControlMode(comm_id_t server_id, comm_ctrl_mode_t control_mode) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_CTRL_MODE, sizeof(control_mode), reinterpret_cast<uint8_t*> (&control_mode));
   queuePacket(server_id, packet);
 }
 
@@ -185,7 +185,7 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Setting control mode" << std::endl;
 #endif
-  queueSetCurrentControlMode(server_id);
+  queueSetControlMode(server_id, COMM_CTRL_MODE_CURRENT);
   exchange(); 
 }
 
@@ -200,7 +200,7 @@ void BLDCControllerClient::exchange() {
     while (!receive(it->first)); // Get server id (key in [key, value] pair)
   }
   // Empty the queue
-  packet_queue_.clear();
+  clearQueue();
 }
 
 void BLDCControllerClient::clearQueue() {
@@ -239,9 +239,12 @@ void BLDCControllerClient::queuePacket(comm_id_t server_id, Packet* packet) {
 void BLDCControllerClient::transmit() {
   tx_buf_.clear();
   // Add Header
-  tx_buf_.write(reinterpret_cast<uint8_t*> (new uint8_t(COMM_SYNC_FLAG)), sizeof(COMM_SYNC_FLAG));
-  tx_buf_.write(reinterpret_cast<uint8_t*> (new uint8_t(COMM_VERSION)), sizeof(COMM_VERSION));
-  tx_buf_.write(reinterpret_cast<uint8_t*> (new comm_fg_t(COMM_FG_COMP)), sizeof(COMM_FG_COMP));
+  uint8_t sync_flag = COMM_SYNC_FLAG;
+  comm_protocol_t version = COMM_VERSION;
+  comm_fg_t computer_flag = COMM_FG_COMP;
+  tx_buf_.writeVar(COMM_SYNC_FLAG);
+  tx_buf_.writeVar(COMM_VERSION);
+  tx_buf_.writeVar(COMM_FG_COMP);
 
   // Generate Payload
   payload_buf_.clear();

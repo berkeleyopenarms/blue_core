@@ -33,6 +33,7 @@ public:
   void read();
   void write();
   void updateComms();
+  void setControl(bool is_enabled);
 
 private:
 

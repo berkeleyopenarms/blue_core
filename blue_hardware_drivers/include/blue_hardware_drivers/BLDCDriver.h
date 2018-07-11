@@ -28,6 +28,8 @@ class BLDCDriver {
   public:
     void init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, MotorState>* states, std::string port);
     void update(std::map<comm_id_t, float>& commands);
+    void engageControl();
+    void disengageControl();
     BLDCDriver();
   
   private:
@@ -40,5 +42,6 @@ class BLDCDriver {
 
     unsigned int loop_count_;
     bool stop_motors_;
+    bool engaged_;
 };
 

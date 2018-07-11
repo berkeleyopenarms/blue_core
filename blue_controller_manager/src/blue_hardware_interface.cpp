@@ -424,13 +424,16 @@ void BlueHW::write() {
 }
 
 void BlueHW::updateComms() {
+  read_from_motors_ = false;
+  bldc_.update(commands_);
   read_from_motors_ = true;
-  try {
-    bldc_.update(commands_);
-  } catch (comms_error e) {
-    // TODO: Return false if error
-    //ROS_ERROR("%s\n", e.what());
-    read_from_motors_ = false;
+}
+
+void BlueHW::setControl(bool is_enabled) {
+  if (is_enabled) {
+    bldc_.engageControl();
+  } else {
+    bldc_.disengageControl();
   }
 }
 

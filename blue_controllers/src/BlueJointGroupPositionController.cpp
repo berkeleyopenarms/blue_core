@@ -36,6 +36,7 @@ namespace blue_controllers
 
     // ROS_ERROR_STREAM("1 Starting Controller");
     pid_controllers_.resize(n_joints_);
+
     // ROS_ERROR_STREAM("2 Starting Controller");
     for(unsigned int i=0; i<n_joints_; i++)
     {
@@ -77,6 +78,10 @@ namespace blue_controllers
   void BlueJointGroupPositionController::update(const ros::Time& time, const ros::Duration& period)
   {
     std::vector<double> & commands = *commands_buffer_.readFromRT();
+
+    // Check if the change between this position and previous position is greater than a threshhold.
+    //antiJump(commands);
+
     for(unsigned int i=0; i<n_joints_; i++)
     {
         double command_position = commands[i];
@@ -143,7 +148,6 @@ namespace blue_controllers
       }
     }
   }
-
 } // namespace
 
 PLUGINLIB_EXPORT_CLASS( blue_controllers::BlueJointGroupPositionController, controller_interface::ControllerBase)

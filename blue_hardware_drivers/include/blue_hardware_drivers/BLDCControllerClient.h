@@ -32,7 +32,7 @@ class BLDCControllerClient {
 
     // Calibration Setup 
     void queueSetTimeout(comm_id_t server_id, uint16_t value); 
-    void queueSetCurrentControlMode(comm_id_t server_id);
+    void queueSetControlMode(comm_id_t server_id, comm_ctrl_mode_t control_mode);
     void queueSetZeroAngle(comm_id_t server_id, uint16_t value);
     void queueSetERevsPerMRev(comm_id_t server_id, uint8_t value);
     void queueSetInvertPhases(comm_id_t server_id, uint8_t value);

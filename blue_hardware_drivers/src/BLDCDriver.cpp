@@ -90,30 +90,35 @@ void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, 
         );
     zero_angles_[id] = (*states)[id].position;
   }
+
+  engaged_ = true;
 }
 
 BLDCDriver::BLDCDriver(){
   states_ = nullptr;
   stop_motors_ = false;
   loop_count_ = 0;
+  engaged_ = false;
 }
 
 void BLDCDriver::update(std::map<comm_id_t, float>& commands){
  
-  if (!stop_motors_) {
-    // Send next motor current command
-    for (auto id : boards_) {
-        device_.queueSetCommandAndGetState(id, commands[id]);
+  if (engaged_) {
+    if (!stop_motors_) {
+      // Send next motor current command
+      for (auto id : boards_) {
+          device_.queueSetCommandAndGetState(id, commands[id]);
+      }
+    } else {
+      // If one of the motors is too hot, we still want to grab the state and set effort to 0
+      for (auto id : boards_) {
+          device_.queueSetCommandAndGetState(id, 0.0);
+      }
     }
-  } else {
-    // If one of the motors is too hot, we still want to grab the state and set effort to 0
-    for (auto id : boards_) {
-        device_.queueSetCommandAndGetState(id, 0.0);
-    }
-  }
 
-  // Run the communication with each board
-  device_.exchange();
+    // Run the communication with each board
+    device_.exchange();
+  }
     
   // Get the state of the each board
   for (auto id : boards_) {
@@ -140,3 +145,67 @@ void BLDCDriver::update(std::map<comm_id_t, float>& commands){
   loop_count_++;
 }
 
+void BLDCDriver::disengageControl() {
+  engaged_ = false;
+  for (auto id : boards_) {
+    bool success = false;
+    while (!success && ros::ok()) {
+      try {
+        device_.queueSetControlMode(id, COMM_CTRL_MODE_RAW_PWM);
+        device_.exchange();
+        success = true;
+      } catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not disengage board %d, retrying...", id);
+        ros::Duration(0.2).sleep();
+      }
+    }
+    success = false;
+    while (!success && ros::ok()) {
+      // Initialize the motor
+      try { 
+        device_.queueSetTimeout(id, 0);
+        device_.exchange();
+        success = true;
+      }
+      catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not set timeout on motor %d, retrying...", id);
+        ros::Duration(0.2).sleep();
+      }
+    }
+  }
+}
+
+void BLDCDriver::engageControl() {
+  for (auto id : boards_) {
+    bool success = false;
+    while (!success && ros::ok()) {
+      try {
+        device_.queueSetControlMode(id, COMM_CTRL_MODE_CURRENT);
+        device_.exchange();
+        success = true;
+      } catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not engage board %d, retrying...", id);
+        ros::Duration(0.2).sleep();
+      }
+    }
+    success = false;
+    while (!success && ros::ok()) {
+      // Initialize the motor
+      try { 
+        device_.queueSetTimeout(id, 1000);
+        device_.exchange();
+        success = true;
+      }
+      catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not set timeout on motor %d, retrying...", id);
+        ros::Duration(0.2).sleep();
+      }
+    }
+  }
+
+  engaged_ = true;
+}

@@ -42,6 +42,18 @@ void Buffer::write(const uint8_t * data, size_t len) {
     buf_[head_++] = data[i]; // Little Endian 
   }
 }
+template<typename T>
+void Buffer::writeVar(const T &data) {
+  if (head_ + sizeof(data) > max_len_)
+    throw std::exception();
+
+  const uint8_t* data_ptr = reinterpret_cast<const uint8_t*> (&data);
+  for (int i = 0; i < sizeof(data); i++) {
+    buf_[head_++] = data_ptr[i]; // Little Endian 
+  }
+}
+
+template void Buffer::writeVar<uint8_t>(const uint8_t&);
 
 void Buffer::read(uint8_t* data, size_t len) {
   if (head_ - len < 0)

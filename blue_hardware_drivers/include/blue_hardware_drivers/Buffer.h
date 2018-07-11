@@ -27,6 +27,9 @@ class Buffer {
 
     void read (uint8_t* data, size_t len);
     void write(const uint8_t* data, size_t len);
+
+    template <typename T> void writeVar(const T &data); 
+
     void addBuf(Buffer& buf);
 
     void clear();

@@ -1,6 +1,7 @@
 #ifndef EFFORT_CONTROLLERS_KOKO_JOINT_GROUP_POSITION_CONTROLLER_H
 #define EFFORT_CONTROLLERS_KOKO_JOINT_GROUP_POSITION_CONTROLLER_H
 
+#include <math.h>
 #include <ros/node_handle.h>
 #include <urdf/model.h>
 #include <control_toolbox/pid.h>
