@@ -17,10 +17,13 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
 
 -----
 
-## How do I set up a development environment?
+## How do I set up the computer to run my arm?
 
 - Install Ubuntu 16.0.4
 - [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
+  - Start from 1.2 to 1.7, just copy paste into terminal 
+  - For step 1.4, use bare bones unless you plan on developing using ROS visualization tools
+  - For step 1.6, use only the first set of commands 
 - Create a workspace:
   ```bash
   mkdir -p ~/blue_ws/src && cd "$_"
@@ -48,14 +51,14 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   sudo addgroup $USER dialout
   ```
 - Log out of your user account in Ubuntu and then log back in for the permissions to apply
-- Proceed to setup the arm with power supply and usb connector (in quick start guide)
+- Proceed to setup the arm with power supply and usb connector ("Electrical Setup" in quick start guide)
 
 -----
 
 ## I have a robot turned on and usb connected to my computer -- how do I run the control stack?
 
 After doing the above setup steps once, the following will immediately boot the arm into gravity comp. 
-With your workspace's `devel/setup.bash` script sourced:
+
 - For a right arm (default setup):
   ```bash
   roslaunch blue_bringup right.launch
