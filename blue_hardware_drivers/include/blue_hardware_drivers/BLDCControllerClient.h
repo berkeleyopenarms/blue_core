@@ -38,6 +38,13 @@ class BLDCControllerClient {
     void queueSetInvertPhases(comm_id_t server_id, uint8_t value);
     void queueSetTorqueConstant(comm_id_t server_id, float value);
     void queueSetPositionOffset(comm_id_t server_id, float value);
+    void queueSetEACScale(comm_id_t server_id, float value);
+    void queueSetEACOffset(comm_id_t server_id, float value);
+    void queueSetEACTable(comm_id_t server_id, size_t start_index, uint8_t *values, size_t count);
+    void queueSetDirectCurrentControllerKp(comm_id_t server_id, float value);
+    void queueSetDirectCurrentControllerKi(comm_id_t server_id, float value);
+    void queueSetQuadratureCurrentControllerKp(comm_id_t server_id, float value);
+    void queueSetQuadratureCurrentControllerKi(comm_id_t server_id, float value);
 
     // Drive Commands
     void queueSetCommand(comm_id_t server_id, float value);

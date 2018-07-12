@@ -78,6 +78,41 @@ void BLDCControllerClient::queueSetPositionOffset(comm_id_t server_id, float val
   queuePacket(server_id, packet);
 }
 
+void BLDCControllerClient::queueSetEACScale(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EAC_SCALE, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetEACOffset(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EAC_OFFSET, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetEACTable(comm_id_t server_id, size_t start_index, uint8_t *values, size_t count) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EAC_TABLE + start_index, sizeof(*values) * count, values, count);
+  queuePacket(server_id, packet);
+}
+
+void BLDCControllerClient::queueSetDirectCurrentControllerKp(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_DI_KP, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}  
+
+void BLDCControllerClient::queueSetDirectCurrentControllerKi(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_DI_KI, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}  
+
+void BLDCControllerClient::queueSetQuadratureCurrentControllerKp(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_QI_KP, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}  
+
+void BLDCControllerClient::queueSetQuadratureCurrentControllerKi(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_QI_KI, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}  
+
 void BLDCControllerClient::queueSetCommand(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
@@ -180,8 +215,59 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
   std::cout << "Position Offset: " << calibrations["zero"].asFloat() << std::endl;
 #endif
   queueSetPositionOffset(server_id, calibrations["zero"].asFloat());
-  exchange(); 
-  
+  exchange();
+
+  if (calibrations.isMember("eac_type")) {
+    std::string eac_type = calibrations["eac_type"].asString();
+
+    if (eac_type.compare("int8") == 0) {
+#ifdef DEBUG_CALIBRATION_DATA
+      std::cout << "EAC calibration available" << std::endl;
+#endif
+
+      Json::Value eac_table = calibrations["eac_table"];
+
+#ifdef DEBUG_CALIBRATION_DATA
+      std::cout << eac_table << std::endl;
+#endif
+
+      if (eac_table.isArray()) {
+        size_t eac_table_len = eac_table.size();
+
+        // Copy the table values into a contiguous block of memory
+        std::vector<uint8_t> eac_table_values(eac_table_len);
+        for (size_t i = 0; i < eac_table_len; i++) {
+          eac_table_values[i] = eac_table[(unsigned int) i].asInt();
+        }
+
+        size_t slice_len = COMM_SINGLE_SET_EAC_TABLE_LENGTH;
+        for (size_t i = 0; i < eac_table_len; i += slice_len) {
+          queueSetEACTable(server_id, i, &eac_table_values[i], std::min(slice_len, eac_table_len - i));
+          exchange();
+        }
+      }
+
+      queueSetEACOffset(server_id, calibrations["eac_offset"].asFloat());
+      exchange();
+
+      queueSetEACScale(server_id, calibrations["eac_scale"].asFloat());
+      exchange();
+    } else {
+#ifdef DEBUG_CALIBRATION_DATA
+      std::cout << "Unsupported EAC type \"" << eac_type << "\", ignoring" << std::endl;
+#endif
+    }
+  }
+
+  queueSetDirectCurrentControllerKp(server_id, 0.5f);
+  exchange();
+  queueSetDirectCurrentControllerKi(server_id, 0.001f);
+  exchange();
+  queueSetQuadratureCurrentControllerKp(server_id, 0.5f);
+  exchange();
+  queueSetQuadratureCurrentControllerKi(server_id, 0.001f);
+  exchange();
+
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Setting control mode" << std::endl;
 #endif
