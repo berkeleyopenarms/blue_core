@@ -40,7 +40,8 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   ```
 - Source:
   ```bash
-  source devel/setup.bash
+  echo "source ~/blue_ws/devel/setup.bash" >> ~/.bashrc
+  source ~/blue_ws/devel/setup.bash
   ```
 
 -----
