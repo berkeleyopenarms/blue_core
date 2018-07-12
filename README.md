@@ -43,6 +43,10 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   echo "source ~/blue_ws/devel/setup.bash" >> ~/.bashrc
   source ~/blue_ws/devel/setup.bash
   ```
+- Setup User Permissions:
+  ```bash
+  sudo addgroup $USER dialout
+  ```
 
 -----
 
