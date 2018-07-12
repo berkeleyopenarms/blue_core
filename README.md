@@ -31,11 +31,11 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   ```
 - Install dependencies:
   ```bash
+  cd ~/blue_ws
   rosdep install --from-paths src --ignore-src -r -y
   ```
 - Build:
   ```bash
-  cd ~/blue_ws
   catkin_make install
   ```
 - Source:
