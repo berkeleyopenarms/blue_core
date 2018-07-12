@@ -47,25 +47,28 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   ```bash
   sudo addgroup $USER dialout
   ```
+- Log out of your user account in Ubuntu and then log back in for the permissions to apply
+- Proceed to setup the arm with power supply and usb connector (in quick start guide)
 
 -----
 
-## I have a robot turned on and connected to my computer -- how do I run the control stack?
+## I have a robot turned on and usb connected to my computer -- how do I run the control stack?
 
+After doing the above setup steps once, the following will immediately boot the arm into gravity comp. 
 With your workspace's `devel/setup.bash` script sourced:
+- For a right arm (default setup):
+  ```bash
+  roslaunch blue_bringup right.launch
+  ``` 
 - For a left arm:
   ```bash
   roslaunch blue_bringup left.launch
-  ``` 
-- For a right arm:
-  ```bash
-  roslaunch blue_bringup right.launch
   ``` 
 - For the (experimental) two-arm setup:
   ```bash
   roslaunch blue_bringup full.launch
   ```
   
-For different arms, there are a handful of configuration values that currently still need to be changed in the `koko_bringup/config/robot_parameters_*.yaml` files. Notably:
+(for 444) For different link, there are a handful of configuration values that currently still need to be changed in the `blue_bringup/config/robot_parameters_*.yaml` files. Notably:
 - Serial port
 - Motor driver IDs
