@@ -306,9 +306,9 @@ void BLDCControllerClient::readFlash(comm_id_t server_id, comm_full_addr_t addr,
   std::vector<comm_id_t> board;
   board.push_back(server_id);
 
-  for (size_t i = 0; i < count; i += std::min(count - i, COMM_SINGLE_READ_LENGTH)) {
-	size_t num_bytes = std::min(count - i, COMM_SINGLE_READ_LENGTH);
-    queuePacket(server_id, new ReadFlashPacket(server_id, addr, num_bytes)); 
+  for (size_t i = 0; i < count; i += COMM_SINGLE_READ_LENGTH) {
+    size_t num_bytes = std::min(count - i, COMM_SINGLE_READ_LENGTH);
+    queuePacket(server_id, new ReadFlashPacket(server_id, addr + i, num_bytes)); 
     exchange(); // This can error which means when running flash commands make sure to try/catch comm_error!   
     buffer.append(rx_bufs_[server_id].remain_str()); 
   }
