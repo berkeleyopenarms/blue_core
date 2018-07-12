@@ -257,18 +257,17 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
       std::cout << "Unsupported EAC type \"" << eac_type << "\", ignoring" << std::endl;
 #endif
     }
+    queueSetDirectCurrentControllerKp(server_id, 0.5f);
+    exchange();
+    queueSetDirectCurrentControllerKi(server_id, 0.001f);
+    exchange();
+    queueSetQuadratureCurrentControllerKp(server_id, 0.5f);
+    exchange();
+    queueSetQuadratureCurrentControllerKi(server_id, 0.001f);
+    exchange();
   }
 
-  queueSetDirectCurrentControllerKp(server_id, 0.5f);
-  exchange();
-  queueSetDirectCurrentControllerKi(server_id, 0.001f);
-  exchange();
-  queueSetQuadratureCurrentControllerKp(server_id, 0.5f);
-  exchange();
-  queueSetQuadratureCurrentControllerKi(server_id, 0.001f);
-  exchange();
-
-#ifdef DEBUG_CALIBRATION_DATA
+  #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Setting control mode" << std::endl;
 #endif
   queueSetControlMode(server_id, COMM_CTRL_MODE_CURRENT);
@@ -306,9 +305,9 @@ void BLDCControllerClient::readFlash(comm_id_t server_id, comm_full_addr_t addr,
   std::vector<comm_id_t> board;
   board.push_back(server_id);
 
-  for (size_t i = 0; i < count; i += std::min(count - i, COMM_SINGLE_READ_LENGTH)) {
+  for (size_t i = 0; i < count; i += COMM_SINGLE_READ_LENGTH) {
 	size_t num_bytes = std::min(count - i, COMM_SINGLE_READ_LENGTH);
-    queuePacket(server_id, new ReadFlashPacket(server_id, addr, num_bytes)); 
+    queuePacket(server_id, new ReadFlashPacket(server_id, addr + i, num_bytes)); 
     exchange(); // This can error which means when running flash commands make sure to try/catch comm_error!   
     buffer.append(rx_bufs_[server_id].remain_str()); 
   }
