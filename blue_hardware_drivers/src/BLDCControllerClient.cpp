@@ -93,6 +93,26 @@ void BLDCControllerClient::queueSetEACTable(comm_id_t server_id, size_t start_in
   queuePacket(server_id, packet);
 }
 
+void BLDCControllerClient::queueSetDirectCurrentControllerKp(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_DI_KP, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}  
+
+void BLDCControllerClient::queueSetDirectCurrentControllerKi(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_DI_KI, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}  
+
+void BLDCControllerClient::queueSetQuadratureCurrentControllerKp(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_QI_KP, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}  
+
+void BLDCControllerClient::queueSetQuadratureCurrentControllerKi(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_QI_KI, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+}  
+
 void BLDCControllerClient::queueSetCommand(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
@@ -237,13 +257,22 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
       queueSetEACScale(server_id, calibrations["eac_scale"].asFloat());
       exchange();
     } else {
+
 #ifdef DEBUG_CALIBRATION_DATA
       std::cout << "Unsupported EAC type \"" << eac_type << "\", ignoring" << std::endl;
 #endif
     }
+    queueSetDirectCurrentControllerKp(server_id, 0.5f);
+    exchange();
+    queueSetDirectCurrentControllerKi(server_id, 0.001f);
+    exchange();
+    queueSetQuadratureCurrentControllerKp(server_id, 0.5f);
+    exchange();
+    queueSetQuadratureCurrentControllerKi(server_id, 0.001f);
+    exchange();
   }
 
-#ifdef DEBUG_CALIBRATION_DATA
+  #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Setting control mode" << std::endl;
 #endif
 
@@ -283,7 +312,11 @@ void BLDCControllerClient::readFlash(comm_id_t server_id, comm_full_addr_t addr,
   board.push_back(server_id);
 
   for (size_t i = 0; i < count; i += COMM_SINGLE_READ_LENGTH) {
+<<<<<<< HEAD
 	size_t num_bytes = std::min(count - i, COMM_SINGLE_READ_LENGTH);
+=======
+    size_t num_bytes = std::min(count - i, COMM_SINGLE_READ_LENGTH);
+>>>>>>> new_hardware_interface
     queuePacket(server_id, new ReadFlashPacket(server_id, addr + i, num_bytes)); 
     exchange(); // This can error which means when running flash commands make sure to try/catch comm_error!   
     buffer.append(rx_bufs_[server_id].remain_str()); 
