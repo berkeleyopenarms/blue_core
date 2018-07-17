@@ -58,9 +58,15 @@ int main(int argc, char** argv)
       frequency += (ros::Time::now() - temp_time).toSec();
       if ((count++%num_comms_per_update) == 0) {
         ROS_INFO("Communication frequency is %fHz. Number of errors in last %d packets: %d", (1/(frequency/num_comms_per_update)), num_comms_per_update, num_errors);
+        // Check for 100% error rate! If so, exit loop (kill control stack)
+        if (num_errors == num_comms_per_update) {
+          ROS_ERROR("100%% packet drop. Exiting...");
+          break; 
+        }
         frequency = 0;
         num_errors = 0;
       }
+
     }
 
     loop_rate.sleep();
