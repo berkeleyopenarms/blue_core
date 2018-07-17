@@ -20,6 +20,7 @@ find_package(
 
 catkin_package(
    INCLUDE_DIRS include
+   LIBRARIES ${PROJECT_NAME}
 )
 
 include_directories(
