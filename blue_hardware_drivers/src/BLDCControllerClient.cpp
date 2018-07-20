@@ -21,7 +21,6 @@ BLDCControllerClient::BLDCControllerClient(std::string port, const std::vector<c
 }
 
 void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& boards) {
-  system(std::string("setserial " + port + " ^low_latency").c_str());
   ser_.setPort(port);
   ser_.setBaudrate(COMM_DEFAULT_BAUD_RATE);
   ser_.setTimeout(serial::Timeout::max(), 4, 1, 4, 1);
