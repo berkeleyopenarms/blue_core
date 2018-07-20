@@ -17,6 +17,7 @@ BLDCControllerClient::BLDCControllerClient() {
 
 BLDCControllerClient::BLDCControllerClient(std::string port, const std::vector<comm_id_t>& boards) {
   init(port, boards);
+  allocs_ = 0;
 }
 
 void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& boards) {
@@ -42,87 +43,104 @@ void BLDCControllerClient::queueLeaveBootloader(comm_id_t server_id, uint32_t ju
 
   Packet* packet = new JumpToAddrPacket(server_id, jump_addr);
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueSetControlMode(comm_id_t server_id, comm_ctrl_mode_t control_mode) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_CTRL_MODE, sizeof(control_mode), reinterpret_cast<uint8_t*> (&control_mode));
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueSetTimeout(comm_id_t server_id, uint16_t value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_WATCHDOG, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueSetZeroAngle(comm_id_t server_id, uint16_t value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_REV_START, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueSetERevsPerMRev(comm_id_t server_id, uint8_t value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EREVS_PER_MREV, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueSetInvertPhases(comm_id_t server_id, uint8_t value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_INV_PHASES, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueSetTorqueConstant(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_MOTOR_T, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueSetPositionOffset(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_POS_OFFSET, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueSetEACScale(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EAC_SCALE, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueSetEACOffset(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EAC_OFFSET, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueSetEACTable(comm_id_t server_id, size_t start_index, uint8_t *values, size_t count) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_EAC_TABLE + start_index, sizeof(*values) * count, values, count);
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueSetDirectCurrentControllerKp(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_DI_KP, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }  
 
 void BLDCControllerClient::queueSetDirectCurrentControllerKi(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_DI_KI, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }  
 
 void BLDCControllerClient::queueSetQuadratureCurrentControllerKp(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_QI_KP, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }  
 
 void BLDCControllerClient::queueSetQuadratureCurrentControllerKi(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_QI_KI, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }  
 
 void BLDCControllerClient::queueSetCommand(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueGetRotorPosition(comm_id_t server_id) {
   // Generate Transmit Packet
   Packet* packet = new ReadRegPacket(server_id, COMM_REG_RO_ROTOR_P, 1);
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::resultGetRotorPosition(comm_id_t server_id, float* position) {
@@ -135,12 +153,14 @@ void BLDCControllerClient::queueSetCommandAndGetRotorPosition(comm_id_t server_i
     COMM_REG_RO_ROTOR_P, 1,                                          // Read
     COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*>(&value));  // Write
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::queueGetState(comm_id_t server_id) {
   // Generate Transmit Packet
   Packet* packet = new ReadRegPacket (server_id, COMM_REG_RO_ROTOR_P, 9);  
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::resultGetState(comm_id_t server_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, int32_t* acc_x, int32_t* acc_y, int32_t* acc_z) {
@@ -161,6 +181,7 @@ void BLDCControllerClient::queueSetCommandAndGetState(comm_id_t server_id, float
     COMM_REG_RO_ROTOR_P, 9,                                          // Read
     COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*>(&value));  // Write
   queuePacket(server_id, packet);
+  allocs_++;
 }
 
 void BLDCControllerClient::initMotor(comm_id_t server_id){
@@ -293,6 +314,10 @@ void BLDCControllerClient::exchange() {
   }
   // Empty the queue
   clearQueue();
+#ifdef DEBUG_ALLOCS
+  // This should ALWAYS be 0
+  std::cout << "Number of unfreed allocations: " << allocs_ << std::endl;
+#endif
 }
 
 void BLDCControllerClient::clearQueue() {
@@ -300,6 +325,7 @@ void BLDCControllerClient::clearQueue() {
     auto packet = it->second; // Get packet pointer (value in [key, value] pair)
     if (packet != nullptr) {
       delete packet;
+      allocs_--;
       it->second = nullptr;
     }
   }
@@ -309,12 +335,10 @@ void BLDCControllerClient::clearQueue() {
 
 /* Private Flash Accessor/Mutator Members */
 void BLDCControllerClient::readFlash(comm_id_t server_id, comm_full_addr_t addr, uint32_t count, std::string& buffer){
-  std::vector<comm_id_t> board;
-  board.push_back(server_id);
-
   for (size_t i = 0; i < count; i += COMM_SINGLE_READ_LENGTH) {
 	size_t num_bytes = std::min(count - i, COMM_SINGLE_READ_LENGTH);
     queuePacket(server_id, new ReadFlashPacket(server_id, addr + i, num_bytes)); 
+    allocs_++;
     exchange(); // This can error which means when running flash commands make sure to try/catch comm_error!   
     buffer.append(rx_bufs_[server_id].remain_str()); 
   }
@@ -361,6 +385,7 @@ void BLDCControllerClient::transmit() {
     payload_buf_.addBuf(sub_packet_buf_);
 
     delete packet;
+    allocs_--;
     it->second = nullptr;
   }
   // Add total packet length

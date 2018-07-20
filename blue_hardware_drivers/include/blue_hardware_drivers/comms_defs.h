@@ -8,6 +8,7 @@
 //#define DEBUG_RECEIVE
 //#define DEBUG_RECEIVE_CRC
 //#define DEBUG_CALIBRATION_DATA
+//#define DEBUG_ALLOCS
 
 constexpr uint8_t COMM_SYNC_FLAG = 0xFF;
 // Reverse index from 0xFF (Protocol V1 and V2 use FF)
