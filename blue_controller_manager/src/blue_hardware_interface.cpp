@@ -152,13 +152,13 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
       gear_ratios_temp[1] = -gear_ratios_[j_idx];
       j_idx++;
 
-      differential_transmissions_[differential_idx] = new ti::DifferentialTransmission(actuator_ratios, gear_ratios_temp);
+      differential_transmissions_[differential_idx] = std::make_shared<ti::DifferentialTransmission>(actuator_ratios, gear_ratios_temp);
       differential_idx++;
 
     } else {
       // a simple transmission because not in paired constraints
       ROS_INFO("Joint Index %d", j_idx);
-      simple_transmissions_[simple_idx] = new ti::SimpleTransmission(-gear_ratios_[j_idx], 0.0);
+      simple_transmissions_[simple_idx] = std::make_shared<ti::SimpleTransmission>(-gear_ratios_[j_idx], 0.0);
       simple_idx++;
       j_idx++;
     }
@@ -230,11 +230,11 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
       // a differential transmission if in paired constraints
 
       actuator_to_joint_interface_.registerHandle(ti::ActuatorToJointStateHandle("differential_trans" + oss.str(),
-            differential_transmissions_[differential_idx],
+            differential_transmissions_[differential_idx].get(),
             actuator_states_[a_idx],
             joint_states_[a_idx]));
       joint_to_actuator_interface_.registerHandle(ti::JointToActuatorEffortHandle("differential_trans" + oss.str(),
-            differential_transmissions_[differential_idx],
+            differential_transmissions_[differential_idx].get(),
             actuator_commands_[a_idx],
             joint_commands_[a_idx]));
       joint_index += 2;
@@ -242,11 +242,11 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
     } else {
       // a simple transmission because not in paired constraints
       actuator_to_joint_interface_.registerHandle(ti::ActuatorToJointStateHandle("simple_trans" + oss.str(),
-            simple_transmissions_[simple_idx],
+            simple_transmissions_[simple_idx].get(),
             actuator_states_[a_idx],
             joint_states_[a_idx]));
       joint_to_actuator_interface_.registerHandle(ti::JointToActuatorEffortHandle("simple_trans" + oss.str(),
-            simple_transmissions_[simple_idx],
+            simple_transmissions_[simple_idx].get(),
             actuator_commands_[a_idx],
             joint_commands_[a_idx]));
       joint_index += 1;
@@ -444,7 +444,7 @@ void BlueHW::buildDynamicChain(KDL::Chain &chain){
 
     if (seg.getJoint().getType() != 8)
     {
-      JointParams* jointParam = new JointParams();
+      std::shared_ptr<JointParams> jointParam = std::make_shared<JointParams>();
       std::string jointName = seg.getJoint().getName();
       kdl_chain_.addSegment(seg);
       double id_gain = id_gains_[i];

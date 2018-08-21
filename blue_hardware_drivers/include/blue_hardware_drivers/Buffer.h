@@ -13,7 +13,7 @@
 class Buffer {
   public:
     ~Buffer() {
-      delete buf_;
+      delete [] buf_;
     }
 
     void init(size_t len); 

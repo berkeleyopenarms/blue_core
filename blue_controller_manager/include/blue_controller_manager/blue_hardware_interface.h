@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <vector>
 #include <string>
+#include <memory>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
@@ -101,8 +102,8 @@ private:
   // Transmission interfaces
   ti::ActuatorToJointStateInterface actuator_to_joint_interface_;
   ti::JointToActuatorEffortInterface joint_to_actuator_interface_;
-  std::vector<ti::SimpleTransmission *> simple_transmissions_;
-  std::vector<ti::DifferentialTransmission *> differential_transmissions_;
+  std::vector<std::shared_ptr<ti::SimpleTransmission>> simple_transmissions_;
+  std::vector<std::shared_ptr<ti::DifferentialTransmission>> differential_transmissions_;
   int num_diff_actuators_;
   bool has_base_;
   bool has_gripper_;
@@ -135,7 +136,7 @@ private:
   KDL::Vector gravity_vector_;
   KDL::Chain kdl_chain_;
   KDL::JntArray id_torques_;
-  std::vector<JointParams*> joint_params_;
+  std::vector<std::shared_ptr<JointParams>> joint_params_;
 };
 
 #endif // KOKO_HARDWARE_INTERFACE

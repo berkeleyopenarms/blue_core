@@ -23,7 +23,6 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
 - [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
   - Start from 1.2 to 1.7, just copy paste into terminal 
   - For step 1.4, use bare bones unless you plan on developing using ROS visualization tools
-  - For step 1.6, use only the first set of commands 
 - Create a workspace:
   ```bash
   mkdir -p ~/blue_ws/src && cd "$_"
@@ -46,18 +45,23 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   echo "source ~/blue_ws/devel/setup.bash" >> ~/.bashrc
   source ~/blue_ws/devel/setup.bash
   ```
-- Setup User Permissions:
+- Setup user permissions:
   ```bash
   sudo addgroup $USER dialout
   ```
+- There are a handful of configuration values in `blue_bringup/config/robot_parameters_*.yaml` that will differ for each individual arm, notably:
+  - `serial_port`
+  - `motor_ids`
+  
+  They should be replaced with the values specific to your robot arm.
 - Log out of your user account in Ubuntu and then log back in for the permissions to apply
-- Proceed to setup the arm with power supply and usb connector ("Electrical Setup" in quick start guide)
+- Proceed to setup the arm with power supply and USB adapter ("Electrical Setup" in Quick Start Guide)
 
 -----
 
-## I have a robot turned on and usb connected to my computer -- how do I run the control stack?
+## The robot is now turned on, connected via USB, and in the proper startup position -- how do I run the control stack?
 
-After doing the above setup steps once, the following will immediately boot the arm into gravity comp. 
+After doing the above setup steps once, the following will immediately boot the arm into gravity compensation mode:
 
 - For a right arm (default setup):
   ```bash
@@ -71,7 +75,3 @@ After doing the above setup steps once, the following will immediately boot the 
   ```bash
   roslaunch blue_bringup full.launch
   ```
-  
-(for 444) For different link, there are a handful of configuration values that currently still need to be changed in the `blue_bringup/config/robot_parameters_*.yaml` files. Notably:
-- Serial port
-- Motor driver IDs
