@@ -283,17 +283,18 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
       std::cout << "Unsupported EAC type \"" << eac_type << "\", ignoring" << std::endl;
 #endif
     }
-    queueSetDirectCurrentControllerKp(server_id, 0.5f);
-    exchange();
-    queueSetDirectCurrentControllerKi(server_id, 0.001f);
-    exchange();
-    queueSetQuadratureCurrentControllerKp(server_id, 0.5f);
-    exchange();
-    queueSetQuadratureCurrentControllerKi(server_id, 0.001f);
-    exchange();
   }
 
-  #ifdef DEBUG_CALIBRATION_DATA
+  queueSetDirectCurrentControllerKp(server_id, 0.5f);
+  exchange();
+  queueSetDirectCurrentControllerKi(server_id, 0.001f);
+  exchange();
+  queueSetQuadratureCurrentControllerKp(server_id, 0.5f);
+  exchange();
+  queueSetQuadratureCurrentControllerKi(server_id, 0.001f);
+  exchange();
+
+#ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Setting control mode" << std::endl;
 #endif
 
