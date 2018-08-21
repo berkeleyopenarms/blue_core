@@ -32,7 +32,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/wrist_roll_link.STL" />
+            filename="package://blue_descriptions/meshes/wrist_roll_link_open.STL" />
         </geometry>
         <material name="">
           <color rgba="1 1 1 1" />
@@ -44,7 +44,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/wrist_roll_link.STL" />
+            filename="package://blue_descriptions/meshes/wrist_roll_link_open.STL" />
         </geometry>
       </collision>
     </link>
@@ -73,7 +73,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/wrist_roll_link.STL" />
+            filename="package://blue_descriptions/meshes/wrist_roll_link_open.STL" />
         </geometry>
         <material
           name="">
@@ -87,7 +87,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/wrist_roll_link.STL" />
+            filename="package://blue_descriptions/meshes/wrist_roll_link_open.STL" />
         </geometry>
       </collision>
     </link>
