@@ -16,17 +16,6 @@
       file="$(find blue_bringup)/config/robot_parameters_$(arg side).yaml"
       command="load" />
 
-    <!-- Motor driver communication -->
-    <!--
-    <node
-      name="motor_interface"
-      pkg="blue_hardware_drivers"
-      type="bldc_driver.py"
-      ns="blue_hardware"
-      required="true"
-      output="screen" />
-    -->
-
     <!-- Start the control stack -->
     <!-- http://wiki.ros.org/ros_control -->
     <include
@@ -36,7 +25,8 @@
       name="blue_controller_manager"
       pkg="blue_controller_manager"
       type="blue_controller_manager"
-      output="screen" />
+      output="screen"
+      required="true" />
     <node
       name="$(anon blue_controller_spawner)"
       pkg="blue_controller_manager"

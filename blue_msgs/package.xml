@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <name>blue_msgs</name>
+  <version>0.0.0</version>
+  <description>The blue_msgs package</description>
+
+  <maintainer email="brentyi@berkeley.edu">Brent Yi</maintainer>
+
+  <license>BSD</license>
+
+  <author email="brentyi@berkeley.edu">Brent Yi</author>
+  <author email="phil80301@berkeley.edu">Philipp Wu</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+
+</package>

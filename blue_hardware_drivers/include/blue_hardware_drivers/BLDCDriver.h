@@ -9,32 +9,32 @@
 #include "math.h"
 #include "time.h"
 
+#include "blue_msgs/MotorState.h"
 #include "blue_hardware_drivers/BLDCControllerClient.h"
 
 constexpr int MAX_TEMP_WARNING = 60;
 constexpr int MAX_TEMP_SHUTOFF = 70;
 
-struct MotorState {
-  float position;
-  float velocity;
-  float di;
-  float qi;
-  float temp;
-  float voltage;
-  int32_t acc_x, acc_y, acc_z;
-};
+// struct MotorState {
+//   float position;
+//   float velocity;
+//   float di;
+//   float qi;
+//   float temp;
+//   float voltage;
+//   int32_t acc_x, acc_y, acc_z;
+// };
 
 class BLDCDriver {
   public:
-    void init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, MotorState>* states, std::string port);
+    void init(const std::vector<comm_id_t> &boards, blue_msgs::MotorState* states, std::string port);
     void update(std::map<comm_id_t, float>& commands);
     void engageControl();
     void disengageControl();
     BLDCDriver();
-  
+
   private:
-    std::map<comm_id_t, MotorState>* states_;
-    std::map<comm_id_t, float> zero_angles_;
+    blue_msgs::MotorState* states_;
     std::vector<comm_id_t> boards_;
 
     serial::Serial ser_;

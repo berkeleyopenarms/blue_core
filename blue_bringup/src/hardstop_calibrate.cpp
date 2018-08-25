@@ -26,7 +26,6 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <tf2/LinearMath/Transform.h>
-#include <blue_hardware_drivers/MotorState.h>
 
 unsigned int nj;
 std::vector<double> hardstop_start_angles;

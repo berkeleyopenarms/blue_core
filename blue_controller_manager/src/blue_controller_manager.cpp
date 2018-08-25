@@ -25,49 +25,39 @@ int main(int argc, char** argv)
 
   ros::AsyncSpinner spinner(4);
   spinner.start();
-  
-  bool home_mode = false;
+
   //robot.setControl(false);
 
   ros::Time prev_time = ros::Time::now();
-  int count = 0;
-  float frequency = 0;
   int num_errors = 0;
-  int num_comms_per_update = 100;
+  long count = 0;
+  double avg_frequency = 0;
   while (ros::ok())
   {
-    if ( !home_mode ) {
-      ros::Time temp_time = ros::Time::now();
+    ros::Time temp_time = ros::Time::now();
 
+    try {
       robot.read();
-
-      ros::Time current_time = ros::Time::now();
-      cm.update(current_time, current_time - prev_time);
-      prev_time = current_time;
-
-      robot.write();
-
-      try {
-        robot.updateComms();
-      } catch (comms_error e) {
-        //ROS_ERROR("%s\n", e.what());
-        num_errors++;
+      num_errors = 0;
+    } catch (comms_error e) {
+      ROS_WARN_THROTTLE(1.0, "%s\n", e.what());
+      num_errors++;
+      if (num_errors == 100) {
+        ROS_ERROR("100 consecutive communication errors, exiting...");
+        break;
       }
-
-      // Information for user! 
-      frequency += (ros::Time::now() - temp_time).toSec();
-      if ((count++%num_comms_per_update) == 0) {
-        ROS_INFO("Communication frequency is %fHz. Number of errors in last %d packets: %d", (1/(frequency/num_comms_per_update)), num_comms_per_update, num_errors);
-        // Check for 100% error rate! If so, exit loop (kill control stack)
-        if (num_errors == num_comms_per_update) {
-          ROS_ERROR("100%% packet drop. Exiting...");
-          break; 
-        }
-        frequency = 0;
-        num_errors = 0;
-      }
-
     }
+
+    ros::Time current_time = ros::Time::now();
+    cm.update(current_time, current_time - prev_time);
+    double frequency = 1.0 / (current_time - prev_time).toSec();
+    prev_time = current_time;
+
+    robot.write();
+
+    // Information for user!
+    ROS_INFO_THROTTLE(1.0, "Communication frequency is %.2fHz", frequency);
+    count++;
 
     loop_rate.sleep();
   }

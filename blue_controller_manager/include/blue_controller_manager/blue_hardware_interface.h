@@ -1,5 +1,5 @@
-#ifndef KOKO_HARDWARE_INTERFACE_H
-#define KOKO_HARDWARE_INTERFACE_H
+#ifndef BLUE_HARDWARE_INTERFACE_H
+#define BLUE_HARDWARE_INTERFACE_H
 
 #include "blue_controller_manager/blue_hardware_interface.h"
 
@@ -15,7 +15,7 @@
 #include <transmission_interface/transmission_interface.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Vector3.h>
-#include <blue_hardware_drivers/MotorState.h>
+#include <blue_msgs/MotorState.h>
 
 #include <geometry_msgs/Vector3.h>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
@@ -33,19 +33,19 @@ public:
   BlueHW(ros::NodeHandle &nh);
   void read();
   void write();
-  void updateComms();
   void setControl(bool is_enabled);
 
 private:
 
+  // Setup helpers
   template <typename TParam>
   void getRequiredParam(ros::NodeHandle &nh, const std::string name, TParam &dest);
-  void motorStateCallback();
+  void setupMotorComms(std::string &port);
+  void buildDynamicChain(KDL::Chain &chain);
+
   void calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
-  void gravityVectorCallback(const geometry_msgs::Vector3ConstPtr& grav);
   void setReadGravityVector();
   void computeInverseDynamics();
-  void buildDynamicChain(KDL::Chain &chain);
 
   struct JointParams
   {
@@ -68,24 +68,19 @@ private:
   BLDCDriver bldc_;
 
   // Publishers and subscribers
-  ros::Subscriber motor_state_sub_;
   std::vector<ros::Publisher> motor_cmd_publishers_;
-  std::vector<ros::Publisher> motor_pos_publishers_;
-  ros::Publisher gravity_publisher_;
+  ros::Publisher motor_state_publisher_;
   ros::Subscriber joint_state_tracker_sub_;
-  ros::Subscriber gravity_vector_sub_;
 
   // Parameters read in from configuration
   std::vector<std::string> joint_names_;
   std::vector<std::string> motor_names_;
-  std::vector<int> motor_ids_;
   std::vector<double> gear_ratios_;
   std::vector<double> current_to_torque_ratios_;
   std::vector<int> differential_pairs_;
   std::vector<double> softstop_min_angles_;
   std::vector<double> softstop_max_angles_;
   std::vector<double> joint_torque_directions_;
-  std::vector<double> actuator_revolution_constant_;
   std::vector<double> id_gains_;
   double softstop_torque_limit_;
   double softstop_tolerance_;
@@ -94,7 +89,6 @@ private:
   // Calibration
   int calibration_counter_;
   bool is_calibrated_;
-  double is_hardstop_calibrate_;
   std::vector<double> joint_pos_initial_;
   std::vector<double> actuator_pos_initial_;
   int num_joints_;
@@ -114,10 +108,10 @@ private:
   std::vector<ti::JointData> joint_states_;
   std::vector<ti::JointData> joint_commands_;
 
-  // Motor State Map
-  std::map<comm_id_t, MotorState> states_;
-  std::map<comm_id_t, float> commands_;
-  std::vector<comm_id_t> boards_;
+  // Motor states
+  std::vector<comm_id_t> motor_ids_;
+  blue_msgs::MotorState motor_states_;
+  std::map<comm_id_t, float> motor_commands_;
 
   // Owned by our ActuatorData and JointData objects
   std::vector<double> actuator_pos_;
@@ -139,4 +133,4 @@ private:
   std::vector<std::shared_ptr<JointParams>> joint_params_;
 };
 
-#endif // KOKO_HARDWARE_INTERFACE
+#endif // BLUE_HARDWARE_INTERFACE

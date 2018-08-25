@@ -5,6 +5,7 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
   blue_hardware_drivers
+  blue_msgs
   controller_interface
   controller_manager
   hardware_interface
@@ -16,8 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES blue_control
-  CATKIN_DEPENDS controller_interface controller_manager blue_hardware_drivers kdl_parser roscpp urdf
+  CATKIN_DEPENDS controller_interface controller_manager blue_hardware_drivers kdl_parser roscpp urdf blue_msgs
 )
 
 include_directories(

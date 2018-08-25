@@ -13,20 +13,13 @@ find_package(catkin REQUIRED COMPONENTS
   serial
   std_msgs
   sensor_msgs
-  message_generation
-)
-
-add_message_files(FILES MotorState.msg GravityVectArr.msg)
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  sensor_msgs
+  blue_msgs
 )
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES blue_hardware_drivers
-  CATKIN_DEPENDS roscpp rospy sensor_msgs serial std_msgs message_runtime
+  CATKIN_DEPENDS roscpp rospy sensor_msgs serial std_msgs
 )
 include_directories(
   include

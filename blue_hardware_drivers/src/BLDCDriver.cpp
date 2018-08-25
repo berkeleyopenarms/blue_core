@@ -5,10 +5,10 @@ const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 const unsigned int CONTROL_LOOP_FREQ = 1000;
 const unsigned int BAUD_RATE = 1000000;
 
-void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, MotorState>* states, std::string port) {
-
-  states_ = states;
+void BLDCDriver::init(const std::vector<comm_id_t> &boards, blue_msgs::MotorState* states, std::string port)
+  {
   boards_ = boards;
+  states_ = states;
 
   device_.init(port, boards);
 
@@ -33,8 +33,8 @@ void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, 
     success = false; // set to false to initialize boards_ (doing this because some test boards_ are not calibrated)
     while (!success && ros::ok()) {
       // Initialize the motor
-      try { 
-        device_.initMotor(id); 
+      try {
+        device_.initMotor(id);
         success = true;
       }
       catch (comms_error e) {
@@ -47,7 +47,7 @@ void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, 
     success = false;
     while (!success && ros::ok()) {
       // Initialize the motor
-      try { 
+      try {
         device_.queueSetTimeout(id, 1000);
         device_.exchange();
         success = true;
@@ -75,21 +75,6 @@ void BLDCDriver::init(const std::vector<comm_id_t> &boards, std::map<comm_id_t, 
       }
     }
   }
-  // Init angle
-  for (auto id : boards_) {
-    device_.resultGetState(id
-        , &(*states_)[id].position
-        , &(*states_)[id].velocity
-        , &(*states_)[id].di
-        , &(*states_)[id].qi
-        , &(*states_)[id].voltage
-        , &(*states_)[id].temp
-        , &(*states_)[id].acc_x
-        , &(*states_)[id].acc_y
-        , &(*states_)[id].acc_z
-        );
-    zero_angles_[id] = (*states)[id].position;
-  }
 
   engaged_ = true;
 }
@@ -102,7 +87,7 @@ BLDCDriver::BLDCDriver(){
 }
 
 void BLDCDriver::update(std::map<comm_id_t, float>& commands){
- 
+
   if (engaged_) {
     if (!stop_motors_) {
       // Send next motor current command
@@ -119,26 +104,26 @@ void BLDCDriver::update(std::map<comm_id_t, float>& commands){
     // Run the communication with each board
     device_.exchange();
   }
-    
+
   // Get the state of the each board
-  for (auto id : boards_) {
+  for (int i = 0; i < boards_.size(); i++) {
+    comm_id_t id = boards_[i];
     device_.resultGetState(id
-        , &(*states_)[id].position
-        , &(*states_)[id].velocity
-        , &(*states_)[id].di
-        , &(*states_)[id].qi
-        , &(*states_)[id].voltage
-        , &(*states_)[id].temp
-        , &(*states_)[id].acc_x
-        , &(*states_)[id].acc_y
-        , &(*states_)[id].acc_z
+        , &states_->position[i]
+        , &states_->velocity[i]
+        , &states_->direct_current[i]
+        , &states_->quadrature_current[i]
+        , &states_->supply_voltage[i]
+        , &states_->temperature[i]
+        , &states_->accel_x[i]
+        , &states_->accel_y[i]
+        , &states_->accel_z[i]
         );
-    if ((*states_)[id].temp > MAX_TEMP_SHUTOFF) {
+    if (states_->temperature[i] > MAX_TEMP_SHUTOFF) {
       stop_motors_ = true;
       ROS_ERROR_THROTTLE(1, "Motor %d is too hot! Shutting off system.", id);
-    }
-    else if ((*states_)[id].temp > MAX_TEMP_WARNING) {
-      ROS_WARN_THROTTLE(1, "Motor %d is warm, currently at %fC", id, (*states_)[id].temp);
+    } else if (states_->temperature[i] > MAX_TEMP_WARNING) {
+      ROS_WARN_THROTTLE(1, "Motor %d is warm, currently at %fC", id, states_->temperature[i]);
     }
   }
 
@@ -163,7 +148,7 @@ void BLDCDriver::disengageControl() {
     success = false;
     while (!success && ros::ok()) {
       // Initialize the motor
-      try { 
+      try {
         device_.queueSetTimeout(id, 0);
         device_.exchange();
         success = true;
@@ -194,7 +179,7 @@ void BLDCDriver::engageControl() {
     success = false;
     while (!success && ros::ok()) {
       // Initialize the motor
-      try { 
+      try {
         device_.queueSetTimeout(id, 1000);
         device_.exchange();
         success = true;
