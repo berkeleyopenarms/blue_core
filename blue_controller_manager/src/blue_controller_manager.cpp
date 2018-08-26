@@ -31,7 +31,7 @@ int main(int argc, char** argv)
   ros::Time prev_time = ros::Time::now();
   int num_errors = 0;
   long count = 0;
-  double avg_frequency = 0;
+
   while (ros::ok())
   {
     ros::Time temp_time = ros::Time::now();

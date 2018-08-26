@@ -365,10 +365,12 @@ void BlueHW::read() {
     accel_vect.data[2] = (float) motor_states_.accel_z[i];
     actuator_accel_.at(i) = accel_vect;
 
-    if (is_calibrated_)
+    if (is_calibrated_) {
       actuator_pos_[i] = motor_states_.position[i] - actuator_pos_initial_[i];
-    else
+      actuator_vel_[i] = motor_states_.velocity[i];
+    } else {
       actuator_pos_initial_[i] = motor_states_.position[i];
+    }
   }
 
   // Propagate actuator information to joint information
