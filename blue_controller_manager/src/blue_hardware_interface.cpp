@@ -472,6 +472,10 @@ void BlueHW::buildDynamicChain(KDL::Chain &chain){
 }
 
 void BlueHW::computeInverseDynamics() {
+  if(!has_base_){
+    return;
+  }
+
   int id_joints = num_joints_;
   if (has_gripper_) {
     id_joints -= 1;
