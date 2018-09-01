@@ -390,8 +390,8 @@ void BlueHW::write() {
     for (int i = 0; i < num_joints_; i++) {
       // add inverse dynamics joint gain for non gripper joints
       if ( !(has_gripper_ && i == num_joints_ - 1) && has_base_ ) {
-        // joint_cmd_[i] = raw_joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
-        joint_cmd_[i] = raw_joint_cmd_[i];
+        joint_cmd_[i] = raw_joint_cmd_[i] + id_torques_(i) * joint_params_[i]->id_gain;
+        // joint_cmd_[i] = raw_joint_cmd_[i];
       } else {
         joint_cmd_[i] = raw_joint_cmd_[i];
       }
