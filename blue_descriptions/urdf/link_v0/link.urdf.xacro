@@ -82,6 +82,22 @@
       </transmission>
     </xacro:if>
 
+    <link
+      name="${side}_${stage}_accel_link"/>
+    <joint
+      name="${side}_${stage}_accel_joint"
+      type="fixed">
+      <origin
+        xyz="-0.020008330615085 -0.000510000000000066 -0.111067108096273"
+        rpy="1.5707963267949 0.328491802364426 5.16250107234938E-16" />
+      <parent
+        link="${side}_${stage}_roll_link" />
+      <child
+        link="${side}_${stage}_accel_link" />
+      <axis
+        xyz="0 0 0" />
+    </joint>
+
   </xacro:macro>
 
   <xacro:macro name="blue_lift_link_v0" params="side stage child reflect">
