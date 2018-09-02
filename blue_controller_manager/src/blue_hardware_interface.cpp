@@ -1,6 +1,7 @@
 #include "blue_controller_manager/blue_hardware_interface.h"
 #include <ros/assert.h>
 #include <std_msgs/Float64.h>
+#include <blue_msgs/GravityVectorArray.h>
 
 namespace ti = transmission_interface;
 
@@ -83,7 +84,6 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
 
   // transmission vectors
   actuator_pos_initial_.resize(num_joints_, 0.0);
-  motor_cmd_publishers_.resize(num_joints_);
   actuator_states_.resize(num_actuators);
   actuator_commands_.resize(num_actuators);
   joint_states_.resize(num_actuators);
@@ -245,22 +245,23 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   }
   ROS_INFO("Finished setting up transmissions");
 
-  joint_state_tracker_sub_ = nh.subscribe("joint_state_tracker", 1, &BlueHW::calibrationStateCallback, this);
-  for (int i = 0; i < motor_names_.size(); i++) {
-    motor_cmd_publishers_[i] = nh.advertise<std_msgs::Float64>("blue_hardware/" + motor_names_[i] + "_cmd", 1);
+  joint_calibration_sub_ = nh.subscribe("joint_calibration_angles", 1, &BlueHW::calibrationStateCallback, this);
 
-    motor_states_.name.push_back(motor_names_[i]);
-    motor_states_.position.push_back(0.0);
-    motor_states_.velocity.push_back(0.0);
-    motor_states_.direct_current.push_back(0.0);
-    motor_states_.quadrature_current.push_back(0.0);
-    motor_states_.temperature.push_back(0.0);
-    motor_states_.supply_voltage.push_back(0.0);
-    motor_states_.accel_x.push_back(0);
-    motor_states_.accel_y.push_back(0);
-    motor_states_.accel_z.push_back(0);
-  }
-  motor_state_publisher_ = nh.advertise<blue_msgs::MotorState>("blue_hardware/motor_states", 1);
+  int motor_count = motor_names_.size();
+  motor_states_.name = motor_names_;
+  motor_states_.command.resize(motor_count);
+  motor_states_.position.resize(motor_count);
+  motor_states_.velocity.resize(motor_count);
+  motor_states_.direct_current.resize(motor_count);
+  motor_states_.quadrature_current.resize(motor_count);
+  motor_states_.temperature.resize(motor_count);
+  motor_states_.supply_voltage.resize(motor_count);
+  motor_states_.accel_x.resize(motor_count);
+  motor_states_.accel_y.resize(motor_count);
+  motor_states_.accel_z.resize(motor_count);
+
+  motor_state_publisher_ = nh.advertise<blue_msgs::MotorState>("motor_states", 1);
+  joint_gravity_publisher_ = nh.advertise<blue_msgs::GravityVectorArray>("joint_gravity_vectors", 1);
   ROS_INFO("Finished setting up subscribers and publisher");
 }
 
@@ -324,6 +325,7 @@ void BlueHW::setReadGravityVector() {
 
     read_gravity_vector_[start_ind + i] = raw * 9.81 / raw.Norm();
   }
+
   // TODO: Find Gripper link transform
   if(has_gripper_) {
     // apply gripper rotation
@@ -334,6 +336,15 @@ void BlueHW::setReadGravityVector() {
     corrected_grip.data[2] = -corrected_grip.data[2];
     read_gravity_vector_[start_ind + num_diff_actuators_] = corrected_grip;
   }
+
+  blue_msgs::GravityVectorArray gravity_msg;
+  gravity_msg.data.resize(read_gravity_vector_.size());
+  for (int i = 0; i < read_gravity_vector_.size(); i++) {
+    gravity_msg.data[i].x = read_gravity_vector_[i][0];
+    gravity_msg.data[i].y = read_gravity_vector_[i][1];
+    gravity_msg.data[i].z = read_gravity_vector_[i][2];
+  }
+  joint_gravity_publisher_.publish(gravity_msg);
 
   // accumulate gravity vector and take moving average
   double a = 0.992;
@@ -431,7 +442,6 @@ void BlueHW::write() {
 
       std_msgs::Float64 commandMsg;
       commandMsg.data = motor_current;
-      motor_cmd_publishers_[i].publish(commandMsg);
       motor_commands_[motor_ids_[i]] = motor_current;
     }
   } else {
