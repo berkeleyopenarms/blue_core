@@ -30,6 +30,7 @@ namespace ti = transmission_interface;
 class BlueHW: public hardware_interface::RobotHW
 {
 public:
+
   BlueHW(ros::NodeHandle &nh);
   void read();
   void write();
@@ -68,9 +69,9 @@ private:
   BLDCDriver bldc_;
 
   // Publishers and subscribers
-  std::vector<ros::Publisher> motor_cmd_publishers_;
   ros::Publisher motor_state_publisher_;
-  ros::Subscriber joint_state_tracker_sub_;
+  ros::Subscriber joint_calibration_sub_;
+  ros::Publisher joint_gravity_publisher_;
 
   // Parameters read in from configuration
   std::vector<std::string> joint_names_;

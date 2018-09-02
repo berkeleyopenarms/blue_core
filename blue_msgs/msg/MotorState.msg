@@ -1,6 +1,8 @@
 Header header
 
 string[] name
+float32[] command
+
 float32[] position
 float32[] velocity
 float32[] direct_current

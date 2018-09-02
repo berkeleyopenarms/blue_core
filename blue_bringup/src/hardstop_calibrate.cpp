@@ -35,11 +35,11 @@ ros::Publisher pub;
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "joint_state_tracker");
+  ros::init(argc, argv, "hardstop_calibrator");
   ros::NodeHandle node;
   ros::Duration(0.0444).sleep();
-  // publisher and subscriber setup
-  pub = node.advertise<sensor_msgs::JointState>("joint_state_tracker", 100);
+
+  pub = node.advertise<sensor_msgs::JointState>("joint_calibration_angles", 100);
 
   if (!node.getParam("blue_hardware/joint_names", joint_names)) {
     ROS_ERROR("No joint_names given (namespace: %s)", node.getNamespace().c_str());
@@ -69,15 +69,13 @@ int main(int argc, char** argv)
     joint_state_msg.effort.push_back(0.0);
   }
 
-  ros::Rate loop_rate(50);
+  ros::Rate loop_rate(20);
 
   while(ros::ok()){
     ros::spinOnce();
     loop_rate.sleep();
     pub.publish(joint_state_msg);
   }
-
-  ros::spin();
 
   return 0;
 }

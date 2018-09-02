@@ -91,13 +91,17 @@ void BLDCDriver::update(std::map<comm_id_t, float>& commands){
   if (engaged_) {
     if (!stop_motors_) {
       // Send next motor current command
-      for (auto id : boards_) {
-          device_.queueSetCommandAndGetState(id, commands[id]);
+      for (int i = 0; i < boards_.size(); i++) {
+        comm_id_t id = boards_[i];
+        device_.queueSetCommandAndGetState(id, commands[id]);
+        states_->command[i] = commands[id];
       }
     } else {
       // If one of the motors is too hot, we still want to grab the state and set effort to 0
-      for (auto id : boards_) {
-          device_.queueSetCommandAndGetState(id, 0.0);
+      for (int i = 0; i < boards_.size(); i++) {
+        comm_id_t id = boards_[i];
+        device_.queueSetCommandAndGetState(id, 0.0);
+        states_->command[i] = 0.0;
       }
     }
 
@@ -119,6 +123,7 @@ void BLDCDriver::update(std::map<comm_id_t, float>& commands){
         , &states_->accel_y[i]
         , &states_->accel_z[i]
         );
+
     if (states_->temperature[i] > MAX_TEMP_SHUTOFF) {
       stop_motors_ = true;
       ROS_ERROR_THROTTLE(1, "Motor %d is too hot! Shutting off system.", id);
