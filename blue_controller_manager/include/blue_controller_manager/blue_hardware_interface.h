@@ -71,9 +71,10 @@ private:
   // Publishers and subscribers
   ros::Publisher motor_state_publisher_;
   ros::Subscriber joint_calibration_sub_;
-  ros::Publisher joint_gravity_publisher_;
+  std::vector<ros::Publisher> joint_imu_publishers_;
 
   // Parameters read in from configuration
+  std::vector<std::string> accel_links_;
   std::vector<std::string> joint_names_;
   std::vector<std::string> motor_names_;
   std::vector<double> gear_ratios_;

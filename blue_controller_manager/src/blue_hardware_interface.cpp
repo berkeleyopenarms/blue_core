@@ -1,7 +1,7 @@
 #include "blue_controller_manager/blue_hardware_interface.h"
 #include <ros/assert.h>
 #include <std_msgs/Float64.h>
-#include <blue_msgs/GravityVectorArray.h>
+#include <sensor_msgs/Imu.h>
 
 namespace ti = transmission_interface;
 
@@ -15,6 +15,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   getRequiredParam(nh, "robot_description", robot_desc_string);
   getRequiredParam(nh, "blue_hardware/joint_names", joint_names_);
   getRequiredParam(nh, "blue_hardware/motor_names", motor_names_);
+  getRequiredParam(nh, "blue_hardware/accel_links", accel_links_);
   getRequiredParam(nh, "blue_hardware/gear_ratios", gear_ratios_);
   getRequiredParam(nh, "blue_hardware/joint_torque_directions", joint_torque_directions_);
   getRequiredParam(nh, "blue_hardware/current_to_torque_ratios", current_to_torque_ratios_);
@@ -261,7 +262,13 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   motor_states_.accel_z.resize(motor_count);
 
   motor_state_publisher_ = nh.advertise<blue_msgs::MotorState>("motor_states", 1);
-  joint_gravity_publisher_ = nh.advertise<blue_msgs::GravityVectorArray>("joint_gravity_vectors", 1);
+
+  joint_imu_publishers_.resize(read_gravity_vector_.size());
+  for (int i = 0; i < read_gravity_vector_.size(); i++) {
+    std::string topic_name = "joint_imu_";
+    topic_name += std::to_string(i);
+    joint_imu_publishers_[i] = nh.advertise<sensor_msgs::Imu>(topic_name, 1);
+  }
   ROS_INFO("Finished setting up subscribers and publisher");
 }
 
@@ -283,6 +290,7 @@ void BlueHW::setReadGravityVector() {
     KDL::Vector corrected_base;
     // scale gravity vector and rotate
     corrected_base = base_rot_z * actuator_accel_[0] * 9.81 / actuator_accel_[0].Norm();
+    // ROS_ERROR("base: raw: [%.2f, %.2f, %.2f]", corrected_base(0), corrected_base(1), corrected_base(2));
     corrected_base.data[0] = -corrected_base.data[0];
     corrected_base.data[1] = -corrected_base.data[1];
     corrected_base.data[2] = corrected_base.data[2];
@@ -305,46 +313,83 @@ void BlueHW::setReadGravityVector() {
     KDL::Rotation left_rot_x;
     left_rot_x.DoRotX(M_PI);
     raw_left = left_rot_x * raw_left;
+    // ROS_ERROR("index: %d, left: [%f, %f, %f], right: [%f, %f, %f]", i, raw_left(0), raw_left(1), raw_left(2), raw_right(0), raw_right(1), raw_right(2));
 
     // Average the KDL Vector accelerations
     raw = (raw_right + raw_left) / 2.0;
 
-    // Apply found link transmission to raw reading
-    KDL::Vector x_vect(0.26860026, -0.96283056, -0.02848168);
-    KDL::Vector y_vect(0.96299097,  0.2690981,  -0.01531682);
-    KDL::Vector z_vect(0.02241186, -0.0233135,   0.99947696);
-    KDL::Rotation transform(x_vect, y_vect, z_vect);
-    raw = transform * raw;
-    KDL::Rotation raw_rot_x;
-    raw_rot_x.DoRotX(M_PI / 2);
-    raw = raw_rot_x * raw;
-    KDL::Rotation raw_rot_z;
-    raw_rot_z.DoRotZ(M_PI);
-    raw = raw_rot_z * raw;
-    raw.data[2] = -raw.data[2];
+    KDL::Rotation link_rot_z;
+    link_rot_z.DoRotZ(-.3378);
 
-    read_gravity_vector_[start_ind + i] = raw * 9.81 / raw.Norm();
+    KDL::Rotation link_rot_y;
+    link_rot_y.DoRotY(-M_PI/2.0);
+
+    KDL::Rotation link_rot_z2;
+    link_rot_z2.DoRotZ(M_PI/2.0);
+
+    KDL::Vector corrected_link;
+    corrected_link = link_rot_z2 * link_rot_y * link_rot_z * raw;
+    if (i == 0 || i == 1) {
+      // ROS_ERROR("index: %d, raw: [%.2f, %.2f, %.2f]", i, corrected_link(0), corrected_link(1), corrected_link(2));
+    }
+
+    // Apply found link transmission to raw reading
+    // KDL::Vector x_vect(0.26860026, -0.96283056, -0.02848168);
+    // KDL::Vector y_vect(0.96299097,  0.2690981,  -0.01531682);
+    // KDL::Vector z_vect(0.02241186, -0.0233135,   0.99947696);
+    // KDL::Rotation transform(x_vect, y_vect, z_vect);
+    // raw = transform * raw;
+    // KDL::Rotation raw_rot_x;
+    // raw_rot_x.DoRotX(M_PI / 2);
+    // raw = raw_rot_x * raw;
+    // KDL::Rotation raw_rot_z;
+    // raw_rot_z.DoRotZ(M_PI);
+    // raw = raw_rot_z * raw;
+    // raw.data[2] = -raw.data[2];
+
+    // read_gravity_vector_[start_ind + i] = raw * 9.81 / raw.Norm();
+    corrected_link.data[0] = corrected_link.data[0];
+    corrected_link.data[1] = -corrected_link.data[1];
+    corrected_link.data[2] = corrected_link.data[2];
+
+    corrected_link.data[0] = -corrected_link.data[0];
+    corrected_link.data[1] = -corrected_link.data[1];
+    corrected_link.data[2] = -corrected_link.data[2];
+    read_gravity_vector_[start_ind + i] = corrected_link * 9.81 / raw.Norm();
   }
 
   // TODO: Find Gripper link transform
   if(has_gripper_) {
     // apply gripper rotation
     KDL::Rotation grip_rot_z;
-    grip_rot_z.DoRotZ(2 * M_PI);
+    grip_rot_z.DoRotZ(M_PI/2.0);
     KDL::Vector corrected_grip;
     corrected_grip = grip_rot_z * actuator_accel_[start_ind + 2*num_diff_actuators_] / actuator_accel_[start_ind + 2*num_diff_actuators_].Norm() * 9.81;
+    // corrected_grip.data[2] = -corrected_grip.data[2];
+    corrected_grip.data[1] = -corrected_grip.data[1];
+
+    corrected_grip.data[0] = -corrected_grip.data[0];
+    corrected_grip.data[1] = -corrected_grip.data[1];
     corrected_grip.data[2] = -corrected_grip.data[2];
+
+    ROS_ERROR("gripper: raw: [%.2f, %.2f, %.2f]", corrected_grip(0), corrected_grip(1), corrected_grip(2));
     read_gravity_vector_[start_ind + num_diff_actuators_] = corrected_grip;
   }
 
-  blue_msgs::GravityVectorArray gravity_msg;
-  gravity_msg.data.resize(read_gravity_vector_.size());
   for (int i = 0; i < read_gravity_vector_.size(); i++) {
-    gravity_msg.data[i].x = read_gravity_vector_[i][0];
-    gravity_msg.data[i].y = read_gravity_vector_[i][1];
-    gravity_msg.data[i].z = read_gravity_vector_[i][2];
+    sensor_msgs::Imu imu_msg;
+
+    imu_msg.header.frame_id = accel_links_[i];
+    imu_msg.header.stamp = ros::Time::now();
+
+    imu_msg.orientation.w = 1.0;
+
+    imu_msg.linear_acceleration.x = read_gravity_vector_[i][0];
+    imu_msg.linear_acceleration.y = read_gravity_vector_[i][1];
+    imu_msg.linear_acceleration.z = read_gravity_vector_[i][2];
+
+    joint_imu_publishers_[i].publish(imu_msg);
   }
-  joint_gravity_publisher_.publish(gravity_msg);
 
   // accumulate gravity vector and take moving average
   double a = 0.992;

@@ -11,11 +11,22 @@ blue_hardware:
         - right_gripper_joint
     baselink: right_base_link
     endlink: right_end_roll_link
+    accel_links:
+        - right_base_link
+        - right_shoulder_roll_link
+        - right_elbow_roll_link
+        - right_wrist_roll_link
+        - right_end_roll_link
+        # - right_shoulder_accel_link
+        # - right_elbow_accel_link
+        # - right_wrist_accel_link
+        # - right_end_roll_link
     differential_pairs: [1, 2, 3, 4, 5, 6]
     gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 14.4]
     joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    #id_torque_gains: [1.45, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]
+    # id_torque_gains: [1.45, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]
     id_torque_gains: [1.12, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    # id_torque_gains: [.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     # id_torque_gains: [1.38, 1.27, 1.27, 1.27, 1.27, 1.0, 1.0]
     softstop_min_angles: [-3.3, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -1.45]
     softstop_max_angles: [2.2, 0.5, 2.6, 0.5, 2.6, 0.2, 2.6, 1.45]
@@ -23,7 +34,8 @@ blue_hardware:
     softstop_torque_limit: 95.0
 
     ### Motor configuration
-    serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NOKG-if00-port0
+    # serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NOKG-if00-port0
+    serial_port: /dev/ttyUSB0
     #serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506NOIG-if00-port0
     motor_names:
         - base_roll_motor
@@ -34,6 +46,8 @@ blue_hardware:
         - right_motor3
         - left_motor3
         - gripper_motor
+    # motor_ids: [40, 47, 48, 80, 79, 58, 60, 55]
+    # motor_ids: [83, 68, 81, 70, 77, 35, 36, 56]
     motor_ids: [1, 76,65, 45,18, 20,21, 52]
     # motor_current_limits: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0]
