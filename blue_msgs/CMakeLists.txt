@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
 )
 
-add_message_files(FILES MotorState.msg GravityVectArr.msg)
+add_message_files(FILES MotorState.msg GravityVectorArray.msg)
 generate_messages(
   DEPENDENCIES
   std_msgs
