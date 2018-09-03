@@ -284,13 +284,13 @@ void BLDCControllerClient::initMotor(comm_id_t server_id){
     }
   }
 
-  queueSetDirectCurrentControllerKp(server_id, 0.05f);
+  queueSetDirectCurrentControllerKp(server_id, 0.5f);
   exchange();
-  queueSetDirectCurrentControllerKi(server_id, 0.0001f);
+  queueSetDirectCurrentControllerKi(server_id, 0.001f);
   exchange();
-  queueSetQuadratureCurrentControllerKp(server_id, 0.05f);
+  queueSetQuadratureCurrentControllerKp(server_id, 0.5f);
   exchange();
-  queueSetQuadratureCurrentControllerKi(server_id, 0.0001f);
+  queueSetQuadratureCurrentControllerKi(server_id, 0.001f);
   exchange();
 
 #ifdef DEBUG_CALIBRATION_DATA

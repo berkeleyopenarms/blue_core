@@ -303,8 +303,8 @@ void BlueHW::setReadGravityVector() {
     KDL::Vector raw;
 
     // reading raw accelerometer values
-    raw_right = actuator_accel_.at(start_ind + 2*i);
-    raw_left = actuator_accel_.at(start_ind + 2*i + 1);
+    raw_right = actuator_accel_.at(start_ind + 2 * i);
+    raw_left = actuator_accel_.at(start_ind + 2 * i + 1);
 
     // Rotate Left accel vector into Right accel Frame
     KDL::Rotation left_rot_z;
@@ -319,13 +319,13 @@ void BlueHW::setReadGravityVector() {
     raw = (raw_right + raw_left) / 2.0;
 
     KDL::Rotation link_rot_z;
-    link_rot_z.DoRotZ(-.3378);
+    link_rot_z.DoRotZ(-0.3378);
 
     KDL::Rotation link_rot_y;
-    link_rot_y.DoRotY(-M_PI/2.0);
+    link_rot_y.DoRotY(-M_PI / 2.0);
 
     KDL::Rotation link_rot_z2;
-    link_rot_z2.DoRotZ(M_PI/2.0);
+    link_rot_z2.DoRotZ(M_PI / 2.0);
 
     KDL::Vector corrected_link;
     corrected_link = link_rot_z2 * link_rot_y * link_rot_z * raw;
@@ -362,9 +362,9 @@ void BlueHW::setReadGravityVector() {
   if(has_gripper_) {
     // apply gripper rotation
     KDL::Rotation grip_rot_z;
-    grip_rot_z.DoRotZ(M_PI/2.0);
+    grip_rot_z.DoRotZ(M_PI / 2.0);
     KDL::Vector corrected_grip;
-    corrected_grip = grip_rot_z * actuator_accel_[start_ind + 2*num_diff_actuators_] / actuator_accel_[start_ind + 2*num_diff_actuators_].Norm() * 9.81;
+    corrected_grip = grip_rot_z * actuator_accel_[start_ind + 2 * num_diff_actuators_] / actuator_accel_[start_ind + 2 * num_diff_actuators_].Norm() * 9.81;
     // corrected_grip.data[2] = -corrected_grip.data[2];
     corrected_grip.data[1] = -corrected_grip.data[1];
 
@@ -372,7 +372,7 @@ void BlueHW::setReadGravityVector() {
     corrected_grip.data[1] = -corrected_grip.data[1];
     corrected_grip.data[2] = -corrected_grip.data[2];
 
-    ROS_ERROR("gripper: raw: [%.2f, %.2f, %.2f]", corrected_grip(0), corrected_grip(1), corrected_grip(2));
+    // ROS_ERROR("gripper: raw: [%.2f, %.2f, %.2f]", corrected_grip(0), corrected_grip(1), corrected_grip(2));
     read_gravity_vector_[start_ind + num_diff_actuators_] = corrected_grip;
   }
 
