@@ -1,0 +1,29 @@
+<launch>
+
+
+  <param
+    name="robot_description"
+    command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_full.urdf.xacro'" />
+  <group ns="right_arm" clear_params="true">
+
+    <!-- Use shared URDF, joint states topic -->
+    <remap
+      from="robot_description"
+      to="/robot_description" />
+    <remap
+      from="joint_states"
+      to="/joint_states" />
+
+    <!-- Load hardware configuration -->
+    <rosparam
+      file="$(find blue_bringup)/config/robot_parameters_right.yaml"
+      command="load" />
+
+    <node
+      name="accel_calibrator"
+      pkg="blue_bringup"
+      type="accel_calibration.py"
+      output="screen" />
+
+  </group>
+</launch>

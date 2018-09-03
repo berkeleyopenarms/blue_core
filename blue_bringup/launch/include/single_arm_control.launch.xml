@@ -43,6 +43,11 @@
       pkg="blue_bringup"
       type="hardstop_calibrate"
       output="screen" />
+    <node
+      name="accel_calibrator"
+      pkg="blue_bringup"
+      type="accel_calibration.py"
+      output="screen" />
 
   </group>
 </launch>
