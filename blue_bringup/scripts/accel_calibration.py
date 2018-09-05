@@ -6,6 +6,7 @@ from std_msgs.msg import Int32
 from std_msgs.msg import Float32
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import Imu
+from blue_msgs.msg import MotorState
 import PyKDL as kdl
 import kdl_parser_py.urdf as kdl_parser
 
@@ -59,7 +60,7 @@ class ParicleFilter:
     def __init__(self, num_particles, dynamics_chains):
         self.init_particles(num_particles)
 
-    def init_particles():
+    # def init_particles():
 
 
 def main():
