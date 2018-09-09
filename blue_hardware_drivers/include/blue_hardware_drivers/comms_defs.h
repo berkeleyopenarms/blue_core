@@ -18,6 +18,11 @@ constexpr comm_protocol_t COMM_VERSION = 0xFE;
 using comm_ctrl_mode_t = uint8_t;
 constexpr comm_ctrl_mode_t COMM_CTRL_MODE_CURRENT = 0x00;
 constexpr comm_ctrl_mode_t COMM_CTRL_MODE_RAW_PWM = 0x01;
+constexpr comm_ctrl_mode_t COMM_CTRL_MODE_TORQUE = 0x02;
+constexpr comm_ctrl_mode_t COMM_CTRL_MODE_VELOCITY = 0x03;
+constexpr comm_ctrl_mode_t COMM_CTRL_MODE_POSITION = 0x04;
+constexpr comm_ctrl_mode_t COMM_CTRL_MODE_POS_VEL = 0x05;
+constexpr comm_ctrl_mode_t COMM_CTRL_MODE_PWM_DRIVE = 0x06;
 
 // Message lengths are stored at 2 bytes
 using comm_msg_len_t = uint16_t;
@@ -67,10 +72,10 @@ constexpr comm_addr_t COMM_REG_CAL_DI_KP = 0x1003;
 constexpr comm_addr_t COMM_REG_CAL_DI_KI = 0x1004;
 constexpr comm_addr_t COMM_REG_CAL_QI_KP = 0x1005;
 constexpr comm_addr_t COMM_REG_CAL_QI_KI = 0x1006;
-constexpr comm_addr_t COMM_REG_CAL_VI_KP = 0x1007;
-constexpr comm_addr_t COMM_REG_CAL_VI_KI = 0x1008;
-constexpr comm_addr_t COMM_REG_CAL_PI_KP = 0x1009;
-constexpr comm_addr_t COMM_REG_CAL_PI_KI = 0x100a;
+constexpr comm_addr_t COMM_REG_CAL_V_KP = 0x1007;
+constexpr comm_addr_t COMM_REG_CAL_V_KI = 0x1008;
+constexpr comm_addr_t COMM_REG_CAL_P_KP = 0x1009;
+constexpr comm_addr_t COMM_REG_CAL_P_KI = 0x100a;
 constexpr comm_addr_t COMM_REG_CAL_I_LIMIT = 0x1010;
 constexpr comm_addr_t COMM_REG_CAL_T_LIMIT = 0x1011;
 constexpr comm_addr_t COMM_REG_CAL_V_LIMIT = 0x1012;
@@ -96,6 +101,7 @@ constexpr comm_addr_t COMM_REG_VOL_PHASE_C_PWM = 0x2005;
 constexpr comm_addr_t COMM_REG_VOL_SETPOINT_T = 0x2006;
 constexpr comm_addr_t COMM_REG_VOL_SETPOINT_V = 0x2007;
 constexpr comm_addr_t COMM_REG_VOL_SETPOINT_P = 0x2008;
+constexpr comm_addr_t COMM_REG_VOL_PWM_DRIVE = 0x2009;
 // Read Only Registers (0x3***)
 constexpr comm_addr_t COMM_REG_RO_ROTOR_P = 0x3000;
 constexpr comm_addr_t COMM_REG_RO_ROTOT_V = 0x3001;

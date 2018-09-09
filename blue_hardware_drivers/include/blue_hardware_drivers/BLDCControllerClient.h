@@ -45,11 +45,15 @@ class BLDCControllerClient {
     void queueSetDirectCurrentControllerKi(comm_id_t server_id, float value);
     void queueSetQuadratureCurrentControllerKp(comm_id_t server_id, float value);
     void queueSetQuadratureCurrentControllerKi(comm_id_t server_id, float value);
-
+    void queueSetVelocityControllerKp(comm_id_t server_id, float value);
+    void queueSetVelocityControllerKi(comm_id_t server_id, float value);
+    void queueSetPositionControllerKp(comm_id_t server_id, float value);
+    void queueSetPositionControllerKi(comm_id_t server_id, float value);
     // Drive Commands
     void queueSetCommand(comm_id_t server_id, float value);
     void queueGetRotorPosition(comm_id_t server_id);
     void queueSetCommandAndGetRotorPosition(comm_id_t server_id, float value);
+    void queueSetPositionAndGetRotorPosition(comm_id_t server_id, float value);
     void queueGetState(comm_id_t server_id);
     void queueSetCommandAndGetState(comm_id_t server_id, float value);
     

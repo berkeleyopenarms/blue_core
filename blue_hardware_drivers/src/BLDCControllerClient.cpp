@@ -128,6 +128,29 @@ void BLDCControllerClient::queueSetQuadratureCurrentControllerKi(comm_id_t serve
   allocs_++;
 }
 
+void BLDCControllerClient::queueSetVelocityControllerKp(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_V_KP, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+  allocs_++;
+}
+
+void BLDCControllerClient::queueSetVelocityControllerKi(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_V_KI, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+  allocs_++;
+}
+void BLDCControllerClient::queueSetPositionControllerKp(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_P_KP, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+  allocs_++;
+}
+
+void BLDCControllerClient::queueSetPositionControllerKi(comm_id_t server_id, float value) {
+  Packet* packet = new WriteRegPacket(server_id, COMM_REG_CAL_P_KI, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(server_id, packet);
+  allocs_++;
+}
+
 void BLDCControllerClient::queueSetCommand(comm_id_t server_id, float value) {
   Packet* packet = new WriteRegPacket(server_id, COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(server_id, packet);
@@ -150,6 +173,15 @@ void BLDCControllerClient::queueSetCommandAndGetRotorPosition(comm_id_t server_i
   Packet* packet = new ReadWriteRegPacket (server_id,
     COMM_REG_RO_ROTOR_P, 1,                                          // Read
     COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*>(&value));  // Write
+  queuePacket(server_id, packet);
+  allocs_++;
+}
+
+void BLDCControllerClient::queueSetPositionAndGetRotorPosition(comm_id_t server_id, float value) {
+  // Generate Transmit Packet
+  Packet* packet = new ReadWriteRegPacket (server_id,
+    COMM_REG_RO_ROTOR_P, 1,                                          // Read
+    COMM_REG_VOL_SETPOINT_P, sizeof(value), reinterpret_cast<uint8_t*>(&value));  // Write
   queuePacket(server_id, packet);
   allocs_++;
 }
