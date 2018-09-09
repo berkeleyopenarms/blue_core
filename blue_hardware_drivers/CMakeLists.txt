@@ -55,6 +55,11 @@ target_link_libraries(BLDCDriver_communication_freq_test
   ${catkin_LIBRARIES}
 )
 
+add_executable(BLDCDriver_Position_Drive src/BLDCDriver_Position_Drive.cpp)
+target_link_libraries(BLDCDriver_Position_Drive
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
 
 ## Mark executables and/or libraries for installation
 #install(TARGETS BLDCDriver
