@@ -3,7 +3,7 @@
 """This node should run at startup, and sets the initial joint angles to some hardcoded values."""
 
 import rospy
-from blue_msgs.srv import JointStartupCalibration, JointStartupCalibrationResponse
+from blue_msgs.srv import JointStartupCalibration
 
 if __name__ == "__main__":
     rospy.init_node("simple_startup_calibration")
