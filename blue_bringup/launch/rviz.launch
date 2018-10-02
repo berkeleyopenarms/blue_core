@@ -1,0 +1,9 @@
+<launch>
+
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find blue_bringup)/config/blue.rviz" />
+
+</launch>
