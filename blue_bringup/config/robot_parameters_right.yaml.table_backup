@@ -45,8 +45,7 @@ blue_hardware:
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.67, 1.67, 1.67]
 
     ### Calibration configuration
-    hardstop_start_angles: [-0.6647, -2.1228, 0.8881, -2.1951, -2.0915, -0.4548, 0.0376, 0.0]
-    calibration_initial_angles: [-0.62, 0.99, 0.0, -0.83, 0.0, 0.0, 0.0, 0.0] # for vive calibration
+    simple_startup_angles: [-0.6647, -2.1228, 0.8881, -2.1951, -2.0915, -0.4548, 0.0376, 0.0]
 
     ### Posture control parameters for gradient descent ik pose controller
     posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90, -1.0, 0.0]
