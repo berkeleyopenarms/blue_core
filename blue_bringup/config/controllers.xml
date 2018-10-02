@@ -39,9 +39,9 @@
     gripper_controller:
       type: effort_controllers/GripperActionController
       joint:  $(arg side)_gripper_joint
-      goal_tolerance: 0.05
-      stalled_velocity_threshold: 0.05
-      stall_timeout: 0.1
+      goal_tolerance: 0.01
+      stalled_velocity_threshold: 0.01
+      stall_timeout: 0.2
       gains:
         $(arg side)_gripper_joint: {p: 25, i: 5, d: 1.5, i_clamp: 1}
 
@@ -58,31 +58,6 @@
         - $(arg side)_wrist_lift_joint
         - $(arg side)_wrist_roll_joint
 
-#    joint_position_controller:
-#      type: blue_controllers/BlueJointGroupPositionController
-#      joints:
-#        - $(arg side)_base_roll_joint
-#        - $(arg side)_shoulder_lift_joint
-#        - $(arg side)_shoulder_roll_joint
-#        - $(arg side)_elbow_lift_joint
-#        - $(arg side)_elbow_roll_joint
-#        - $(arg side)_wrist_lift_joint
-#        - $(arg side)_wrist_roll_joint
-#      $(arg side)_base_roll_joint:
-#        pid: {p: 50, i: 5.0, d: 10, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
-#      $(arg side)_shoulder_lift_joint:
-#        pid: {p: 40, i: 3, d: 10, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
-#      $(arg side)_shoulder_roll_joint:
-#        pid: {p: 40, i: 3, d: 8, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
-#      $(arg side)_elbow_lift_joint:
-#        pid: {p: 30, i: 2, d: 8, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
-#      $(arg side)_elbow_roll_joint:
-#        pid: {p: 30, i: 2, d: 8, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
-#      $(arg side)_wrist_lift_joint:
-#        pid: {p: 20, i: 1, d: 5, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
-#      $(arg side)_wrist_roll_joint:
-#        pid: {p: 15, i: 1, d: 5, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
-
     joint_position_controller:
       type: blue_controllers/BlueJointGroupPositionController
       joints:
@@ -94,19 +69,19 @@
         - $(arg side)_wrist_lift_joint
         - $(arg side)_wrist_roll_joint
       $(arg side)_base_roll_joint:
-        pid: {p: 200, i: 200.0, d: 0, i_clamp_min: -3, i_clamp_max: 3, antiwindup: true}
+        pid: {p: 50, i: 5.0, d: 10, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_shoulder_lift_joint:
-        pid: {p: 200, i: 300, d: 10, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
+        pid: {p: 40, i: 3, d: 10, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_shoulder_roll_joint:
-        pid: {p: 200, i: 300, d: 8, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
+        pid: {p: 40, i: 3, d: 8, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_elbow_lift_joint:
-        pid: {p: 200, i: 300, d: 8, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
+        pid: {p: 30, i: 2, d: 8, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_elbow_roll_joint:
-        pid: {p: 200, i: 300, d: 8, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
+        pid: {p: 30, i: 2, d: 8, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_wrist_lift_joint:
-        pid: {p: 80, i: 100, d: 0, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
+        pid: {p: 20, i: 1, d: 5, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_wrist_roll_joint:
-        pid: {p: 80, i: 100, d: 0, i_clamp_min: -1, i_clamp_max: 1, antiwindup: true}
+        pid: {p: 15, i: 1, d: 5, i_clamp_min: -1, i_clamp_max: 1}
 
     cartesian_pose_controller:
       endlink: '$(arg side)_end_roll_link'
