@@ -15,7 +15,6 @@
 #include <transmission_interface/transmission_interface.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Vector3.h>
-#include <blue_msgs/MotorState.h>
 
 #include <geometry_msgs/Vector3.h>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
@@ -24,6 +23,8 @@
 #include <kdl/segment.hpp>
 
 #include "blue_hardware_drivers/BLDCDriver.h"
+#include "blue_msgs/MotorState.h"
+#include "blue_msgs/JointStartupCalibration.h"
 
 namespace ti = transmission_interface;
 
@@ -44,7 +45,10 @@ private:
   void setupMotorComms(std::string &port);
   void buildDynamicChain(KDL::Chain &chain);
 
-  void calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
+  bool jointStartupCalibration(
+      blue_msgs::JointStartupCalibration::Request &request,
+      blue_msgs::JointStartupCalibration::Response &response
+  );
   void setReadGravityVector();
   void computeInverseDynamics();
 
@@ -89,7 +93,6 @@ private:
   std::vector<double> motor_current_limits_;
 
   // Calibration
-  int calibration_counter_;
   bool is_calibrated_;
   std::vector<double> joint_pos_initial_;
   std::vector<double> actuator_pos_initial_;

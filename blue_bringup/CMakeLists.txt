@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   visualization_msgs
   blue_hardware_drivers
+  blue_msgs
 )
 
 ###################################

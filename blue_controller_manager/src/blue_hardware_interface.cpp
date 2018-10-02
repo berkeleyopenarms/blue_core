@@ -1,4 +1,5 @@
 #include "blue_controller_manager/blue_hardware_interface.h"
+
 #include <ros/assert.h>
 #include <std_msgs/Float64.h>
 #include <sensor_msgs/Imu.h>
@@ -100,7 +101,6 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   joint_eff_.resize(num_joints_);
   raw_joint_cmd_.resize(num_joints_);
   joint_cmd_.resize(num_joints_);
-  calibration_counter_ = 0;
   is_calibrated_ = false;
   gravity_vector_.data[0] = 0;
   gravity_vector_.data[1] = 0;
@@ -246,7 +246,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   }
   ROS_INFO("Finished setting up transmissions");
 
-  joint_calibration_sub_ = nh.subscribe("joint_calibration_angles", 1, &BlueHW::calibrationStateCallback, this);
+  ros::ServiceServer service = nh.advertiseService("blue_hardware/joint_startup_calibration", &BlueHW::jointStartupCalibration, this);
 
   int motor_count = motor_names_.size();
   motor_states_.name = motor_names_;
@@ -261,7 +261,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   motor_states_.accel_y.resize(motor_count);
   motor_states_.accel_z.resize(motor_count);
 
-  motor_state_publisher_ = nh.advertise<blue_msgs::MotorState>("motor_states", 1);
+  motor_state_publisher_ = nh.advertise<blue_msgs::MotorState>("blue_hardware/motor_states", 1);
 
   joint_imu_publishers_.resize(read_gravity_vector_.size());
   for (int i = 0; i < read_gravity_vector_.size(); i++) {
@@ -552,24 +552,20 @@ void BlueHW::computeInverseDynamics() {
   int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, id_torques_);
 }
 
-void BlueHW::calibrationStateCallback(const sensor_msgs::JointState::ConstPtr& msg) {
-  if (is_calibrated_)
-    return;
-  if (calibration_counter_ >= 10) {
-    // waits for 10 calibration messages before finalizing calibration
-    for (int i = 0; i < joint_pos_initial_.size(); i++) {
-      joint_pos_initial_[i] = msg->position[i];
-      joint_pos_[i] = joint_pos_initial_[i];
-      ROS_INFO("Calibrated joint %d to state %f", i, joint_pos_initial_[i]);
-    }
-    calibration_counter_++;
-    is_calibrated_ = true;
-    ROS_INFO("Finished Calibrating Joint States, counter: %d", calibration_counter_);
-  } else {
-    for (int i = 0; i < joint_pos_initial_.size(); i++) {
-      joint_pos_initial_[i] = msg->position[i];
-      joint_pos_[i] = joint_pos_initial_[i];
-    }
-    calibration_counter_++;
+
+bool BlueHW::jointStartupCalibration(
+    blue_msgs::JointStartupCalibration::Request &request,
+    blue_msgs::JointStartupCalibration::Response &response
+) {
+
+  for (int i = 0; i < joint_pos_initial_.size(); i++) {
+    joint_pos_initial_[i] = request.joint_positions[i];
+    joint_pos_[i] = joint_pos_initial_[i];
+    ROS_INFO("Calibrated joint %d to state %f", i, joint_pos_initial_[i]);
   }
+  is_calibrated_ = true;
+
+  response.success = true;
+
+  return true;
 }
