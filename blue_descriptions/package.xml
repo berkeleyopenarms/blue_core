@@ -1,12 +1,8 @@
 <package>
   <name>blue_descriptions</name>
   <version>1.0.0</version>
-  <description>
-    <p>URDF Description package for blue_description_sevendof_dyn</p>
-    <p>This package contains configuration data, 3D models and launch files
-for blue_description_sevendof_dyn robot</p>
-  </description>
-  <author>me</author>
+  <description>URDF files, 3D models, and other physical descriptors</description>
+
   <maintainer email="phil80301@berkeley.edu">Philipp Wu</maintainer>
 
   <author email="brentyi@berkeley.edu">Brent Yi</author>
