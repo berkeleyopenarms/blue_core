@@ -39,9 +39,9 @@
 
     <!-- Joint calibration -->
     <node
-      name="hardstop_calibrator"
+      name="simple_startup_calibration"
       pkg="blue_bringup"
-      type="hardstop_calibrate"
+      type="simple_startup_calibration.py"
       output="screen" />
 
   </group>

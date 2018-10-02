@@ -76,6 +76,7 @@ private:
   ros::Publisher motor_state_publisher_;
   ros::Subscriber joint_calibration_sub_;
   std::vector<ros::Publisher> joint_imu_publishers_;
+  ros::ServiceServer joint_startup_calibration_service;
 
   // Parameters read in from configuration
   std::vector<std::string> accel_links_;

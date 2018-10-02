@@ -246,7 +246,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh)
   }
   ROS_INFO("Finished setting up transmissions");
 
-  ros::ServiceServer service = nh.advertiseService("blue_hardware/joint_startup_calibration", &BlueHW::jointStartupCalibration, this);
+  joint_startup_calibration_service = nh.advertiseService("blue_hardware/joint_startup_calibration", &BlueHW::jointStartupCalibration, this);
 
   int motor_count = motor_names_.size();
   motor_states_.name = motor_names_;
