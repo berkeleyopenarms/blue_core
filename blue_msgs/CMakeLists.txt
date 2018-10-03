@@ -15,13 +15,13 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 add_message_files(FILES MotorState.msg)
+add_service_files(FILES JointStartupCalibration.srv)
+
 generate_messages(
   DEPENDENCIES
   std_msgs
-  sensor_msgs
-  geometry_msgs
 )
 
 catkin_package(
-  CATKIN_DEPENDS std_msgs sensor_msgs geometry_msgs
+  CATKIN_DEPENDS std_msgs
 )
