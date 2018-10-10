@@ -11,6 +11,8 @@
 #include <numeric>
 #include "time.h"
 
+using namespace blue_hardware_drivers;
+
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 /* const double MAX_CURRENT = 2.8; */
 const unsigned int CONTROL_LOOP_FREQ = 1000;
@@ -43,7 +45,7 @@ int main(int argc, char **argv) {
   board_list.push_back(41);
   board_list.push_back(42);
   board_list.push_back(52);
-  
+
   char* port = argv[1];
   BLDCControllerClient device;
   try {
@@ -81,10 +83,10 @@ int main(int argc, char **argv) {
     device.queueSetTimeout(id, 1000);
     device.exchange();
     ROS_DEBUG("Initialized board: %d", id);
-    
+
   }
 
-  last_time = get_time(); 
+  last_time = get_time();
   float dt = 0;
   int counter = 0;
   ros::Rate r(CONTROL_LOOP_FREQ);
@@ -119,3 +121,4 @@ int main(int argc, char **argv) {
 
   return 0;
 }
+

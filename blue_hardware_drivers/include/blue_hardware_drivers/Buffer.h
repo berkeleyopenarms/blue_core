@@ -3,12 +3,14 @@
  * Operates similarly to stream operators.
  */
 
-#ifndef BUFFER_H_
-#define BUFFER_H_
+#ifndef BUFFER_H
+#define BUFFER_H
 
 #include <cstring>
 #include <iostream>
 #include "stdint.h"
+
+namespace blue_hardware_drivers {
 
 class Buffer {
   public:
@@ -50,5 +52,7 @@ class Buffer {
     size_t tail_;
     uint8_t* buf_;
 };
+
+} // namespace blue_hardware_drivers
 
 #endif

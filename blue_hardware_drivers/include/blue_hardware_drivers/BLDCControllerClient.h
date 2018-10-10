@@ -1,4 +1,4 @@
-/* Controller for Communication Protocol 
+/* Controller for Communication Protocol
  * Protocol Version: 3
  */
 
@@ -18,6 +18,8 @@
 #include "blue_hardware_drivers/Buffer.h"
 #include "json/json.h"
 
+namespace blue_hardware_drivers {
+
 class BLDCControllerClient {
   public:
     BLDCControllerClient(); //requires init afterwards
@@ -30,8 +32,8 @@ class BLDCControllerClient {
     // Program Counter Adjustments
     void queueLeaveBootloader(comm_id_t server_id, uint32_t jump_addr);
 
-    // Calibration Setup 
-    void queueSetTimeout(comm_id_t server_id, uint16_t value); 
+    // Calibration Setup
+    void queueSetTimeout(comm_id_t server_id, uint16_t value);
     void queueSetControlMode(comm_id_t server_id, comm_ctrl_mode_t control_mode);
     void queueSetZeroAngle(comm_id_t server_id, uint16_t value);
     void queueSetERevsPerMRev(comm_id_t server_id, uint8_t value);
@@ -56,17 +58,17 @@ class BLDCControllerClient {
     void queueSetPositionAndGetRotorPosition(comm_id_t server_id, float value);
     void queueGetState(comm_id_t server_id);
     void queueSetCommandAndGetState(comm_id_t server_id, float value);
-    
+
     // Send queued packets and receive from boards
     void exchange();
-    
+
     // Remove all items currently in the queue
-    void clearQueue(); 
+    void clearQueue();
 
     // Result Commands
     void resultGetRotorPosition(comm_id_t server_id, float* result);
-    void resultGetState(comm_id_t server_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, int32_t* acc_x, int32_t* acc_y, int32_t* acc_z); 
-  
+    void resultGetState(comm_id_t server_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, int32_t* acc_x, int32_t* acc_y, int32_t* acc_z);
+
     // Setup/Programming Commands
     void initMotor(comm_id_t server_id);
 
@@ -80,13 +82,13 @@ class BLDCControllerClient {
     std::map<comm_id_t, Buffer> rx_bufs_;
 
     int allocs_ = 0;
-    
+
     // Checks to make sure serial read succeeded
-    void ser_read_check(uint8_t * data, size_t len); 
+    void ser_read_check(uint8_t * data, size_t len);
 
     void transmit();
     bool receive( comm_id_t server_id );
-    
+
     // Flash Commands (Only affects one board at a time)
     void readFlash( comm_id_t server_id, comm_full_addr_t addr, uint32_t count, std::string& buffer );
 
@@ -96,13 +98,15 @@ class BLDCControllerClient {
 class comms_error : public std::exception {
   public:
     comms_error(std::string msg) : error(msg){}
-    
+
     virtual const char* what() const throw() {
       return error.c_str();
-    } 
+    }
 
   private:
     std::string error;
 };
+
+} // namespace blue_hardware_drivers
 
 #endif /* BLDCCONTROLLERCLIENT_H */

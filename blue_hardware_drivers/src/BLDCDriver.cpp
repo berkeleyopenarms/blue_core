@@ -1,20 +1,21 @@
 #include "blue_hardware_drivers/BLDCDriver.h"
 
+namespace blue_hardware_drivers {
+
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 /* const double MAX_CURRENT = 2.8; */
 const unsigned int CONTROL_LOOP_FREQ = 1000;
 const unsigned int BAUD_RATE = 1000000;
 
-void BLDCDriver::init(const std::vector<comm_id_t> &boards, blue_msgs::MotorState* states, std::string port)
+void BLDCDriver::init(std::vector<uint8_t> board_ids, std::string port)
   {
-  boards_ = boards;
-  states_ = states;
+  board_ids_ = board_ids;
 
-  device_.init(port, boards);
+  device_.init(port, board_ids);
 
-  // Kick all boards_ out of bootloader!
+  // Kick all board_ids_ out of bootloader!
   bool success;
-  for (auto id : boards_) {
+  for (auto id : board_ids_) {
     success = false;
     while (!success && ros::ok()) {
       try {
@@ -29,8 +30,8 @@ void BLDCDriver::init(const std::vector<comm_id_t> &boards, blue_msgs::MotorStat
     }
   }
 
-  for (auto id : boards_) {
-    success = false; // set to false to initialize boards_ (doing this because some test boards_ are not calibrated)
+  for (auto id : board_ids_) {
+    success = false; // set to false to initialize board_ids_ (doing this because some test board_ids_ are not calibrated)
     while (!success && ros::ok()) {
       // Initialize the motor
       try {
@@ -61,7 +62,7 @@ void BLDCDriver::init(const std::vector<comm_id_t> &boards, blue_msgs::MotorStat
     ROS_DEBUG("Initialized board: %d", id);
   }
 
-  for (auto id : boards_) {
+  for (auto id : board_ids_) {
     success = false;
     while (!success && ros::ok()) {
       try {
@@ -80,28 +81,27 @@ void BLDCDriver::init(const std::vector<comm_id_t> &boards, blue_msgs::MotorStat
 }
 
 BLDCDriver::BLDCDriver(){
-  states_ = nullptr;
   stop_motors_ = false;
   loop_count_ = 0;
   engaged_ = false;
 }
 
-void BLDCDriver::update(std::map<comm_id_t, float>& commands){
+void BLDCDriver::update(std::map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states){
 
   if (engaged_) {
     if (!stop_motors_) {
       // Send next motor current command
-      for (int i = 0; i < boards_.size(); i++) {
-        comm_id_t id = boards_[i];
+      for (int i = 0; i < board_ids_.size(); i++) {
+        comm_id_t id = board_ids_[i];
         device_.queueSetCommandAndGetState(id, commands[id]);
-        states_->command[i] = commands[id];
+        motor_states.command[i] = commands[id];
       }
     } else {
       // If one of the motors is too hot, we still want to grab the state and set effort to 0
-      for (int i = 0; i < boards_.size(); i++) {
-        comm_id_t id = boards_[i];
+      for (int i = 0; i < board_ids_.size(); i++) {
+        comm_id_t id = board_ids_[i];
         device_.queueSetCommandAndGetState(id, 0.0);
-        states_->command[i] = 0.0;
+        motor_states.command[i] = 0.0;
       }
     }
 
@@ -110,25 +110,25 @@ void BLDCDriver::update(std::map<comm_id_t, float>& commands){
   }
 
   // Get the state of the each board
-  for (int i = 0; i < boards_.size(); i++) {
-    comm_id_t id = boards_[i];
+  for (int i = 0; i < board_ids_.size(); i++) {
+    comm_id_t id = board_ids_[i];
     device_.resultGetState(id
-        , &states_->position[i]
-        , &states_->velocity[i]
-        , &states_->direct_current[i]
-        , &states_->quadrature_current[i]
-        , &states_->supply_voltage[i]
-        , &states_->temperature[i]
-        , &states_->accel_x[i]
-        , &states_->accel_y[i]
-        , &states_->accel_z[i]
+        , &motor_states.position[i]
+        , &motor_states.velocity[i]
+        , &motor_states.direct_current[i]
+        , &motor_states.quadrature_current[i]
+        , &motor_states.supply_voltage[i]
+        , &motor_states.temperature[i]
+        , &motor_states.accel_x[i]
+        , &motor_states.accel_y[i]
+        , &motor_states.accel_z[i]
         );
 
-    if (states_->temperature[i] > MAX_TEMP_SHUTOFF) {
+    if (motor_states.temperature[i] > MAX_TEMP_SHUTOFF) {
       stop_motors_ = true;
       ROS_ERROR_THROTTLE(1, "Motor %d is too hot! Shutting off system.", id);
-    } else if (states_->temperature[i] > MAX_TEMP_WARNING) {
-      ROS_WARN_THROTTLE(1, "Motor %d is warm, currently at %fC", id, states_->temperature[i]);
+    } else if (motor_states.temperature[i] > MAX_TEMP_WARNING) {
+      ROS_WARN_THROTTLE(1, "Motor %d is warm, currently at %fC", id, motor_states.temperature[i]);
     }
   }
 
@@ -137,7 +137,7 @@ void BLDCDriver::update(std::map<comm_id_t, float>& commands){
 
 void BLDCDriver::disengageControl() {
   engaged_ = false;
-  for (auto id : boards_) {
+  for (auto id : board_ids_) {
     bool success = false;
     while (!success && ros::ok()) {
       try {
@@ -168,7 +168,7 @@ void BLDCDriver::disengageControl() {
 }
 
 void BLDCDriver::engageControl() {
-  for (auto id : boards_) {
+  for (auto id : board_ids_) {
     bool success = false;
     while (!success && ros::ok()) {
       try {
@@ -199,3 +199,5 @@ void BLDCDriver::engageControl() {
 
   engaged_ = true;
 }
+
+} // namespace blue_hardware_drivers

@@ -30,6 +30,6 @@ install(DIRECTORY launch/
 )
 
 install(PROGRAMS scripts/simple_startup_calibration.py
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

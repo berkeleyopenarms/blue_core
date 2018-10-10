@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+namespace blue_hardware_drivers {
+
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 int main(int argc, char** argv) {
   if (argc < 2) {
@@ -40,3 +42,5 @@ int main(int argc, char** argv) {
 
   return 0;
 }
+
+} // namespace blue_hardware_drivers

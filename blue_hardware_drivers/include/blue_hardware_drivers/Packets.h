@@ -7,6 +7,8 @@
 #include "blue_hardware_drivers/comms_defs.h"
 #include "blue_hardware_drivers/Buffer.h"
 
+namespace blue_hardware_drivers {
+
 class Packet {
   private: 
     uint8_t server_id_;
@@ -92,6 +94,6 @@ class JumpToAddrPacket : public Packet {
     void dump(Buffer& buf);
 };
 
-
+} // namespace blue_hardware_drivers
 
 #endif
