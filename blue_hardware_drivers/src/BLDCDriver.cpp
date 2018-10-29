@@ -7,7 +7,7 @@ const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 const unsigned int CONTROL_LOOP_FREQ = 1000;
 const unsigned int BAUD_RATE = 1000000;
 
-void BLDCDriver::init(std::vector<uint8_t> board_ids, std::string port)
+void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
   {
   board_ids_ = board_ids;
 

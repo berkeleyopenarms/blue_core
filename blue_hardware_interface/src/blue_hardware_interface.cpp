@@ -1,4 +1,5 @@
 #include "blue_hardware_interface/blue_hardware_interface.h"
+#include "blue_hardware_interface/blue_transmissions.h"
 #include "blue_msgs/MotorState.h"
 
 #include <ros/assert.h>
@@ -7,23 +8,34 @@
 
 namespace ti = transmission_interface;
 
-BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
-
-  // Read the motor ids
+struct Params{
+  std::string serial_port;
   std::vector<uint8_t> motor_ids;
+};
+
+void BlueHW::loadParams(Params &params) {
+  // Read the serial port path, eg /dev/ttyUSB0
+  getParam("blue_hardware/serial_port", params.serial_port);
+
+  // Read the motor ids, which need to be cast int->uint8_t
   std::vector<int> temp_motor_ids;
   getParam("blue_hardware/motor_ids", temp_motor_ids);
   for (auto id : temp_motor_ids)
-    motor_ids.push_back(id);
+    params.motor_ids.push_back(id);
 
-  blue_msgs::MotorState motor_states_;
+  //
+}
 
-  // Bring up motors
-  std::string serial_port;
-  getParam("blue_hardware/serial_port", serial_port);
-  motor_driver.init(motor_ids, serial_port);
+BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
 
-  // ROS_ASSERT(nh.getParam("blue_hardware/serial_port", ));
+  // Read robot parameters
+  Params params;
+  loadParams(params);
+
+  // Motor driver bringup
+  motor_driver.init(
+      params.serial_port,
+      params.motor_ids);
 
   // Set up transmissions
 
@@ -48,9 +60,9 @@ void BlueHW::write() {
 }
 
 template <typename TParam>
-TParam BlueHW::getParam(const std::string name, TParam& output) {
+void BlueHW::getParam(const std::string name, TParam& dest) {
   ROS_ASSERT_MSG(
-    nh_.getParam(name, output),
+    nh_.getParam(name, dest),
     "Could not find %s parameter in namespace %s",
     name.c_str(),
     nh_.getNamespace().c_str()

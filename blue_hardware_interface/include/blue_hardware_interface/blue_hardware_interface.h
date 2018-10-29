@@ -15,7 +15,9 @@
 #include "blue_hardware_drivers/BLDCDriver.h"
 #include "blue_msgs/JointStartupCalibration.h"
 
-namespace ti = transmission_interface;
+// namespace ti = transmission_interface;
+
+typedef struct Params Params;
 
 class BlueHW: public hardware_interface::RobotHW
 {
@@ -31,8 +33,12 @@ private:
   // Motor driver interface
   blue_hardware_drivers::BLDCDriver motor_driver;
 
+  // Transmission abstraction layer (actuator <-> joint)
+  BlueTransmissions transmission;
+
   template <typename TParam>
-  TParam getParam(const std::string name, TParam& output);
+  void getParam(const std::string name, TParam& dest);
+  void loadParams(Params &params);
 
 };
 

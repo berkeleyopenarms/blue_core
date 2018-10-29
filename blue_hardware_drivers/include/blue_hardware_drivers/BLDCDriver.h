@@ -22,7 +22,7 @@ constexpr int MAX_TEMP_SHUTOFF = 70;
 
 class BLDCDriver {
   public:
-    void init(std::vector<uint8_t> board_ids, std::string port);
+    void init(std::string port, std::vector<uint8_t> board_ids);
     void update(std::map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states);
     void engageControl();
     void disengageControl();
