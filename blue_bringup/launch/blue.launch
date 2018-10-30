@@ -1,0 +1,14 @@
+<launch>
+
+  <arg name="param_file" />
+
+  <rosparam
+    file="$(arg param_file)"
+    command="load"
+    ns="right_arm" />
+
+  <include file="$(find blue_bringup)/launch/include/run.launch.xml">
+    <arg name="configuration" value="right" />
+  </include>
+
+</launch>
