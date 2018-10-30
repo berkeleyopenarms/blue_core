@@ -49,11 +49,21 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   ```bash
   sudo addgroup $USER dialout
   ```
-- There are a handful of configuration values in `blue_bringup/config/robot_parameters_*.yaml` that will differ for each individual arm, notably:
-  - `serial_port`
-  - `motor_ids`
-  
-  They should be replaced with the values specific to your robot arm.
+- There are a handful of configuration that are specific to your arm that you need to set
+  ```bash
+  cd ~/.ros
+  touch blue_params.yaml
+  ```
+- in your newly created ```blue_params.yaml``` file add
+  - `serial_port` (path to the serial port your arm is connected to)
+  - `motor_ids` (there are 8)
+- to get you started, here is what our blue_params.yaml file looks like
+  ```
+  serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506MP4W-if00-port0
+  motor_ids: [40, 76, 65, 70, 77, 20, 21, 52]
+  ```
+  (They should be replaced with the values specific to your robot arm.)
+
 - Log out of your user account in Ubuntu and then log back in for the permissions to apply
 - Proceed to setup the arm with power supply and USB adapter ("Electrical Setup" in Quick Start Guide)
 
@@ -65,13 +75,4 @@ After doing the above setup steps once, the following will immediately boot the 
 
 - For a right arm (default setup):
   ```bash
-  roslaunch blue_bringup right.launch
-  ``` 
-- For a left arm:
-  ```bash
-  roslaunch blue_bringup left.launch
-  ``` 
-- For the (experimental) two-arm setup:
-  ```bash
-  roslaunch blue_bringup full.launch
-  ```
+  roslaunch blue_bringup blue.launch param_file:="blue_params.yaml"
