@@ -60,11 +60,10 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
 - to get you started, here is what our blue_params.yaml file looks like. Format your .yaml file similarly.
   (You should replace the motor, serial port, values specific to your robot arm.)
   ```
-  right_arm:
-      blue_hardware:
-          serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506MP4W-if00-port0
-          motor_ids: [40, 76,65, 70,77, 20,21, 52]
-          simple_startup_angles: [-0.6647, -2.1294, 0.8929, -2.1951, -2.0915, -0.5770, 0.0274, 0.0]
+  right_arm/blue_hardware:
+        serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506MP4W-if00-port0
+        motor_ids: [40, 76,65, 70,77, 20,21, 52]
+        simple_startup_angles: [-0.6647, -2.1294, 0.8929, -2.1951, -2.0915, -0.5770, 0.0274, 0.0]
   ```
 
 - Log out of your user account in Ubuntu and then log back in for the permissions to apply
@@ -86,14 +85,12 @@ After doing the above setup steps once, the following will immediately boot the 
 
 - For the experimental two arm setup, format your .yaml file similarly
 ```
-right_arm:
-    blue_hardware:
-        serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506MP4W-if00-port0
-        motor_ids: [40, 76, 65, 70, 77, 20, 21, 52]
-        simple_startup_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0, 0.0]
-left_arm:
-    blue_hardware:
-        serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI057K87-if00-port0
-        motor_ids: [30, 62, 69, 16, 33, 51, 50, 55]
-        simple_startup_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0, 0.0]
+right_arm/blue_hardware:
+      serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506MP4W-if00-port0
+      motor_ids: [40, 76, 65, 70, 77, 20, 21, 52]
+      simple_startup_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0, 0.0]
+left_arm/blue_hardware:
+      serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI057K87-if00-port0
+      motor_ids: [30, 62, 69, 16, 33, 51, 50, 55]
+      simple_startup_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0, 0.0]
 ```

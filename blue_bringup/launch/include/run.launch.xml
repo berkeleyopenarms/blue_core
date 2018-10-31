@@ -9,7 +9,8 @@
     command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_full.urdf.xacro'" />
 
   <!-- Run core control stack -->
-  <include file="$(find blue_bringup)/launch/include/single_arm_control.launch.xml"
+  <include
+    file="$(find blue_bringup)/launch/include/single_arm_control.launch.xml"
     if="$(eval configuration == 'right' or configuration == 'full')">
     <arg name="side" value="right" />
   </include>
