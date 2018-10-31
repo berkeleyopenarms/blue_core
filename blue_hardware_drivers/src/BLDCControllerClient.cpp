@@ -1,8 +1,13 @@
 #include "blue_hardware_drivers/BLDCControllerClient.h"
-
 #include <serial/serial.h>
 #include <iostream>
 #include <string>
+
+// Needed for setting low latency flag
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/serial.h>
 #include <stdio.h>
 
 #include "blue_hardware_drivers/comms_defs.h"
@@ -20,6 +25,15 @@ BLDCControllerClient::BLDCControllerClient(std::string port, const std::vector<c
 }
 
 void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& boards) {
+  // First, manualy set the port to low latency mode
+  int fd = open(port.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
+  struct serial_struct ser;
+  ioctl(fd, TIOCGSERIAL, &ser);
+  ser.flags |= ASYNC_LOW_LATENCY;
+  ioctl(fd, TIOCSSERIAL, &ser);
+  close(fd);
+
+  // Then set up serial library
   ser_.setPort(port);
   ser_.setBaudrate(COMM_DEFAULT_BAUD_RATE);
   ser_.setTimeout(serial::Timeout::max(), 4, 1, 4, 1);
