@@ -2,17 +2,12 @@
 
   <arg name="param_file" />
 
-  <arg name="config_side" value="$(side)"/>
-
   <rosparam
     file="$(arg param_file)"
-    command="load"
-    ns="right_arm/blue_hardware" />
-
+    command="load"/>
 
   <include file="$(find blue_bringup)/launch/include/run.launch.xml">
-    <!-- <arg name="configuration" value="right" /> -->
-    <arg name="configuration" value="$(config_side)" />
+    <arg name="configuration" value="full" />
   </include>
 
 </launch>

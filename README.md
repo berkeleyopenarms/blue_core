@@ -57,12 +57,15 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
 - in your newly created ```blue_params.yaml``` file add
   - `serial_port` (path to the serial port your arm is connected to)
   - `motor_ids` (there are 8)
-- to get you started, here is what our blue_params.yaml file looks like
+- to get you started, here is what our blue_params.yaml file looks like. Format your .yaml file similarly.
+  (You should replace the motor, serial port, values specific to your robot arm.)
   ```
-  serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506MP4W-if00-port0
-  motor_ids: [40, 76, 65, 70, 77, 20, 21, 52]
+  right_arm:
+      blue_hardware:
+          serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506MP4W-if00-port0
+          motor_ids: [40, 76,65, 70,77, 20,21, 52]
+          simple_startup_angles: [-0.6647, -2.1294, 0.8929, -2.1951, -2.0915, -0.5770, 0.0274, 0.0]
   ```
-  (They should be replaced with the values specific to your robot arm.)
 
 - Log out of your user account in Ubuntu and then log back in for the permissions to apply
 - Proceed to setup the arm with power supply and USB adapter ("Electrical Setup" in Quick Start Guide)
