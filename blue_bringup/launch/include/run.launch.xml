@@ -1,7 +1,7 @@
 <launch>
 
   <!-- What kind of robot am I? -->
-  <arg name="configuration" default="full" doc="stand, left, right, or full" />
+  <arg name="configuration" default="full" doc="left, right, or full" />
 
   <!-- Load URDF -->
   <param
@@ -9,7 +9,8 @@
     command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_full.urdf.xacro'" />
 
   <!-- Run core control stack -->
-  <include file="$(find blue_bringup)/launch/include/single_arm_control.launch.xml"
+  <include
+    file="$(find blue_bringup)/launch/include/single_arm_control.launch.xml"
     if="$(eval configuration == 'right' or configuration == 'full')">
     <arg name="side" value="right" />
   </include>
@@ -17,11 +18,6 @@
     file="$(find blue_bringup)/launch/include/single_arm_control.launch.xml"
     if="$(eval configuration == 'left' or configuration == 'full')">
     <arg name="side" value="left" />
-  </include>
-  <include
-    file="$(find blue_bringup)/launch/include/single_arm_control.launch.xml"
-    if="$(eval configuration == 'stand')">
-    <arg name="side" value="stand" />
   </include>
 
   <!-- Compute forward kinematics and broadcast via tf -->
