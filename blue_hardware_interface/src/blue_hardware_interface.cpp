@@ -13,6 +13,8 @@ struct Params{
   std::vector<uint8_t> motor_ids;
 
   std::string robot_description;
+  std::string baselink;
+  std::string endlink;
 
   std::vector<std::string> joint_names;
   std::vector<int> differential_pairs;
@@ -29,8 +31,10 @@ void BlueHW::loadParams(Params &params) {
   for (auto id : temp_motor_ids)
     params.motor_ids.push_back(id);
 
-  // Read URDF
+  // Parameter for parsing URDF
   getParam("robot_description", params.robot_description);
+  getParam("baselink", params.baselink);
+  getParam("endlink", params.endlink);
 
   // Read data needed for transmissions
   getParam("blue_hardware/joint_names", params.joint_names);
@@ -50,8 +54,12 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
       params.serial_port,
       params.motor_ids);
 
-  // Build robot dynamics helper
-  dynamics_.init(params.robot_description);
+  // Build helper for robot dynamics
+  // (Used to compute gravity compensation torques)
+  dynamics_.init(
+      params.robot_description,
+      params.baselink,
+      params.endlink);
 
   // Set up transmissions
   transmissions_.init(
@@ -59,11 +67,9 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
       params.differential_pairs,
       params.gear_ratios);
 
-  // Register joint state/effort handles
+  // Register joint interfaces with the controller manager
   registerInterface(&transmissions_.joint_state_interface);
   registerInterface(&transmissions_.joint_effort_interface);
-
-  // Set up publishers and subscribers
 }
 
 void BlueHW::read() {
