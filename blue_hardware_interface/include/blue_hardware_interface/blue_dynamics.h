@@ -18,11 +18,14 @@ public:
       std::string baselink,
       std::string endlink);
   void setGravityVector(std::vector<double> gravity_vector);
-  void computeInverseDynamics(
+
+  std::vector<double> computeGravityComp(
+      const std::vector<double> &joint_pos,
+      const std::vector<double> &joint_vel);
+  std::vector<double> computeInverseDynamics(
       const std::vector<double> &joint_pos,
       const std::vector<double> &joint_vel,
-      const std::vector<double> &target_joint_accel,
-      std::vector<double> &id_torques);
+      const std::vector<double> &target_joint_accel);
 
 private:
 

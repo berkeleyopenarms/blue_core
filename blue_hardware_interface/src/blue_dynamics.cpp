@@ -29,6 +29,7 @@ void BlueDynamics::init(
 void BlueDynamics::setGravityVector(std::vector<double> gravity_vector) {
   assert(gravity_vector.size() == 3);
 
+  // Convert data type for KDL
   KDL::Vector kdl_gravity_vector;
   kdl_gravity_vector.data[0] = gravity_vector[0];
   kdl_gravity_vector.data[1] = gravity_vector[1];
@@ -38,11 +39,21 @@ void BlueDynamics::setGravityVector(std::vector<double> gravity_vector) {
   kdl_id_solver_.reset(new KDL::ChainIdSolver_RNE(kdl_chain_, kdl_gravity_vector));
 }
 
-void BlueDynamics::computeInverseDynamics(
+std::vector<double> BlueDynamics::computeGravityComp(
+    const std::vector<double> &joint_pos,
+    const std::vector<double> &joint_vel) {
+
+  std::vector<double> target_joint_accel(joint_pos.size(), 0.0);
+  return computeInverseDynamics(
+      joint_pos,
+      joint_vel,
+      target_joint_accel);
+}
+
+std::vector<double> BlueDynamics::computeInverseDynamics(
     const std::vector<double> &joint_pos,
     const std::vector<double> &joint_vel,
-    const std::vector<double> &target_joint_accel,
-    std::vector<double> &id_torques) {
+    const std::vector<double> &target_joint_accel) {
 
   // Convert data types for KDL
   size_t joint_count = joint_pos.size();
@@ -68,7 +79,9 @@ void BlueDynamics::computeInverseDynamics(
       kdl_id_torques);
 
   // Convert from KDL back to native C++
+  std::vector<double> id_torques;
   for (int i = 0; i < joint_count; i++)
     id_torques[i] = kdl_id_torques.data[i];
 
+  return id_torques;
 }

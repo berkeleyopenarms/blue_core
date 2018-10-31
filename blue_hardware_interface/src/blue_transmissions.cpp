@@ -15,10 +15,10 @@ void BlueTransmissions::init(
       std::vector<double> gear_ratios) {
 
   // How many joints do we have?
-  int num_joints = joint_names.size();
+  num_joints_ = joint_names.size();
 
   // How many transmissions?
-  int num_simple_transmissions = num_joints - differential_pairs.size();
+  int num_simple_transmissions = num_joints_ - differential_pairs.size();
   int num_diff_transmissions = differential_pairs.size() / 2;
   int num_transmissions = num_simple_transmissions + num_diff_transmissions;
 
@@ -29,20 +29,20 @@ void BlueTransmissions::init(
   joint_states_.resize(num_transmissions);
   joint_commands_.resize(num_transmissions);
 
-  actuator_pos_.resize(num_joints);
-  actuator_vel_.resize(num_joints);
-  actuator_eff_.resize(num_joints);
-  actuator_cmd_.resize(num_joints);
-  joint_pos_.resize(num_joints);
-  joint_vel_.resize(num_joints);
-  joint_eff_.resize(num_joints);
-  joint_cmd_.resize(num_joints);
+  actuator_pos_.resize(num_joints_);
+  actuator_vel_.resize(num_joints_);
+  actuator_eff_.resize(num_joints_);
+  actuator_cmd_.resize(num_joints_);
+  joint_pos_.resize(num_joints_);
+  joint_vel_.resize(num_joints_);
+  joint_eff_.resize(num_joints_);
+  joint_cmd_.resize(num_joints_);
 
-  raw_joint_cmd_.resize(num_joints);
+  raw_joint_cmd_.resize(num_joints_);
 
   // Build each of our transmission objects
   int joint_idx = 0;
-  for(int transmission_idx = 0; transmission_idx < num_transmissions; transmission_idx++){
+  for (int transmission_idx = 0; transmission_idx < num_transmissions; transmission_idx++){
     // How many joints are in this transmission?
     int joints_in_transmission;
 
@@ -103,7 +103,7 @@ void BlueTransmissions::init(
   }
 
   // Build interfaces for ros_control
-  for (int i = 0; i < num_joints; i++) {
+  for (int i = 0; i < num_joints_; i++) {
     joint_cmd_[i] = 0.0;
     raw_joint_cmd_[i] = 0.0;
     hardware_interface::JointStateHandle state_handle_a(
@@ -113,7 +113,7 @@ void BlueTransmissions::init(
         &joint_eff_[i]);
     joint_state_interface.registerHandle(state_handle_a);
   }
-  for (int i = 0; i < num_joints; i++) {
+  for (int i = 0; i < num_joints_; i++) {
     hardware_interface::JointHandle effort_handle_a(
         joint_state_interface.getHandle(joint_names[i]),
         &raw_joint_cmd_[i]);
@@ -122,3 +122,26 @@ void BlueTransmissions::init(
 
 }
 
+const std::vector<double>& BlueTransmissions::getJointPos() {
+  return joint_pos_;
+}
+
+const std::vector<double>& BlueTransmissions::getJointVel() {
+  return joint_vel_;
+}
+
+std::vector<double> BlueTransmissions::getActuatorCommands(
+    std::vector<double> feedforward_torques) {
+
+  // Compute joint commands
+  for (int i = 0; i < num_joints_; i++)
+    joint_cmd_[i] = raw_joint_cmd_[i] + feedforward_torques[i];
+
+  // Soft stops
+  // TODO
+
+  // Propagate through transmissions to compute actuator commands
+  joint_to_actuator_interface_.propagate();
+
+  return actuator_cmd_;
+}

@@ -8,7 +8,7 @@ const unsigned int CONTROL_LOOP_FREQ = 1000;
 const unsigned int BAUD_RATE = 1000000;
 
 void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
-  {
+{
   board_ids_ = board_ids;
 
   device_.init(port, board_ids);
@@ -86,7 +86,20 @@ BLDCDriver::BLDCDriver(){
   engaged_ = false;
 }
 
-void BLDCDriver::update(std::map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states){
+void BLDCDriver::update(std::map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states) {
+
+  // Resize MotorState message to fit our read data
+  int motor_count = commands.size();
+  motor_states.command.resize(motor_count);
+  motor_states.position.resize(motor_count);
+  motor_states.velocity.resize(motor_count);
+  motor_states.direct_current.resize(motor_count);
+  motor_states.quadrature_current.resize(motor_count);
+  motor_states.temperature.resize(motor_count);
+  motor_states.supply_voltage.resize(motor_count);
+  motor_states.accel_x.resize(motor_count);
+  motor_states.accel_y.resize(motor_count);
+  motor_states.accel_z.resize(motor_count);
 
   if (engaged_) {
     if (!stop_motors_) {
