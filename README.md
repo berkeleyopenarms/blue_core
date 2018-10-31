@@ -79,3 +79,21 @@ After doing the above setup steps once, the following will immediately boot the 
 - For a right arm (default setup):
   ```bash
   roslaunch blue_bringup blue.launch param_file:="blue_params.yaml"
+  ```
+
+-----
+## Experimental two arm
+
+- For the experimental two arm setup, format your .yaml file similarly
+```
+right_arm:
+    blue_hardware:
+        serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506MP4W-if00-port0
+        motor_ids: [40, 76, 65, 70, 77, 20, 21, 52]
+        simple_startup_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0, 0.0]
+left_arm:
+    blue_hardware:
+        serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI057K87-if00-port0
+        motor_ids: [30, 62, 69, 16, 33, 51, 50, 55]
+        simple_startup_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0, 0.0]
+```

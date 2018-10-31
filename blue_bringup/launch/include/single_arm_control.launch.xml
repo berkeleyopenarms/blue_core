@@ -26,7 +26,8 @@
       pkg="blue_controller_manager"
       type="blue_controller_manager"
       output="screen"
-      required="true" />
+      required="false" />
+      <!-- required="true" /> -->
     <node
       name="$(anon blue_controller_spawner)"
       pkg="blue_controller_manager"
