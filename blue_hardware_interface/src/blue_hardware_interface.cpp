@@ -11,6 +11,12 @@ namespace ti = transmission_interface;
 struct Params{
   std::string serial_port;
   std::vector<uint8_t> motor_ids;
+
+  std::string robot_description;
+
+  std::vector<std::string> joint_names;
+  std::vector<int> differential_pairs;
+  std::vector<double> gear_ratios;
 };
 
 void BlueHW::loadParams(Params &params) {
@@ -23,7 +29,14 @@ void BlueHW::loadParams(Params &params) {
   for (auto id : temp_motor_ids)
     params.motor_ids.push_back(id);
 
-  //
+  // Read URDF
+  getParam("robot_description", params.robot_description);
+
+  // Read data needed for transmissions
+  getParam("blue_hardware/joint_names", params.joint_names);
+  getParam("blue_hardware/gear_ratios", params.gear_ratios);
+  getParam("blue_hardware/differential_pairs", params.differential_pairs);
+
 }
 
 BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
@@ -33,15 +46,22 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   loadParams(params);
 
   // Motor driver bringup
-  motor_driver.init(
+  motor_driver_.init(
       params.serial_port,
       params.motor_ids);
 
-  // Set up transmissions
+  // Build robot dynamics helper
+  dynamics_.init(params.robot_description);
 
-  // Gravity Compensation
+  // Set up transmissions
+  transmissions_.init(
+      params.joint_names,
+      params.differential_pairs,
+      params.gear_ratios);
 
   // Register joint state/effort handles
+  registerInterface(&transmissions_.joint_state_interface);
+  registerInterface(&transmissions_.joint_effort_interface);
 
   // Set up publishers and subscribers
 }

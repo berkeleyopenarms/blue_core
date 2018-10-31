@@ -7,14 +7,15 @@
 
 #include <string.h>
 
-BlueTransmissions::BlueTransmissions() {
-  // TODO: use real parameters
-  std::vector<std::string> joint_names;
-  std::vector<int> differential_pairs;
-  std::vector<double> gear_ratios;
+BlueTransmissions::BlueTransmissions() {}
+
+void BlueTransmissions::init(
+      std::vector<std::string> joint_names,
+      std::vector<int> differential_pairs,
+      std::vector<double> gear_ratios) {
 
   // How many joints do we have?
-  int num_joints = 0;
+  int num_joints = joint_names.size();
 
   // How many transmissions?
   int num_simple_transmissions = num_joints - differential_pairs.size();
@@ -48,21 +49,25 @@ BlueTransmissions::BlueTransmissions() {
     // Is this part of a differential pair?
     auto tmp = std::find(differential_pairs.begin(), differential_pairs.end(), joint_idx);
     if(tmp != differential_pairs.end()){
-      // Differential pair (ie links)
+      // Differential transmissions (ie links, two joints each)
       std::vector<double> transmission_actuator_ratios{-1.0, 1.0};
-      std::vector<double> transmission_gear_ratios{-gear_ratios[joint_idx], -gear_ratios[joint_idx + 1]};
+      std::vector<double> transmission_gear_ratios{
+          -gear_ratios[joint_idx],
+          -gear_ratios[joint_idx + 1]};
+
       transmissions_[transmission_idx] = new ti::DifferentialTransmission(
           transmission_actuator_ratios,
-          transmission_gear_ratios
-      );
+          transmission_gear_ratios);
       joints_in_transmission = 2;
     } else {
-      // Not differential pair (base, gripper)
-      transmissions_[transmission_idx] = new ti::SimpleTransmission(-gear_ratios[joint_idx], 0.0);
+      // Not differential pair (base or gripper, one joint each)
+      transmissions_[transmission_idx] = new ti::SimpleTransmission(
+          -gear_ratios[joint_idx],
+          0.0);
       joints_in_transmission = 1;
     }
 
-    // Wrap raw data for each joint the transmission
+    // Wrap raw data for each joint in the transmission
     for (int i = 0; i < joints_in_transmission; i++) {
       actuator_states_[transmission_idx].position.push_back(&actuator_pos_[joint_idx]);
       actuator_states_[transmission_idx].velocity.push_back(&actuator_vel_[joint_idx]);
@@ -78,24 +83,22 @@ BlueTransmissions::BlueTransmissions() {
       joint_idx++;
     }
 
-    // Name this transmission...
+    // Name the transmission...
     std::ostringstream stream;
     stream << "transmission_" << transmission_idx;
     stream << (joints_in_transmission == 1 ? "_simple" : "_differential");
     std::string transmission_name = stream.str();
     // ...and then register it
     actuator_to_joint_interface_.registerHandle(
-      ti::ActuatorToJointStateHandle(transmission_name,
-      transmissions_[transmission_idx],
-      actuator_states_[transmission_idx],
-      joint_states_[transmission_idx])
-    );
+        ti::ActuatorToJointStateHandle(transmission_name,
+        transmissions_[transmission_idx],
+        actuator_states_[transmission_idx],
+        joint_states_[transmission_idx]));
     joint_to_actuator_interface_.registerHandle(
-      ti::JointToActuatorEffortHandle(transmission_name,
-      transmissions_[transmission_idx],
-      actuator_commands_[transmission_idx],
-      joint_commands_[transmission_idx])
-    );
+        ti::JointToActuatorEffortHandle(transmission_name,
+        transmissions_[transmission_idx],
+        actuator_commands_[transmission_idx],
+        joint_commands_[transmission_idx]));
 
   }
 
@@ -104,18 +107,16 @@ BlueTransmissions::BlueTransmissions() {
     joint_cmd_[i] = 0.0;
     raw_joint_cmd_[i] = 0.0;
     hardware_interface::JointStateHandle state_handle_a(
-      joint_names[i],
-      &joint_pos_[i],
-      &joint_vel_[i],
-      &joint_eff_[i]
-    );
+        joint_names[i],
+        &joint_pos_[i],
+        &joint_vel_[i],
+        &joint_eff_[i]);
     joint_state_interface.registerHandle(state_handle_a);
   }
   for (int i = 0; i < num_joints; i++) {
     hardware_interface::JointHandle effort_handle_a(
         joint_state_interface.getHandle(joint_names[i]),
-        &raw_joint_cmd_[i]
-    );
+        &raw_joint_cmd_[i]);
     joint_effort_interface.registerHandle(effort_handle_a);
   }
 

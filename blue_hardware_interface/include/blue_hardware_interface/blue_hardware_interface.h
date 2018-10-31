@@ -11,11 +11,10 @@
 #include <geometry_msgs/Vector3.h>
 
 #include "blue_hardware_interface/blue_transmissions.h"
+#include "blue_hardware_interface/blue_dynamics.h"
 
 #include "blue_hardware_drivers/BLDCDriver.h"
 #include "blue_msgs/JointStartupCalibration.h"
-
-// namespace ti = transmission_interface;
 
 typedef struct Params Params;
 
@@ -31,10 +30,13 @@ private:
   ros::NodeHandle nh_;
 
   // Motor driver interface
-  blue_hardware_drivers::BLDCDriver motor_driver;
+  blue_hardware_drivers::BLDCDriver motor_driver_;
 
   // Transmission abstraction layer (actuator <-> joint)
-  BlueTransmissions transmission;
+  BlueTransmissions transmissions_;
+
+  // Robot dynamics helper
+  BlueDynamics dynamics_;
 
   template <typename TParam>
   void getParam(const std::string name, TParam& dest);
