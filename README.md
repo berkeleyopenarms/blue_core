@@ -77,7 +77,7 @@ After doing the above setup steps once, the following will immediately boot the 
 
 - For a right arm (default setup):
   ```bash
-  roslaunch blue_bringup blue.launch param_file:="blue_params.yaml"
+  roslaunch blue_bringup right.launch param_file:="blue_params.yaml"
   ```
 
 -----
@@ -94,3 +94,8 @@ left_arm/blue_hardware:
       motor_ids: [30, 62, 69, 16, 33, 51, 50, 55]
       simple_startup_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0, 0.0]
 ```
+
+- For a right arm (default setup):
+  ```bash
+  roslaunch blue_bringup full.launch param_file:="blue_params.yaml"
+  ```
