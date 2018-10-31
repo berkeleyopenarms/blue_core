@@ -27,7 +27,6 @@ blue_hardware:
     softstop_torque_limit: 95.0
 
     ### Motor configuration
-    # serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI057K87-if00-port0
     motor_names:
         - base_roll_motor
         - right_motor1
@@ -37,12 +36,8 @@ blue_hardware:
         - right_motor3
         - left_motor3
         - gripper_motor
-    # motor_ids: [30, 62, 69, 16, 33, 51, 50, 55]
     motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0]
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.67, 1.67, 1.67]
-
-    ### Calibration configuration
-    # simple_startup_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0, 0.0]
 
     ### Posture control parameters for gradient descent ik pose controller
     posture_target: [0.9, -1.57, 0.0, -1.57, 0.90, -1.0, 0.0]

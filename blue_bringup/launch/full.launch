@@ -3,7 +3,7 @@
 
   <rosparam
     file="$(arg param_file)"
-    command="load"/>
+    command="load" />
 
   <include
     file="$(find blue_bringup)/launch/include/run.launch.xml">

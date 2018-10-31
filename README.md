@@ -54,10 +54,14 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   cd ~/.ros
   touch blue_params.yaml
   ```
-- in your newly created ```blue_params.yaml``` file add
-  - `serial_port` (path to the serial port your arm is connected to)
-  - `motor_ids` (there are 8)
-- to get you started, here is what our blue_params.yaml file looks like. Format your .yaml file similarly.
+- In your newly created ```blue_params.yaml``` file add the following under the `right_arm/blue_hardware` namespace
+  - `serial_port`
+    - path to the serial port your arm is connected to
+  - `motor_ids`
+    - a list of the 8 motor ids, starting from the base to the gripper
+  - `simple_startup_angles`
+    - the intial starting joint angles of your robot upon startup
+- To get you started, here is what our blue_params.yaml file looks like. Format your .yaml file similarly.
   (You should replace the motor, serial port, values specific to your robot arm.)
   ```
   right_arm/blue_hardware:
@@ -77,7 +81,7 @@ After doing the above setup steps once, the following will immediately boot the 
 
 - For a right arm (default setup):
   ```bash
-  roslaunch blue_bringup right.launch param_file:="blue_params.yaml"
+  roslaunch blue_bringup right.launch param_file:=blue_params.yaml
   ```
 
 -----
@@ -97,5 +101,5 @@ left_arm/blue_hardware:
 
 - For a right arm (default setup):
   ```bash
-  roslaunch blue_bringup full.launch param_file:="blue_params.yaml"
+  roslaunch blue_bringup full.launch param_file:=blue_params.yaml
   ```
