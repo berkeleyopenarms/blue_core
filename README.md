@@ -106,3 +106,10 @@ After running the above setup steps, the following will boot the arm and put it 
   ```bash
   roslaunch blue_bringup full.launch param_file:=blue_params.yaml
   ```
+
+-----
+## rviz
+
+```bash
+roslaunch blue_bringup rviz.launch
+```
