@@ -55,6 +55,11 @@ std::vector<double> BlueDynamics::computeInverseDynamics(
     const std::vector<double> &joint_vel,
     const std::vector<double> &target_joint_accel) {
 
+  if (!kdl_id_solver_) {
+    std::vector<double> torques(joint_pos.size(), 0.0);
+    return torques;
+  }
+
   // Convert data types for KDL
   size_t joint_count = joint_pos.size();
   KDL::JntArray kdl_joint_pos(joint_count);

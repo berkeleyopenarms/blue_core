@@ -138,6 +138,16 @@ const std::vector<double>& BlueTransmissions::getJointVel() {
   return joint_vel_;
 }
 
+void BlueTransmissions::setActuatorStates(
+    std::vector<double> positions,
+    std::vector<double> velocities,
+    std::vector<double> efforts) {
+  actuator_pos_ = positions;
+  actuator_vel_ = velocities;
+  actuator_eff_ = efforts;
+  actuator_to_joint_interface_.propagate();
+}
+
 std::vector<double> BlueTransmissions::getActuatorCommands(
     std::vector<double> feedforward_torques,
     double softstop_torque_limit, // TODO: clean up softstop code
@@ -154,7 +164,7 @@ std::vector<double> BlueTransmissions::getActuatorCommands(
   // Compute joint commands
   for (int i = 0; i < num_joints_; i++) {
     joint_cmd_[i] = raw_joint_cmd_[i] + feedforward_torques[i];
-
+    break;
     // Soft stops
     // TODO: hacky and temporary
     if(joint_pos_[i] > softstop_max_angles[i] - softstop_tolerance){

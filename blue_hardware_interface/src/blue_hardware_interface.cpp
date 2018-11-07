@@ -57,10 +57,26 @@ void BlueHW::read() {
   // Publish the motor states, in case anybody's listening
   motor_states_.header.stamp = ros::Time::now();
   motor_state_publisher_.publish(motor_states_);
+
+  // std::vector<float> => <double> casting
+  std::vector<double> positions;
+  std::vector<double> velocities;
+  std::vector<double> efforts;
+  for (int i = 0; i < params_.motor_ids.size(); i++) {
+    positions.push_back(motor_states_.position[i]);
+    velocities.push_back(motor_states_.velocity[i]);
+    efforts.push_back(
+        motor_states_.quadrature_current[i] / params_.current_to_torque_ratios[i]);
+  }
+
+  // Update transmissions with motor states
+  transmissions_.setActuatorStates(
+      positions,
+      velocities,
+      efforts);
 }
 
 void BlueHW::write() {
-  return;
   // Compute gravity compensation
   auto gravity_comp_torques = dynamics_.computeGravityComp(
       transmissions_.getJointPos(),
@@ -84,6 +100,7 @@ void BlueHW::write() {
   // Post-process motor commands
   for (int i = 0; i < actuator_commands.size(); i++) {
     // Convert torque to current
+    // TODO: use driver internal torque control mode
     actuator_commands[i] = actuator_commands[i] * params_.current_to_torque_ratios[i];
 
     // Apply current limit
@@ -111,8 +128,7 @@ bool BlueHW::jointStartupCalibration(
     blue_msgs::JointStartupCalibration::Request &request,
     blue_msgs::JointStartupCalibration::Response &response
 ) {
-  ROS_ERROR("???");
-  // transmissions_.setJointOffsets(request.joint_positions);
+  transmissions_.setJointOffsets(request.joint_positions);
   response.success = true;
 
   return true;

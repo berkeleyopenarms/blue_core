@@ -29,6 +29,12 @@ public:
   // Joint calibration
   void setJointOffsets(std::vector<double> offsets);
 
+  //  Update internal actuator states
+  void setActuatorStates(
+      std::vector<double> positions,
+      std::vector<double> velocities,
+      std::vector<double> efforts);
+
   // Get desired actuator commands
   std::vector<double> getActuatorCommands(
       std::vector<double> feedforward_torques,
