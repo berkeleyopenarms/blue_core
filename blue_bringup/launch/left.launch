@@ -1,7 +1,12 @@
 <launch>
+  <arg name="param_file" />
 
-  <include file="$(find blue_bringup)/launch/include/run.launch.xml">
+  <rosparam
+    file="$(arg param_file)"
+    command="load" />
+
+  <include
+    file="$(find blue_bringup)/launch/include/run.launch.xml">
     <arg name="configuration" value="left" />
   </include>
-
 </launch>

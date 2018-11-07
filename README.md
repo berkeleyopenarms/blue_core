@@ -14,6 +14,8 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   - Lower-level code for communicating with hardware (ie motor drivers) and providing a ROS interface to them
 - **blue_descriptions**
   - Physical descriptions of our robot, in the form of URDF files and associated 3D models
+- **blue_msgs**
+  - Message types and service descriptions
 
 -----
 
@@ -45,33 +47,69 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   echo "source ~/blue_ws/devel/setup.bash" >> ~/.bashrc
   source ~/blue_ws/devel/setup.bash
   ```
-- Setup user permissions:
+- Setup user permissions (you'll need to log out and back in for this take effect):
   ```bash
   sudo addgroup $USER dialout
   ```
-- There are a handful of configuration values in `blue_bringup/config/robot_parameters_*.yaml` that will differ for each individual arm, notably:
+- There are a handful of configuration that are specific to your arm that you need to set
+  ```bash
+  cd ~/.ros
+  touch blue_params.yaml
+  ```
+- In your newly created ```blue_params.yaml``` file add the following under the `right_arm/blue_hardware` namespace
   - `serial_port`
+    - path to the serial port your arm is connected to
   - `motor_ids`
-  
-  They should be replaced with the values specific to your robot arm.
-- Log out of your user account in Ubuntu and then log back in for the permissions to apply
+    - a list of the 8 motor ids, starting from the base to the gripper
+  - `simple_startup_angles`
+    - the intial starting joint angles of your robot upon startup
+- To get you started, here is what our blue_params.yaml file looks like:
+  ```
+  right_arm/blue_hardware:
+        serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506MP4W-if00-port0
+        motor_ids: [40, 76, 65, 70, 77, 20, 21, 52]
+        simple_startup_angles: [-0.6647, -2.1294, 0.8929, -2.1951, -2.0915, -0.5770, 0.0274, 0.0]
+  ```
+
 - Proceed to setup the arm with power supply and USB adapter ("Electrical Setup" in Quick Start Guide)
 
 -----
 
 ## The robot is now turned on, connected via USB, and in the proper startup position -- how do I run the control stack?
 
-After doing the above setup steps once, the following will immediately boot the arm into gravity compensation mode:
+After running the above setup steps, the following will boot the arm and put it into gravity compensation mode:
 
 - For a right arm (default setup):
   ```bash
-  roslaunch blue_bringup right.launch
-  ``` 
-- For a left arm:
-  ```bash
-  roslaunch blue_bringup left.launch
-  ``` 
-- For the (experimental) two-arm setup:
-  ```bash
-  roslaunch blue_bringup full.launch
+  roslaunch blue_bringup right.launch param_file:=blue_params.yaml
   ```
+- For a left arm (yaml file will need to be namespaced relative to `left_arm` instead of `right_arm`):
+  ```bash
+  roslaunch blue_bringup left.launch param_file:=blue_params.yaml
+  ```
+
+-----
+## Experimental two arm
+
+- For the experimental two arm setup, the .yaml file should contain parameters for both the left and right arms:
+  ```
+  right_arm/blue_hardware:
+        serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506MP4W-if00-port0
+        motor_ids: [40, 76, 65, 70, 77, 20, 21, 52]
+        simple_startup_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0, 0.0]
+  left_arm/blue_hardware:
+        serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI057K87-if00-port0
+        motor_ids: [30, 62, 69, 16, 33, 51, 50, 55]
+        simple_startup_angles: [-0.785398, -2.19, -1.570796, 0.0, 1.570796, -0.23, 0.0, 0.0]
+  ```
+- To run:
+  ```bash
+  roslaunch blue_bringup full.launch param_file:=blue_params.yaml
+  ```
+
+-----
+## rviz
+
+```bash
+roslaunch blue_bringup rviz.launch
+```
