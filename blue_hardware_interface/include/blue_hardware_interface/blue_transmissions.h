@@ -26,17 +26,29 @@ public:
   const std::vector<double>& getJointPos();
   const std::vector<double>& getJointVel();
 
+  // Joint calibration
+  void setJointOffsets(std::vector<double> offsets);
+
+  // Get desired actuator commands
   std::vector<double> getActuatorCommands(
-      std::vector<double> feedforward_torques);
+      std::vector<double> feedforward_torques,
+      double softstop_torque_limit, // TODO: clean up softstop code
+      std::vector<double> softstop_min_angles,
+      std::vector<double> softstop_max_angles,
+      double softstop_tolerance);
 
 private:
 
+  bool is_calibrated_;
   int num_joints_;
   int num_diff_actuators_;
 
   // Transmission interfaces
   ti::ActuatorToJointStateInterface actuator_to_joint_interface_;
   ti::JointToActuatorEffortInterface joint_to_actuator_interface_;
+
+  // Joint offsets
+  std::vector<double> joint_offsets_;
 
   // Actuator and joint state data
   std::vector<ti::Transmission *> transmissions_;

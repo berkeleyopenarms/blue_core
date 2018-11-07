@@ -35,6 +35,16 @@ typedef struct {
   // Torque => current conversion stuff
   std::vector<double> current_to_torque_ratios;
   std::vector<double> motor_current_limits;
+
+  // Gains for our inverse dynamics torques (gravity compensation tuning)
+  std::vector<double> id_torque_gains;
+
+  // Soft stops
+  // TODO: hacky and temporary
+  double softstop_torque_limit;
+  std::vector<double> softstop_min_angles;
+  std::vector<double> softstop_max_angles;
+  double softstop_tolerance;
 } Params;
 
 class BlueHW: public hardware_interface::RobotHW
@@ -61,9 +71,16 @@ private:
   // Robot dynamics helper
   BlueDynamics dynamics_;
 
-  // ROS stuff
+  // Motor state stuff
   blue_msgs::MotorState motor_states_;
   ros::Publisher motor_state_publisher_;
+
+  // Calibration service
+  bool jointStartupCalibration(
+    blue_msgs::JointStartupCalibration::Request &request,
+    blue_msgs::JointStartupCalibration::Response &response
+  );
+  ros::ServiceServer joint_startup_calibration_service_;
 
   // Helpers for reading params
   template <typename TParam>

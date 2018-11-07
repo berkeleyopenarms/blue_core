@@ -6,8 +6,10 @@
 #include <transmission_interface/transmission_interface.h>
 
 #include <string.h>
+#include <cmath>
 
-BlueTransmissions::BlueTransmissions() {}
+BlueTransmissions::BlueTransmissions() :
+  is_calibrated_(false) {}
 
 void BlueTransmissions::init(
       std::vector<std::string> joint_names,
@@ -38,6 +40,7 @@ void BlueTransmissions::init(
   joint_eff_.resize(num_joints_);
   joint_cmd_.resize(num_joints_);
 
+  joint_offsets_.resize(num_joints_);
   raw_joint_cmd_.resize(num_joints_);
 
   // Build each of our transmission objects
@@ -122,6 +125,11 @@ void BlueTransmissions::init(
 
 }
 
+void BlueTransmissions::setJointOffsets(std::vector<double> offsets) {
+  joint_offsets_ = offsets;
+  is_calibrated_ = true;
+}
+
 const std::vector<double>& BlueTransmissions::getJointPos() {
   return joint_pos_;
 }
@@ -131,14 +139,34 @@ const std::vector<double>& BlueTransmissions::getJointVel() {
 }
 
 std::vector<double> BlueTransmissions::getActuatorCommands(
-    std::vector<double> feedforward_torques) {
+    std::vector<double> feedforward_torques,
+    double softstop_torque_limit, // TODO: clean up softstop code
+    std::vector<double> softstop_min_angles,
+    std::vector<double> softstop_max_angles,
+    double softstop_tolerance) {
+
+  if (!is_calibrated_) {
+    // If not calibrated, zero out all actuator commands
+    std::fill(actuator_cmd_.begin(), actuator_cmd_.end(), 0);
+    return actuator_cmd_;
+  }
 
   // Compute joint commands
-  for (int i = 0; i < num_joints_; i++)
+  for (int i = 0; i < num_joints_; i++) {
     joint_cmd_[i] = raw_joint_cmd_[i] + feedforward_torques[i];
 
-  // Soft stops
-  // TODO
+    // Soft stops
+    // TODO: hacky and temporary
+    if(joint_pos_[i] > softstop_max_angles[i] - softstop_tolerance){
+      ROS_WARN_THROTTLE(1, "Going over soft stop max, %d", i);
+      double offset = joint_pos_[i] - softstop_max_angles[i] + softstop_tolerance;
+      joint_cmd_[i] += -1.0 * softstop_torque_limit * pow(offset, 2);
+    } else if (joint_pos_[i] < softstop_min_angles[i] + softstop_tolerance){
+      ROS_WARN_THROTTLE(1, "Going over soft stop min, %d",i);
+      double offset = softstop_min_angles[i] + softstop_tolerance - joint_pos_[i];
+      joint_cmd_[i] += softstop_torque_limit * pow(offset, 2);
+    }
+  }
 
   // Propagate through transmissions to compute actuator commands
   joint_to_actuator_interface_.propagate();

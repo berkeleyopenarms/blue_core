@@ -8,8 +8,7 @@
 
 namespace ti = transmission_interface;
 
-BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
-
+BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) { 
   // Read robot parameters
   loadParams();
 
@@ -39,6 +38,13 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   motor_states_.name = params_.motor_names;
   motor_state_publisher_ = nh.advertise<blue_msgs::MotorState>(
       "blue_hardware/motor_states", 1);
+  joint_startup_calibration_service_ = nh.advertiseService(
+      "blue_hardware/joint_startup_calibration",
+      &BlueHW::jointStartupCalibration,
+      this);
+
+  for (auto id : params_.motor_ids)
+    motor_commands_[id] = 0.0;
 
   // Wait for the dust to settle a bit before we actually start :)
   ros::Duration(0.444).sleep();
@@ -51,21 +57,29 @@ void BlueHW::read() {
   // Publish the motor states, in case anybody's listening
   motor_states_.header.stamp = ros::Time::now();
   motor_state_publisher_.publish(motor_states_);
-
-
 }
 
 void BlueHW::write() {
+  return;
   // Compute gravity compensation
   auto gravity_comp_torques = dynamics_.computeGravityComp(
       transmissions_.getJointPos(),
       transmissions_.getJointVel());
 
-  // Set gripper gravity compensation torque to 0
+  // Ignore gravity compensation torque for gripper joint
   gravity_comp_torques.back() = 0.0;
 
-  // Compute motor commands from actuator commands
-  auto actuator_commands = transmissions_.getActuatorCommands(gravity_comp_torques);
+  // Apply gravity compensation fine tuning terms
+  for (int i = 0; i < gravity_comp_torques.size(); i++)
+    gravity_comp_torques[i] *= params_.id_torque_gains[i];
+
+  // Get actuator commands, using the gravity comp torques as a feedforward
+  auto actuator_commands = transmissions_.getActuatorCommands(
+      gravity_comp_torques,
+      params_.softstop_torque_limit, // TODO: clean up softstop code
+      params_.softstop_min_angles,
+      params_.softstop_max_angles,
+      params_.softstop_tolerance);
 
   // Post-process motor commands
   for (int i = 0; i < actuator_commands.size(); i++) {
@@ -84,6 +98,7 @@ void BlueHW::write() {
 
 template <typename TParam>
 void BlueHW::getParam(const std::string name, TParam& dest) {
+  // Try to find a parameter and explode if it doesn't exist
   ROS_ASSERT_MSG(
     nh_.getParam(name, dest),
     "Could not find %s parameter in namespace %s",
@@ -92,19 +107,30 @@ void BlueHW::getParam(const std::string name, TParam& dest) {
   );
 }
 
+bool BlueHW::jointStartupCalibration(
+    blue_msgs::JointStartupCalibration::Request &request,
+    blue_msgs::JointStartupCalibration::Response &response
+) {
+  ROS_ERROR("???");
+  // transmissions_.setJointOffsets(request.joint_positions);
+  response.success = true;
+
+  return true;
+}
+
 void BlueHW::loadParams() {
   // Motor driver stuff
   getParam("blue_hardware/serial_port", params_.serial_port);
   getParam("blue_hardware/motor_names", params_.motor_names);
   std::vector<int> temp_motor_ids;
   getParam("blue_hardware/motor_ids", temp_motor_ids);
-  for (auto id : temp_motor_ids)
+  for (int id : temp_motor_ids)
     params_.motor_ids.push_back(id);
 
   // Parameters for parsing URDF
   getParam("robot_description", params_.robot_description);
-  getParam("baselink", params_.baselink);
-  getParam("endlink", params_.endlink);
+  getParam("blue_hardware/baselink", params_.baselink);
+  getParam("blue_hardware/endlink", params_.endlink);
 
   // Read data needed for transmissions
   getParam("blue_hardware/joint_names", params_.joint_names);
@@ -114,4 +140,14 @@ void BlueHW::loadParams() {
   // Torque => current conversion stuff
   getParam("blue_hardware/motor_current_limits", params_.motor_current_limits);
   getParam("blue_hardware/current_to_torque_ratios", params_.current_to_torque_ratios);
+
+  // Gravity compensation tuning
+  getParam("blue_hardware/id_torque_gains", params_.id_torque_gains);
+
+  // Soft stops
+  // TODO: hacky and temporary
+  getParam("blue_hardware/softstop_torque_limit", params_.softstop_torque_limit);
+  getParam("blue_hardware/softstop_min_angles", params_.softstop_min_angles);
+  getParam("blue_hardware/softstop_max_angles", params_.softstop_max_angles);
+  getParam("blue_hardware/softstop_tolerance", params_.softstop_tolerance);
 }
