@@ -16,12 +16,6 @@ from blue_msgs.srv import JointStartupCalibration
 # http://docs.ros.org/indigo/api/message_filters/html/python/#message_filters.TimeSynchronizer
 # synch callbacks with this
 
-# class ParticleFilter:
-    # def __init__(self, num_joints, differential_pairs, particles_per_joint, jmin, jmax):
-#
-    # def update(self, new_joints, accel):
-        # TODO, update ParticleGroups
-        # return mle_joints, mle
 def measurement_likelihood(vec_part, vec_meas):
     return np.linalg.norm(vec_part.dot(vec_meas))
 
@@ -46,15 +40,19 @@ class ParticleGroup:
             ml = measurement_likelihood(grav_post, accel_2)
             ml_array.append(ml)
 
-        # TODO reample particles and update particle filter offsets
-        self.particle_offsets = np.random.uniform(self.jmin, self.jmax, (num_p, num_j))
+
+        alpha = np.sum(ml_array)
+        ml_array = np.array(ml_array) / alpha
+        cdf = np.cumsum(ml_array)
+        # TODO verify that this is done correctly
+        self.particle_offsets = np.array([self.particle_offsets[np.argwhere(cdf>np.random.uniform())[0,0],:] for i in range(self.num_p)])
 
         # TODO implement roughening
-        # some code that adds noise
+        if False:
+            pass
 
-        # TODO return max joint angles, and max likelyhood probability
-        return ml_joints, ml
-
+        index = np.argmax(ml_array)
+        return self.particle_offsets[index,:], ml_array[index]
 
 class BlueRobotFilter:
     def _setup(self):
@@ -72,11 +70,12 @@ class BlueRobotFilter:
         self.joint_names = rospy.get_param("blue_hardware/joint_names")
         self.accel_links = rospy.get_param("blue_hardware/accel_links").insert(0, self.baselink)
         self.accel_links.insert(0, self.baselink)
-        print self.joint_names
+        self.best_estimate = np.zeros(self.num_joints)
+        self.probability = 0
 
+        # TODO make a rosparam
         particles_per_joints = 100
 
-####
         ppj = particles_per_joint
         p_groups = []
         joints_per_group = []
@@ -100,7 +99,6 @@ class BlueRobotFilter:
                 joints_per_group.append(1)
             i = i + 1
             g = g + 1
-####
 
         self.pg_array = p_groups
         self.jpg = joints_per_group
@@ -111,20 +109,37 @@ class BlueRobotFilter:
             self.debug_count = 0
         self._setup()
 
-    def update_joints(self, joint_msg):
-        # TODO figure out how to synchronize with accelerometer
-        pass
+    def get_probability(self):
+        return self.probability
+
+    def get_best_estimate(self):
+        return self.best_estimate
 
     def update_filter(self, joints, accel):
         new_joints = self.joints.copy()
         i = 0
+        probabilities = []
+        best_estimate = []
         for j, pg in enumerate(self.pg_array):
-
             index = joint_msg.name.index(n)
             self.joints[i] = joint_msg.position[index]
+            new_link_joints = []
+            for k in range(self.jpg[j]):
+                new_link_joints.append(joint_msg.position[i])
+                i = i + 1
+            joints, prob = pg.update(new_link_joints, self.accel_links[j], self.accel_links[j+1])
+            probabilities.append(prob)
+            best_estimate.append(joints)
+
+        self.best_estimate = np.array(best_estimate)
+        self.probability = np.min(probabilities)
 
     def calibrate(self):
+        # TODO write this function which uses the synchronized callbacks
+        # rospy.Subscriber("/accel", Brents custom accel, self.update_joints)
         rospy.Subscriber("/joint_states", JointState, self.update_joints)
+        # synch callbacks with this
+        # sych callback = update filter
 
 if __name__ == "__main__":
     rospy.init_node("simple_startup_calibration")
@@ -134,7 +149,7 @@ if __name__ == "__main__":
     blue = BlueRobotFilter(debug=True)
     blue.calibrate()
     r = rospy.Rate(1.0)
-    while blue.probability() < 0.9:
+    while blue.get_probability() < 0.9:
         r.sleep();
 
     # Read startup angles from parameter server
