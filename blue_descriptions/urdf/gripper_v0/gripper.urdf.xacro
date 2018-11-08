@@ -7,6 +7,7 @@
   <xacro:macro name="blue_end_effector_v0" params="side name">
     <xacro:blue_end_v0 side="${side}" name="${name}"/>
     <xacro:blue_gripper_v0 side="${side}" parent="${name}"/>
+    <xacro:blue_gripper_finger_v0 side="${side}" parent="${name}"/>
   </xacro:macro>
 
   <xacro:macro name="blue_end_v0" params="side name">
@@ -50,6 +51,23 @@
     </link>
   </xacro:macro>
 
+  <xacro:macro name="blue_gripper_finger_v0" params="side parent">
+    <link
+      name="${side}_gripper_finger_link">
+    </link>
+    <joint
+      name="${side}_gripper_finger_joint"
+      type="fixed">
+      <origin
+        xyz="0 0.0 -0.18"
+        rpy="-3.14159 -0.0 1.5708" />
+      <parent
+        link="${side}_${parent}" />
+      <child
+        link="${side}_gripper_finger_link" />
+    </joint>
+  </xacro:macro>
+
   <xacro:macro name="blue_gripper_v0" params="side parent">
     <link
       name="${side}_gripper_link">
@@ -67,29 +85,6 @@
           iyz="0.64172907801915E-07"
           izz="0.000293333065172452" />
       </inertial>
-      <visual>
-        <origin
-          xyz="0 0 0"
-          rpy="0 0 0" />
-        <geometry>
-          <mesh
-            filename="package://blue_descriptions/meshes/wrist_roll_link.STL" />
-        </geometry>
-        <material
-          name="">
-          <color
-            rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
-        </material>
-      </visual>
-      <collision>
-        <origin
-          xyz="0 0 0"
-          rpy="0 0 0" />
-        <geometry>
-          <mesh
-            filename="package://blue_descriptions/meshes/wrist_roll_link.STL" />
-        </geometry>
-      </collision>
     </link>
     <joint
       name="${side}_gripper_joint"

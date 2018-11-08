@@ -10,7 +10,7 @@ blue_hardware:
         - right_wrist_roll_joint
         - right_gripper_joint
     baselink: right_base_link
-    endlink: right_end_roll_link
+    endlink: right_gripper_finger_link
     accel_links:
         - right_base_link
         - right_shoulder_roll_link
