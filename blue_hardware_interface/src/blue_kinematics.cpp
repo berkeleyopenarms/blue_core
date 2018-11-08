@@ -1,5 +1,5 @@
 #include "blue_hardware_interface/blue_hardware_interface.h"
-#include "blue_hardware_interface/blue_transmissions.h"
+#include "blue_hardware_interface/blue_kinematics.h"
 
 #include <transmission_interface/simple_transmission.h>
 #include <transmission_interface/differential_transmission.h>
@@ -8,28 +8,28 @@
 #include <string.h>
 #include <cmath>
 
-BlueTransmissions::BlueTransmissions() :
+BlueKinematics::BlueKinematics() :
   is_calibrated_(false) {}
 
-void BlueTransmissions::init(
-      std::vector<std::string> joint_names,
-      std::vector<int> differential_pairs,
-      std::vector<double> gear_ratios) {
+void BlueKinematics::init(
+      const std::vector<std::string> &joint_names,
+      const std::vector<int> &differential_pairs,
+      const std::vector<double> &gear_ratios) {
 
   // How many joints do we have?
   num_joints_ = joint_names.size();
 
   // How many transmissions?
-  int num_simple_transmissions = num_joints_ - differential_pairs.size();
-  int num_diff_transmissions = differential_pairs.size() / 2;
-  int num_transmissions = num_simple_transmissions + num_diff_transmissions;
+  num_simple_transmissions_ = num_joints_ - differential_pairs.size();
+  num_diff_transmissions_ = differential_pairs.size() / 2;
+  num_transmissions_ = num_simple_transmissions_ + num_diff_transmissions_;
 
   // Neat, now let's make the correct amount of space for objects/raw data
-  transmissions_.resize(num_transmissions);
-  actuator_states_.resize(num_transmissions);
-  actuator_commands_.resize(num_transmissions);
-  joint_states_.resize(num_transmissions);
-  joint_commands_.resize(num_transmissions);
+  transmissions_.resize(num_transmissions_);
+  actuator_states_.resize(num_transmissions_);
+  actuator_commands_.resize(num_transmissions_);
+  joint_states_.resize(num_transmissions_);
+  joint_commands_.resize(num_transmissions_);
 
   actuator_pos_.resize(num_joints_);
   actuator_vel_.resize(num_joints_);
@@ -40,12 +40,16 @@ void BlueTransmissions::init(
   joint_eff_.resize(num_joints_);
   joint_cmd_.resize(num_joints_);
 
-  joint_offsets_.resize(num_joints_);
-  raw_joint_cmd_.resize(num_joints_);
+  joint_offsets_.resize(num_joints_, 0.0);
+  raw_joint_cmd_.resize(num_joints_, 0.0);
+
+  KDL::Vector zero_vector(0.0, 0.0, 0.0);
+  accel_vectors_.resize(num_transmissions_, zero_vector);
+  accel_counter_ = 1;
 
   // Build each of our transmission objects
   int joint_idx = 0;
-  for (int transmission_idx = 0; transmission_idx < num_transmissions; transmission_idx++){
+  for (int transmission_idx = 0; transmission_idx < num_transmissions_; transmission_idx++){
     // How many joints are in this transmission?
     int joints_in_transmission;
 
@@ -125,34 +129,127 @@ void BlueTransmissions::init(
 
 }
 
-void BlueTransmissions::setJointOffsets(std::vector<double> offsets) {
+void BlueKinematics::setJointOffsets(
+    const std::vector<double> &offsets) {
   joint_offsets_ = offsets;
   is_calibrated_ = true;
 }
 
-const std::vector<double>& BlueTransmissions::getJointPos() {
+const std::vector<double>& BlueKinematics::getJointPos() {
   return joint_pos_;
 }
 
-const std::vector<double>& BlueTransmissions::getJointVel() {
+const std::vector<double>& BlueKinematics::getJointVel() {
   return joint_vel_;
 }
 
-void BlueTransmissions::setActuatorStates(
-    std::vector<double> positions,
-    std::vector<double> velocities,
-    std::vector<double> efforts) {
+void BlueKinematics::setActuatorStates(
+    const std::vector<double> &positions,
+    const std::vector<double> &velocities,
+    const std::vector<double> &efforts,
+    const std::vector<double> &accel_x,
+    const std::vector<double> &accel_y,
+    const std::vector<double> &accel_z) {
+
   actuator_pos_ = positions;
   actuator_vel_ = velocities;
   actuator_eff_ = efforts;
   actuator_to_joint_interface_.propagate();
+
+  // Bias joint positions by calibrated offset
+  for (int i = 0; i < num_joints_; i++)
+    joint_pos_[i] += joint_offsets_[i];
+
+
+  // Compute a gravity vector for each link/transmission
+  // TODO: fix this, it's pretty hacky
+  int actuator_idx = 0;
+  for (int transmission_idx = 0; transmission_idx < num_transmissions_; transmission_idx++) {
+
+    KDL::Vector accel_vector;
+    accel_vector(0) = accel_x[actuator_idx];
+    accel_vector(1) = accel_y[actuator_idx];
+    accel_vector(2) = accel_z[actuator_idx];
+    accel_vector = accel_vector / accel_vector.Norm() * 9.81;
+
+    if (transmissions_[transmission_idx]->numActuators() == 2) {
+      // Differential link
+
+      // Load left reading
+      KDL::Vector accel_vector_left;
+      accel_vector_left(0) = accel_x[actuator_idx + 1];
+      accel_vector_left(1) = accel_y[actuator_idx + 1];
+      accel_vector_left(2) = accel_z[actuator_idx + 1];
+
+      // Rotate left reading to match frame of right
+      KDL::Rotation left_rot_z;
+      left_rot_z.DoRotZ(M_PI);
+      accel_vector_left = left_rot_z * accel_vector_left;
+
+      KDL::Rotation left_rot_x;
+      left_rot_x.DoRotX(M_PI);
+      accel_vector_left = left_rot_x * accel_vector_left;
+
+      // Average left and right readings
+      accel_vector = (accel_vector + accel_vector_left) / 2.0;
+
+      // Apply link -> accelerometer transform to averaged reading
+      KDL::Rotation link_rot_z;
+      link_rot_z.DoRotZ(-0.3378);
+
+      KDL::Rotation link_rot_y;
+      link_rot_y.DoRotY(-M_PI / 2.0);
+
+      KDL::Rotation link_rot_z2;
+      link_rot_z2.DoRotZ(M_PI / 2.0);
+
+      accel_vector = link_rot_z2 * link_rot_y * link_rot_z * accel_vector;
+
+      // Flip axes
+      accel_vector(0) = -accel_vector(0);
+      accel_vector(2) = -accel_vector(2);
+
+      actuator_idx += 2;
+    } else if (transmission_idx == 0) {
+      accel_vector(0) = -accel_vector(0);
+      // Base link
+      KDL::Rotation base_rot_z;
+      base_rot_z.DoRotZ(-4.301 - M_PI);
+      accel_vector = base_rot_z * accel_vector;
+      accel_vector(0) = -accel_vector(0);
+      accel_vector(1) = -accel_vector(1);
+
+      actuator_idx++;
+    } else if (transmission_idx == num_transmissions_ - 1) {
+      // Gripper link
+      KDL::Rotation grip_rot_z;
+      grip_rot_z.DoRotZ(M_PI / 2.0);
+      accel_vector = grip_rot_z * accel_vector;
+      accel_vector(0) = -accel_vector(0);
+      accel_vector(2) = -accel_vector(2);
+
+      actuator_idx++;
+    }
+
+    // Exponential decay + bias correction
+    accel_vectors_[transmission_idx] =
+      (accel_vectors_[transmission_idx] * 0.995 + accel_vector * 0.01)
+      / (1 - pow(0.995, accel_counter_));
+  }
+  accel_counter_++;
 }
 
-std::vector<double> BlueTransmissions::getActuatorCommands(
-    std::vector<double> feedforward_torques,
+std::vector<double> BlueKinematics::getGravityVector() {
+  KDL::Vector scaled = accel_vectors_[0] / accel_vectors_[0].Norm() * -9.81;
+  std::vector<double> output(scaled.data, scaled.data + 3);
+  return output;
+}
+
+std::vector<double> BlueKinematics::getActuatorCommands(
+    const std::vector<double> &feedforward_torques,
     double softstop_torque_limit, // TODO: clean up softstop code
-    std::vector<double> softstop_min_angles,
-    std::vector<double> softstop_max_angles,
+    const std::vector<double> &softstop_min_angles,
+    const std::vector<double> &softstop_max_angles,
     double softstop_tolerance) {
 
   if (!is_calibrated_) {
@@ -163,7 +260,13 @@ std::vector<double> BlueTransmissions::getActuatorCommands(
 
   // Compute joint commands
   for (int i = 0; i < num_joints_; i++) {
-    joint_cmd_[i] = raw_joint_cmd_[i] + feedforward_torques[i];
+    // Add feedforward if it exists
+    if (i < feedforward_torques.size())
+      joint_cmd_[i] = raw_joint_cmd_[i] + feedforward_torques[i];
+    else
+      joint_cmd_[i] = raw_joint_cmd_[i];
+
+    raw_joint_cmd_[i] = 0.0;
 
     // Soft stops
     // TODO: hacky and temporary

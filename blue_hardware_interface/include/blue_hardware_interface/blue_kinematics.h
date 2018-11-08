@@ -5,18 +5,20 @@
 #include <transmission_interface/differential_transmission.h>
 #include <transmission_interface/transmission_interface.h>
 
+#include <kdl/frames.hpp>
+
 namespace ti = transmission_interface;
 
-class BlueTransmissions
+class BlueKinematics
 {
 public:
 
-  BlueTransmissions();
+  BlueKinematics();
 
   void init(
-      std::vector<std::string> joint_names,
-      std::vector<int> differential_pairs,
-      std::vector<double> gear_ratios);
+      const std::vector<std::string> &joint_names,
+      const std::vector<int> &differential_pairs,
+      const std::vector<double> &gear_ratios);
 
   // ROS control hardware interfaces
   hardware_interface::JointStateInterface joint_state_interface;
@@ -27,27 +29,41 @@ public:
   const std::vector<double>& getJointVel();
 
   // Joint calibration
-  void setJointOffsets(std::vector<double> offsets);
+  void setJointOffsets(
+      const std::vector<double> &offsets);
 
   //  Update internal actuator states
   void setActuatorStates(
-      std::vector<double> positions,
-      std::vector<double> velocities,
-      std::vector<double> efforts);
+      const std::vector<double> &positions,
+      const std::vector<double> &velocities,
+      const std::vector<double> &efforts,
+      const std::vector<double> &accel_x,
+      const std::vector<double> &accel_y,
+      const std::vector<double> &accel_z);
+
+  // Which way is down??
+  std::vector<double> getGravityVector();
 
   // Get desired actuator commands
   std::vector<double> getActuatorCommands(
-      std::vector<double> feedforward_torques,
+      const std::vector<double> &feedforward_torques,
       double softstop_torque_limit, // TODO: clean up softstop code
-      std::vector<double> softstop_min_angles,
-      std::vector<double> softstop_max_angles,
+      const std::vector<double> &softstop_min_angles,
+      const std::vector<double> &softstop_max_angles,
       double softstop_tolerance);
 
 private:
 
   bool is_calibrated_;
+
   int num_joints_;
   int num_diff_actuators_;
+  int num_simple_transmissions_;
+  int num_diff_transmissions_;
+  int num_transmissions_;
+
+  bool has_base_;
+  bool has_gripper_;
 
   // Transmission interfaces
   ti::ActuatorToJointStateInterface actuator_to_joint_interface_;
@@ -62,6 +78,10 @@ private:
   std::vector<ti::ActuatorData> actuator_commands_;
   std::vector<ti::JointData> joint_states_;
   std::vector<ti::JointData> joint_commands_;
+
+  // Gravity vector
+  std::vector<KDL::Vector> accel_vectors_;
+  int accel_counter_;
 
   // Data owned by our ActuatorData and JointData objects
   // Also shared by the joint state/effort interfaces

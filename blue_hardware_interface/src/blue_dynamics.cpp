@@ -1,5 +1,5 @@
 #include "blue_hardware_interface/blue_dynamics.h"
-
+#include "ros/ros.h"
 
 BlueDynamics::BlueDynamics() {}
 
@@ -26,7 +26,9 @@ void BlueDynamics::init(
 
 }
 
-void BlueDynamics::setGravityVector(std::vector<double> gravity_vector) {
+void BlueDynamics::setGravityVector(
+    const std::vector<double> &gravity_vector) {
+
   assert(gravity_vector.size() == 3);
 
   // Convert data type for KDL
@@ -61,7 +63,7 @@ std::vector<double> BlueDynamics::computeInverseDynamics(
   }
 
   // Convert data types for KDL
-  size_t joint_count = joint_pos.size();
+  size_t joint_count = kdl_chain_.getNrOfJoints();
   KDL::JntArray kdl_joint_pos(joint_count);
   KDL::JntArray kdl_joint_vel(joint_count);
   KDL::JntArray kdl_joint_accel(joint_count);
@@ -84,7 +86,7 @@ std::vector<double> BlueDynamics::computeInverseDynamics(
       kdl_id_torques);
 
   // Convert from KDL back to native C++
-  std::vector<double> id_torques;
+  std::vector<double> id_torques(joint_count);
   for (int i = 0; i < joint_count; i++)
     id_torques[i] = kdl_id_torques.data[i];
 

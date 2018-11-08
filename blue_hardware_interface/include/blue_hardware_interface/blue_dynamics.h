@@ -17,7 +17,8 @@ public:
       std::string robot_description,
       std::string baselink,
       std::string endlink);
-  void setGravityVector(std::vector<double> gravity_vector);
+  void setGravityVector(
+      const std::vector<double> &gravity_vector);
 
   std::vector<double> computeGravityComp(
       const std::vector<double> &joint_pos,

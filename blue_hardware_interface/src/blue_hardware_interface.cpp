@@ -1,5 +1,5 @@
 #include "blue_hardware_interface/blue_hardware_interface.h"
-#include "blue_hardware_interface/blue_transmissions.h"
+#include "blue_hardware_interface/blue_kinematics.h"
 #include "blue_msgs/MotorState.h"
 
 #include <ros/assert.h>
@@ -24,15 +24,15 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
       params_.baselink,
       params_.endlink);
 
-  // Set up transmissions
-  transmissions_.init(
+  // Set up kinematics
+  kinematics_.init(
       params_.joint_names,
       params_.differential_pairs,
       params_.gear_ratios);
 
   // Register joint interfaces with the controller manager
-  registerInterface(&transmissions_.joint_state_interface);
-  registerInterface(&transmissions_.joint_effort_interface);
+  registerInterface(&kinematics_.joint_state_interface);
+  registerInterface(&kinematics_.joint_effort_interface);
 
   // ROS communications setup
   motor_states_.name = params_.motor_names;
@@ -45,9 +45,6 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
 
   for (auto id : params_.motor_ids)
     motor_commands_[id] = 0.0;
-
-  // Wait for the dust to settle a bit before we actually start :)
-  ros::Duration(0.444).sleep();
 }
 
 void BlueHW::read() {
@@ -59,38 +56,45 @@ void BlueHW::read() {
   motor_state_publisher_.publish(motor_states_);
 
   // std::vector<float> => <double> casting
-  std::vector<double> positions;
-  std::vector<double> velocities;
+  const blue_msgs::MotorState *m = &motor_states_;
+  std::vector<double> positions(m->position.begin(), m->position.end());
+  std::vector<double> velocities(m->velocity.begin(), m->velocity.end());
+  std::vector<double> accel_x(m->accel_x.begin(), m->accel_x.end());
+  std::vector<double> accel_y(m->accel_y.begin(), m->accel_y.end());
+  std::vector<double> accel_z(m->accel_z.begin(), m->accel_z.end());
+
   std::vector<double> efforts;
   for (int i = 0; i < params_.motor_ids.size(); i++) {
-    positions.push_back(motor_states_.position[i]);
-    velocities.push_back(motor_states_.velocity[i]);
     efforts.push_back(
         motor_states_.quadrature_current[i] / params_.current_to_torque_ratios[i]);
   }
 
-  // Update transmissions with motor states
-  transmissions_.setActuatorStates(
+  // Update kinematics with motor states
+  kinematics_.setActuatorStates(
       positions,
       velocities,
-      efforts);
+      efforts,
+      accel_x,
+      accel_y,
+      accel_z);
+
+  // Update orientation for gravity compensation
+  dynamics_.setGravityVector(
+      kinematics_.getGravityVector());
 }
 
 void BlueHW::write() {
   // Compute gravity compensation
   auto gravity_comp_torques = dynamics_.computeGravityComp(
-      transmissions_.getJointPos(),
-      transmissions_.getJointVel());
-
-  // Ignore gravity compensation torque for gripper joint
-  gravity_comp_torques.back() = 0.0;
+      kinematics_.getJointPos(),
+      kinematics_.getJointVel());
 
   // Apply gravity compensation fine tuning terms
   for (int i = 0; i < gravity_comp_torques.size(); i++)
     gravity_comp_torques[i] *= params_.id_torque_gains[i];
 
   // Get actuator commands, using the gravity comp torques as a feedforward
-  auto actuator_commands = transmissions_.getActuatorCommands(
+  auto actuator_commands = kinematics_.getActuatorCommands(
       gravity_comp_torques,
       params_.softstop_torque_limit, // TODO: clean up softstop code
       params_.softstop_min_angles,
@@ -128,7 +132,7 @@ bool BlueHW::jointStartupCalibration(
     blue_msgs::JointStartupCalibration::Request &request,
     blue_msgs::JointStartupCalibration::Response &response
 ) {
-  transmissions_.setJointOffsets(request.joint_positions);
+  kinematics_.setJointOffsets(request.joint_positions);
   response.success = true;
 
   return true;
@@ -148,7 +152,7 @@ void BlueHW::loadParams() {
   getParam("blue_hardware/baselink", params_.baselink);
   getParam("blue_hardware/endlink", params_.endlink);
 
-  // Read data needed for transmissions
+  // Read data needed for kinematics
   getParam("blue_hardware/joint_names", params_.joint_names);
   getParam("blue_hardware/gear_ratios", params_.gear_ratios);
   getParam("blue_hardware/differential_pairs", params_.differential_pairs);
@@ -166,4 +170,7 @@ void BlueHW::loadParams() {
   getParam("blue_hardware/softstop_min_angles", params_.softstop_min_angles);
   getParam("blue_hardware/softstop_max_angles", params_.softstop_max_angles);
   getParam("blue_hardware/softstop_tolerance", params_.softstop_tolerance);
+
+  // Links to attach accelerometer measurements to
+  getParam("blue_hardware/accel_links", params_.accel_links);
 }

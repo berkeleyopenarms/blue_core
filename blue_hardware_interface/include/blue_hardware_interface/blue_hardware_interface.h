@@ -10,7 +10,7 @@
 
 #include <geometry_msgs/Vector3.h>
 
-#include "blue_hardware_interface/blue_transmissions.h"
+#include "blue_hardware_interface/blue_kinematics.h"
 #include "blue_hardware_interface/blue_dynamics.h"
 
 #include "blue_hardware_drivers/BLDCDriver.h"
@@ -27,7 +27,7 @@ typedef struct {
   std::string baselink;
   std::string endlink;
 
-  // Read data needed for transmissions
+  // Read data needed for kinematics
   std::vector<std::string> joint_names;
   std::vector<int> differential_pairs;
   std::vector<double> gear_ratios;
@@ -45,6 +45,9 @@ typedef struct {
   std::vector<double> softstop_min_angles;
   std::vector<double> softstop_max_angles;
   double softstop_tolerance;
+
+  // Links to attach accelerometer measurements to
+  std::vector<std::string> accel_links;
 } Params;
 
 class BlueHW: public hardware_interface::RobotHW
@@ -65,8 +68,8 @@ private:
   blue_hardware_drivers::BLDCDriver motor_driver_;
   std::map<uint8_t, float> motor_commands_;
 
-  // Transmission abstraction layer (actuator <-> joint)
-  BlueTransmissions transmissions_;
+  // Kinematics abstraction layer (actuator <-> joint)
+  BlueKinematics kinematics_;
 
   // Robot dynamics helper
   BlueDynamics dynamics_;

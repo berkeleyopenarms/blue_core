@@ -26,7 +26,7 @@ include_directories(
 
 add_library(blue_hardware_interface
   src/blue_hardware_interface.cpp
-  src/blue_transmissions.cpp
+  src/blue_kinematics.cpp
   src/blue_dynamics.cpp
 )
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
