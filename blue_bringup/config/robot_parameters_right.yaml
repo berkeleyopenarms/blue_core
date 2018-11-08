@@ -10,7 +10,7 @@ blue_hardware:
         - right_wrist_roll_joint
         - right_gripper_joint
     baselink: right_base_link
-    endlink: right_end_roll_link
+    endlink: right_gripper_finger_link
     accel_links:
         - right_base_link
         - right_shoulder_roll_link
@@ -38,9 +38,6 @@ blue_hardware:
         - gripper_motor
     motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0]
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.67, 1.67, 1.67]
-
-    ### Calibration configuration
-    simple_startup_angles: [0.785398, -2.19, 1.570796, 0.0, -1.570796, -0.23, 0.0, 0.0]
 
     ### Posture control parameters for gradient descent ik pose controller
     posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90, -1.0, 0.0]
