@@ -85,17 +85,17 @@ void BlueHW::read() {
 
 void BlueHW::write() {
   // Compute gravity compensation
-  auto gravity_comp_torques = dynamics_.computeGravityComp(
+  auto feedforward_torques = dynamics_.computeGravityComp(
       kinematics_.getJointPos(),
       kinematics_.getJointVel());
 
   // Apply gravity compensation fine tuning terms
-  for (int i = 0; i < gravity_comp_torques.size(); i++)
-    gravity_comp_torques[i] *= params_.id_torque_gains[i];
+  for (int i = 0; i < feedforward_torques.size(); i++)
+    feedforward_torques[i] *= params_.id_torque_gains[i];
 
   // Get actuator commands, using the gravity comp torques as a feedforward
   auto actuator_commands = kinematics_.getActuatorCommands(
-      gravity_comp_torques,
+      feedforward_torques,
       params_.softstop_torque_limit, // TODO: clean up softstop code
       params_.softstop_min_angles,
       params_.softstop_max_angles,

@@ -154,6 +154,15 @@ void BlueKinematics::setActuatorStates(
   actuator_pos_ = positions;
   actuator_vel_ = velocities;
   actuator_eff_ = efforts;
+
+  // Set actuator offsets so all positions are zero on startup
+  while (actuator_offsets_.size() < actuator_pos_.size())
+    actuator_offsets_.push_back(-actuator_pos_[actuator_offsets_.size()]);
+
+  // Apply actuator offsets
+  for (int i = 0; i < actuator_pos_.size(); i++)
+    actuator_pos_[i] += actuator_offsets_[i];
+
   actuator_to_joint_interface_.propagate();
 
   // Bias joint positions by calibrated offset
@@ -211,7 +220,6 @@ void BlueKinematics::setActuatorStates(
 
       actuator_idx += 2;
     } else if (transmission_idx == 0) {
-      accel_vector(0) = -accel_vector(0);
       // Base link
       KDL::Rotation base_rot_z;
       base_rot_z.DoRotZ(-4.301 - M_PI);
@@ -231,16 +239,18 @@ void BlueKinematics::setActuatorStates(
       actuator_idx++;
     }
 
-    // Exponential decay + bias correction
+    // Exponential decay to smooth values + bias correction
+    double alpha = 0.99;
     accel_vectors_[transmission_idx] =
-      (accel_vectors_[transmission_idx] * 0.995 + accel_vector * 0.01)
-      / (1 - pow(0.995, accel_counter_));
+      (accel_vectors_[transmission_idx] * alpha - accel_vector * (1 - alpha))
+      / (1 - pow(alpha, accel_counter_));
+
   }
   accel_counter_++;
 }
 
 std::vector<double> BlueKinematics::getGravityVector() {
-  KDL::Vector scaled = accel_vectors_[0] / accel_vectors_[0].Norm() * -9.81;
+  KDL::Vector scaled = accel_vectors_[0] / accel_vectors_[0].Norm() * 9.81;
   std::vector<double> output(scaled.data, scaled.data + 3);
   return output;
 }

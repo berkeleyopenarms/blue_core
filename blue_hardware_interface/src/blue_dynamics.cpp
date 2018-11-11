@@ -1,5 +1,4 @@
 #include "blue_hardware_interface/blue_dynamics.h"
-#include "ros/ros.h"
 
 BlueDynamics::BlueDynamics() {}
 
@@ -32,10 +31,10 @@ void BlueDynamics::setGravityVector(
   assert(gravity_vector.size() == 3);
 
   // Convert data type for KDL
-  KDL::Vector kdl_gravity_vector;
-  kdl_gravity_vector.data[0] = gravity_vector[0];
-  kdl_gravity_vector.data[1] = gravity_vector[1];
-  kdl_gravity_vector.data[2] = gravity_vector[2];
+  KDL::Vector kdl_gravity_vector(
+      gravity_vector[0],
+      gravity_vector[1],
+      gravity_vector[2]);
 
   // New gravity vector -> we need to re-create the inverse dynamics solver
   kdl_id_solver_.reset(new KDL::ChainIdSolver_RNE(kdl_chain_, kdl_gravity_vector));

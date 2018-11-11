@@ -70,6 +70,7 @@ private:
   ti::JointToActuatorEffortInterface joint_to_actuator_interface_;
 
   // Joint offsets
+  std::vector<double> actuator_offsets_;
   std::vector<double> joint_offsets_;
 
   // Actuator and joint state data
