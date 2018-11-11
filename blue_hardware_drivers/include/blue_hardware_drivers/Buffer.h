@@ -18,7 +18,7 @@ class Buffer {
       delete [] buf_;
     }
 
-    void init(size_t len); 
+    void init(size_t len);
 
     // Operators for loading in data
     template <typename T>
@@ -30,7 +30,7 @@ class Buffer {
     void read (uint8_t* data, size_t len);
     void write(const uint8_t* data, size_t len);
 
-    template <typename T> void writeVar(const T &data); 
+    template <typename T> void writeVar(const T &data);
 
     void addBuf(Buffer& buf);
 

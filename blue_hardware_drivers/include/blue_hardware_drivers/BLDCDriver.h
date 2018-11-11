@@ -8,6 +8,7 @@
 #include "std_msgs/Float32.h"
 #include "sensor_msgs/JointState.h"
 #include <vector>
+#include <unordered_map>
 #include <string>
 #include "math.h"
 #include "time.h"
@@ -23,7 +24,7 @@ constexpr int MAX_TEMP_SHUTOFF = 70;
 class BLDCDriver {
   public:
     void init(std::string port, std::vector<uint8_t> board_ids);
-    void update(std::map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states);
+    void update(std::unordered_map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states);
     void engageControl();
     void disengageControl();
     BLDCDriver();

@@ -86,7 +86,7 @@ BLDCDriver::BLDCDriver(){
   engaged_ = false;
 }
 
-void BLDCDriver::update(std::map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states) {
+void BLDCDriver::update(std::unordered_map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states) {
 
   // Resize MotorState message to fit our read data
   int motor_count = commands.size();

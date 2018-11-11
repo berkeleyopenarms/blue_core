@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <map>
+#include <unordered_map>
 #include <exception>
 
 #include "blue_hardware_drivers/comms_defs.h"
@@ -74,12 +74,12 @@ class BLDCControllerClient {
 
   private:
     serial::Serial ser_;
-    std::map<comm_id_t, Packet*> packet_queue_;
+    std::unordered_map<comm_id_t, Packet*> packet_queue_;
 
     Buffer sub_packet_buf_;
     Buffer payload_buf_;
     Buffer tx_buf_;
-    std::map<comm_id_t, Buffer> rx_bufs_;
+    std::unordered_map<comm_id_t, Buffer> rx_bufs_;
 
     int allocs_ = 0;
 

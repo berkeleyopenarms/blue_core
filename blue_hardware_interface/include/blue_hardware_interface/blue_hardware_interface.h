@@ -66,7 +66,7 @@ private:
 
   // Motor driver interface
   blue_hardware_drivers::BLDCDriver motor_driver_;
-  std::map<uint8_t, float> motor_commands_;
+  std::unordered_map<uint8_t, float> motor_commands_;
 
   // Kinematics abstraction layer (actuator <-> joint)
   BlueKinematics kinematics_;
