@@ -59,8 +59,6 @@ namespace blue_controllers
     }
 
     KDL::Chain dummyChain;
-    ROS_ERROR("%s", endlink.c_str());
-    ROS_ERROR("%s", baselink.c_str());
     if (!my_tree.getChain(baselink, endlink, dummyChain)) {
       ROS_ERROR("Failed to construct dummy kdl chain");
       return false;
@@ -166,10 +164,7 @@ namespace blue_controllers
 
         // Set the PID error and compute the PID command with nonuniform
         // time step size.
-        ROS_ERROR("error: %d, %f", i, error);
         commanded_effort = pid_controllers_[i].computeCommand(error, -joints_[i].getVelocity(), period);
-
-        // ROS_ERROR("%f", commanded_effort);
 
         pid_terms[i] = commanded_effort;
     }
@@ -187,11 +182,8 @@ namespace blue_controllers
     KDL::Vector gravity(0, 0, 0);
     KDL::ChainIdSolver_RNE chainIdSolver(chain, gravity);
     int statusID = chainIdSolver.CartToJnt(jointPositions, jointVelocities, jointAccelerations, f_ext, torques);
-    ROS_ERROR("id, %d", statusID);
 
     for (int i = 0; i < n_joints_; i++) {
-        ROS_ERROR("torques, %d, %f", i, torques(i));
-        ROS_ERROR("pid, %d, %f", i, pid_terms[i]);
         joints_[i].setCommand(ctc_weight * torques(i) + (1.0 - ctc_weight) * pid_terms[i]);
     }
   }

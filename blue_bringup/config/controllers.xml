@@ -67,7 +67,7 @@
       $(arg side)_wrist_roll_joint:
         pid: {p: 15, i: 1, d: 5, i_clamp_min: -1, i_clamp_max: 1}
 
-    joint_ctc_controller:
+    joint_ctc:
       type: blue_controllers/BlueJointGroupCTC
       ctc_weight: 1.0
       joints:
@@ -79,19 +79,19 @@
         - $(arg side)_wrist_lift_joint
         - $(arg side)_wrist_roll_joint
       $(arg side)_base_roll_joint:
-        pid: {p: 100, i: 0.0, d: 30, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 200, i: 0.0, d: 50, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_shoulder_lift_joint:
-        pid: {p: 100, i: 0, d: 30, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 200, i: 0, d: 50, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_shoulder_roll_joint:
-        pid: {p: 400, i: 0, d: 50, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 400, i: 0, d: 70, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_elbow_lift_joint:
-        pid: {p: 100, i: 0, d: 30, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 100, i: 0, d: 50, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_elbow_roll_joint:
-        pid: {p: 400, i: 0, d: 50, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 400, i: 0, d: 70, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_wrist_lift_joint:
-        pid: {p: 100, i: 0, d: 30, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 100, i: 0, d: 50, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_wrist_roll_joint:
-        pid: {p: 400, i: 0, d: 30, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 400, i: 0, d: 50, i_clamp_min: -1, i_clamp_max: 1}
 
     cartesian_pose_controller:
       endlink: '$(arg side)_end_roll_link'
