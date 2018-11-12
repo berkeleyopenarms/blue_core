@@ -67,7 +67,7 @@
       <limit
         lower="${0.5*((reflect+1)*base_left_min+(1-reflect)*base_right_min)}"
         upper="${0.5*((reflect+1)*base_left_max+(1-reflect)*base_right_max)}"
-        effort="80"
+        effort="800"
         velocity="50" />
     </joint>
 

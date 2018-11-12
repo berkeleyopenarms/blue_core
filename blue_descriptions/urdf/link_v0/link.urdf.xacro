@@ -65,7 +65,7 @@
       <limit
         lower="-2.2944"
         upper="0"
-        effort="80"
+        effort="800"
         velocity="50" />
     </joint>
 
@@ -155,7 +155,7 @@
       <limit
         lower="-2.6761"
         upper="2.6761"
-        effort="80"
+        effort="800"
         velocity="50" />
     </joint>
 
