@@ -296,11 +296,9 @@ std::vector<double> BlueKinematics::getActuatorCommands(
     // Soft stops
     // TODO: hacky and temporary
     if(joint_pos_[i] > softstop_max_angles[i] - softstop_tolerance) {
-      ROS_WARN_THROTTLE(1, "Going over soft stop max, %d", i);
       double offset = joint_pos_[i] - softstop_max_angles[i] + softstop_tolerance;
       joint_cmd_[i] += -1.0 * softstop_torque_limit * pow(offset, 2);
     } else if (joint_pos_[i] < softstop_min_angles[i] + softstop_tolerance) {
-      ROS_WARN_THROTTLE(1, "Going over soft stop min, %d",i);
       double offset = softstop_min_angles[i] + softstop_tolerance - joint_pos_[i];
       joint_cmd_[i] += softstop_torque_limit * pow(offset, 2);
     }
