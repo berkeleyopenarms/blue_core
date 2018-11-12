@@ -26,9 +26,7 @@ void BlueDynamics::init(
 }
 
 void BlueDynamics::setGravityVector(
-    const std::vector<double> &gravity_vector) {
-
-  assert(gravity_vector.size() == 3);
+    const std::array<double, 3> &gravity_vector) {
 
   // Convert data type for KDL
   KDL::Vector kdl_gravity_vector(

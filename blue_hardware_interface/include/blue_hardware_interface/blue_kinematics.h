@@ -1,6 +1,9 @@
 #ifndef BLUE_TRANSMISSIONS_H
 #define BLUE_TRANSMISSIONS_H
 
+#include "blue_msgs/MotorState.h"
+#include "blue_msgs/GravityVectorArray.h"
+
 #include <transmission_interface/simple_transmission.h>
 #include <transmission_interface/differential_transmission.h>
 #include <transmission_interface/transmission_interface.h>
@@ -34,15 +37,11 @@ public:
 
   //  Update internal actuator states
   void setActuatorStates(
-      const std::vector<double> &positions,
-      const std::vector<double> &velocities,
-      const std::vector<double> &efforts,
-      const std::vector<double> &accel_x,
-      const std::vector<double> &accel_y,
-      const std::vector<double> &accel_z);
+      const blue_msgs::MotorState &msg);
 
   // Which way is down??
-  std::vector<double> getGravityVector();
+  void getGravityVectors(
+      blue_msgs::GravityVectorArray &msg);
 
   // Get desired actuator commands
   std::vector<double> getActuatorCommands(
@@ -54,16 +53,25 @@ public:
 
 private:
 
+  // Private helpers
+  void updateTransmissions(
+      const std::vector<double> &actuator_pos,
+      const std::vector<double> &actuator_vel);
+
+  void updateAccelerometers(
+      const std::vector<double> &accel_x,
+      const std::vector<double> &accel_y,
+      const std::vector<double> &accel_z);
+
+  // Calibration state (zero commands until arm is calibrated)
   bool is_calibrated_;
 
+  // Counters
   int num_joints_;
   int num_diff_actuators_;
   int num_simple_transmissions_;
   int num_diff_transmissions_;
   int num_transmissions_;
-
-  bool has_base_;
-  bool has_gripper_;
 
   // Transmission interfaces
   ti::ActuatorToJointStateInterface actuator_to_joint_interface_;
@@ -82,7 +90,6 @@ private:
 
   // Gravity vector
   std::vector<KDL::Vector> accel_vectors_;
-  int accel_counter_;
 
   // Data owned by our ActuatorData and JointData objects
   // Also shared by the joint state/effort interfaces

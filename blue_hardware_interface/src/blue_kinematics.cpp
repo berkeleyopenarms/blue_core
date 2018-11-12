@@ -45,17 +45,16 @@ void BlueKinematics::init(
 
   KDL::Vector zero_vector(0.0, 0.0, 0.0);
   accel_vectors_.resize(num_transmissions_, zero_vector);
-  accel_counter_ = 1;
 
   // Build each of our transmission objects
   int joint_idx = 0;
-  for (int transmission_idx = 0; transmission_idx < num_transmissions_; transmission_idx++){
+  for (int transmission_idx = 0; transmission_idx < num_transmissions_; transmission_idx++) {
     // How many joints are in this transmission?
     int joints_in_transmission;
 
     // Is this part of a differential pair?
     auto tmp = std::find(differential_pairs.begin(), differential_pairs.end(), joint_idx);
-    if(tmp != differential_pairs.end()){
+    if(tmp != differential_pairs.end()) {
       // Differential transmissions (ie links, two joints each)
       std::vector<double> transmission_actuator_ratios{-1.0, 1.0};
       std::vector<double> transmission_gear_ratios{
@@ -126,7 +125,6 @@ void BlueKinematics::init(
         &raw_joint_cmd_[i]);
     joint_effort_interface.registerHandle(effort_handle_a);
   }
-
 }
 
 void BlueKinematics::setJointOffsets(
@@ -144,16 +142,26 @@ const std::vector<double>& BlueKinematics::getJointVel() {
 }
 
 void BlueKinematics::setActuatorStates(
-    const std::vector<double> &positions,
-    const std::vector<double> &velocities,
-    const std::vector<double> &efforts,
-    const std::vector<double> &accel_x,
-    const std::vector<double> &accel_y,
-    const std::vector<double> &accel_z) {
+    const blue_msgs::MotorState &msg) {
 
-  actuator_pos_ = positions;
-  actuator_vel_ = velocities;
-  actuator_eff_ = efforts;
+  // Cast all float types to doubles
+  std::vector<double> positions(msg.position.begin(), msg.position.end());
+  std::vector<double> velocities(msg.velocity.begin(), msg.velocity.end());
+  std::vector<double> accel_x(msg.accel_x.begin(), msg.accel_x.end());
+  std::vector<double> accel_y(msg.accel_y.begin(), msg.accel_y.end());
+  std::vector<double> accel_z(msg.accel_z.begin(), msg.accel_z.end());
+
+  updateTransmissions(positions, velocities);
+  updateAccelerometers(accel_x, accel_y, accel_z);
+}
+
+void BlueKinematics::updateTransmissions(
+    const std::vector<double> &actuator_pos,
+    const std::vector<double> &actuator_vel) {
+  // Update position and velocity
+  // (Efforts are currently all zero)
+  actuator_pos_ = actuator_pos;
+  actuator_vel_ = actuator_vel;
 
   // Set actuator offsets so all positions are zero on startup
   while (actuator_offsets_.size() < actuator_pos_.size())
@@ -168,8 +176,12 @@ void BlueKinematics::setActuatorStates(
   // Bias joint positions by calibrated offset
   for (int i = 0; i < num_joints_; i++)
     joint_pos_[i] += joint_offsets_[i];
+}
 
-
+void BlueKinematics::updateAccelerometers(
+    const std::vector<double> &accel_x,
+    const std::vector<double> &accel_y,
+    const std::vector<double> &accel_z) {
   // Compute a gravity vector for each link/transmission
   // TODO: fix this, it's pretty hacky
   int actuator_idx = 0;
@@ -179,7 +191,6 @@ void BlueKinematics::setActuatorStates(
     accel_vector(0) = accel_x[actuator_idx];
     accel_vector(1) = accel_y[actuator_idx];
     accel_vector(2) = accel_z[actuator_idx];
-    accel_vector = accel_vector / accel_vector.Norm() * 9.81;
 
     if (transmissions_[transmission_idx]->numActuators() == 2) {
       // Differential link
@@ -239,20 +250,24 @@ void BlueKinematics::setActuatorStates(
       actuator_idx++;
     }
 
-    // Exponential decay to smooth values + bias correction
+    accel_vector = accel_vector / accel_vector.Norm() * -9.80665;
+
+    // Exponential decay to smooth values
     double alpha = 0.99;
     accel_vectors_[transmission_idx] =
-      (accel_vectors_[transmission_idx] * alpha - accel_vector * (1 - alpha))
-      / (1 - pow(alpha, accel_counter_));
-
+      (accel_vectors_[transmission_idx] * alpha + accel_vector * (1 - alpha));
   }
-  accel_counter_++;
 }
 
-std::vector<double> BlueKinematics::getGravityVector() {
-  KDL::Vector scaled = accel_vectors_[0] / accel_vectors_[0].Norm() * 9.81;
-  std::vector<double> output(scaled.data, scaled.data + 3);
-  return output;
+void BlueKinematics::getGravityVectors(
+    blue_msgs::GravityVectorArray &msg) {
+  // Convert vector of KDL vectors into standard C++ objects
+  msg.vectors.resize(accel_vectors_.size());
+  for (int i = 0; i < accel_vectors_.size(); i++) {
+    msg.vectors[i].x = accel_vectors_[i][0];
+    msg.vectors[i].y = accel_vectors_[i][1];
+    msg.vectors[i].z = accel_vectors_[i][2];
+  }
 }
 
 std::vector<double> BlueKinematics::getActuatorCommands(
@@ -280,11 +295,11 @@ std::vector<double> BlueKinematics::getActuatorCommands(
 
     // Soft stops
     // TODO: hacky and temporary
-    if(joint_pos_[i] > softstop_max_angles[i] - softstop_tolerance){
+    if(joint_pos_[i] > softstop_max_angles[i] - softstop_tolerance) {
       ROS_WARN_THROTTLE(1, "Going over soft stop max, %d", i);
       double offset = joint_pos_[i] - softstop_max_angles[i] + softstop_tolerance;
       joint_cmd_[i] += -1.0 * softstop_torque_limit * pow(offset, 2);
-    } else if (joint_pos_[i] < softstop_min_angles[i] + softstop_tolerance){
+    } else if (joint_pos_[i] < softstop_min_angles[i] + softstop_tolerance) {
       ROS_WARN_THROTTLE(1, "Going over soft stop min, %d",i);
       double offset = softstop_min_angles[i] + softstop_tolerance - joint_pos_[i];
       joint_cmd_[i] += softstop_torque_limit * pow(offset, 2);

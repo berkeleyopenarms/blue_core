@@ -1,6 +1,5 @@
 #include "blue_hardware_interface/blue_hardware_interface.h"
 #include "blue_hardware_interface/blue_kinematics.h"
-#include "blue_msgs/MotorState.h"
 
 #include <ros/assert.h>
 #include <std_msgs/Float64.h>
@@ -8,7 +7,7 @@
 
 namespace ti = transmission_interface;
 
-BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) { 
+BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   // Read robot parameters
   loadParams();
 
@@ -35,52 +34,47 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   registerInterface(&kinematics_.joint_effort_interface);
 
   // ROS communications setup
-  motor_states_.name = params_.motor_names;
+  motor_states_msg_.name = params_.motor_names;
   motor_state_publisher_ = nh.advertise<blue_msgs::MotorState>(
       "blue_hardware/motor_states", 1);
+
+  gravity_vectors_msg_.frame_ids = params_.accel_links;
+  gravity_vector_publisher_ = nh.advertise<blue_msgs::GravityVectorArray>(
+      "blue_hardware/gravity_vectors", 1);
+
   joint_startup_calibration_service_ = nh.advertiseService(
       "blue_hardware/joint_startup_calibration",
       &BlueHW::jointStartupCalibration,
       this);
 
+  // Initialize motor commands
   for (auto id : params_.motor_ids)
     motor_commands_[id] = 0.0;
 }
 
 void BlueHW::read() {
   // Motor communication! Simultaneously write commands and read state
-  motor_driver_.update(motor_commands_, motor_states_);
+  motor_driver_.update(motor_commands_, motor_states_msg_);
 
   // Publish the motor states, in case anybody's listening
-  motor_states_.header.stamp = ros::Time::now();
-  motor_state_publisher_.publish(motor_states_);
-
-  // std::vector<float> => <double> casting
-  const blue_msgs::MotorState *m = &motor_states_;
-  std::vector<double> positions(m->position.begin(), m->position.end());
-  std::vector<double> velocities(m->velocity.begin(), m->velocity.end());
-  std::vector<double> accel_x(m->accel_x.begin(), m->accel_x.end());
-  std::vector<double> accel_y(m->accel_y.begin(), m->accel_y.end());
-  std::vector<double> accel_z(m->accel_z.begin(), m->accel_z.end());
-
-  std::vector<double> efforts;
-  for (int i = 0; i < params_.motor_ids.size(); i++) {
-    efforts.push_back(
-        motor_states_.quadrature_current[i] / params_.current_to_torque_ratios[i]);
-  }
+  motor_states_msg_.header.stamp = ros::Time::now();
+  motor_state_publisher_.publish(motor_states_msg_);
 
   // Update kinematics with motor states
-  kinematics_.setActuatorStates(
-      positions,
-      velocities,
-      efforts,
-      accel_x,
-      accel_y,
-      accel_z);
+  kinematics_.setActuatorStates(motor_states_msg_);
 
   // Update orientation for gravity compensation
-  dynamics_.setGravityVector(
-      kinematics_.getGravityVector());
+  kinematics_.getGravityVectors(gravity_vectors_msg_);
+  std::array<double, 3> gravity_vector = {
+    gravity_vectors_msg_.vectors[0].x,
+    gravity_vectors_msg_.vectors[0].y,
+    gravity_vectors_msg_.vectors[0].z
+  };
+  dynamics_.setGravityVector(gravity_vector);
+
+  // Publish gravity vectors
+  gravity_vectors_msg_.header.stamp = ros::Time::now();
+  gravity_vector_publisher_.publish(gravity_vectors_msg_);
 }
 
 void BlueHW::write() {

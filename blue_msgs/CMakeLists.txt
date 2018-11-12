@@ -10,18 +10,16 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   message_generation
   std_msgs
-  sensor_msgs
   geometry_msgs
 )
 
-add_message_files(FILES MotorState.msg)
+add_message_files(FILES MotorState.msg GravityVectorArray.msg)
 add_service_files(FILES JointStartupCalibration.srv)
 
 generate_messages(
   DEPENDENCIES
   std_msgs
+  geometry_msgs
 )
 
-catkin_package(
-  CATKIN_DEPENDS std_msgs
-)
+catkin_package()

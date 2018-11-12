@@ -15,6 +15,8 @@
 
 #include "blue_hardware_drivers/BLDCDriver.h"
 #include "blue_msgs/JointStartupCalibration.h"
+#include "blue_msgs/MotorState.h"
+#include "blue_msgs/GravityVectorArray.h"
 
 typedef struct {
   // Motor driver stuff
@@ -74,9 +76,11 @@ private:
   // Robot dynamics helper
   BlueDynamics dynamics_;
 
-  // Motor state stuff
-  blue_msgs::MotorState motor_states_;
+  // Publishers
+  blue_msgs::MotorState motor_states_msg_;
   ros::Publisher motor_state_publisher_;
+  blue_msgs::GravityVectorArray gravity_vectors_msg_;
+  ros::Publisher gravity_vector_publisher_;
 
   // Calibration service
   bool jointStartupCalibration(

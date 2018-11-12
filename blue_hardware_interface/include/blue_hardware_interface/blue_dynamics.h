@@ -18,7 +18,7 @@ public:
       std::string baselink,
       std::string endlink);
   void setGravityVector(
-      const std::vector<double> &gravity_vector);
+      const std::array<double, 3> &gravity_vector);
 
   std::vector<double> computeGravityComp(
       const std::vector<double> &joint_pos,
