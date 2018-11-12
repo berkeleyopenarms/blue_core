@@ -47,6 +47,7 @@
 extern "C" {
 #endif
 
+namespace blue_hardware_drivers {
 
 /**
  * The definition of the used algorithm.
@@ -98,6 +99,7 @@ static inline crc16_t crc16_finalize(crc16_t crc)
     return crc;
 }
 
+} // namespace blue_hardware_drivers
 
 #ifdef __cplusplus
 }           /* closing brace for extern "C" */

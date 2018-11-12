@@ -6,6 +6,8 @@
 
 #include "stdint.h"
 
+namespace blue_hardware_drivers {
+
 void Buffer::init(size_t len) {
   max_len_ = len;
   head_ = 0, tail_ = 0;
@@ -147,3 +149,5 @@ int main () {
   std::cout << a << std::endl << b << std::endl << c << std::endl;
 }
 */
+
+} // namespace blue_hardware_drivers

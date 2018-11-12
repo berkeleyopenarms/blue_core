@@ -1,6 +1,8 @@
 #ifndef COMMS_H
 #define COMMS_H
 
+namespace blue_hardware_drivers {
+
 // Defined here: https://github.com/berkeley-open-robotics/bldc-controller/docs/
 // Current Protocol = Version 3
 
@@ -131,5 +133,7 @@ constexpr size_t COMM_SINGLE_PROGRAM_LENGTH = 128;
 constexpr size_t COMM_SINGLE_READ_LENGTH = 128;
 constexpr size_t COMM_SINGLE_VERIFY_LENGTH = 128;
 constexpr size_t COMM_SINGLE_SET_EAC_TABLE_LENGTH = 64;
+
+} // namespace blue_hardware_drivers
 
 #endif /* COMMS_H */

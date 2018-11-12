@@ -12,6 +12,8 @@
 
 #include "blue_hardware_drivers/BLDCControllerClient.h"
 
+namespace blue_hardware_drivers {
+
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 /* const double MAX_CURRENT = 2.8; */
 const unsigned int CONTROL_LOOP_FREQ = 5000;
@@ -217,3 +219,5 @@ int main(int argc, char **argv) {
   return 0;
 }
 */
+
+} // namespace blue_hardware_drivers
