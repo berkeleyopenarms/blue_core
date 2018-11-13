@@ -1,7 +1,7 @@
 #include <controller_manager/controller_manager.h>
 #include <ros/console.h>
 
-#include "blue_controller_manager/blue_hardware_interface.h"
+#include "blue_hardware_interface/blue_hardware_interface.h"
 
 int main(int argc, char** argv)
 {
@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     try {
       robot.read();
       num_errors = 0;
-    } catch (comms_error e) {
+    } catch (blue_hardware_drivers::comms_error e) {
       ROS_WARN_THROTTLE(1.0, "%s\n", e.what());
       num_errors++;
       if (num_errors == 100) {

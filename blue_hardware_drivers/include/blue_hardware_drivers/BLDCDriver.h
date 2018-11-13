@@ -1,3 +1,6 @@
+#ifndef BLDC_DRIVER_H
+#define BLDC_DRIVER_H
+
 #include "ros/ros.h"
 #include "serial/serial.h"
 #include "std_msgs/String.h"
@@ -5,6 +8,7 @@
 #include "std_msgs/Float32.h"
 #include "sensor_msgs/JointState.h"
 #include <vector>
+#include <unordered_map>
 #include <string>
 #include "math.h"
 #include "time.h"
@@ -12,30 +16,21 @@
 #include "blue_msgs/MotorState.h"
 #include "blue_hardware_drivers/BLDCControllerClient.h"
 
+namespace blue_hardware_drivers {
+
 constexpr int MAX_TEMP_WARNING = 60;
 constexpr int MAX_TEMP_SHUTOFF = 70;
 
-// struct MotorState {
-//   float position;
-//   float velocity;
-//   float di;
-//   float qi;
-//   float temp;
-//   float voltage;
-//   int32_t acc_x, acc_y, acc_z;
-// };
-
 class BLDCDriver {
   public:
-    void init(const std::vector<comm_id_t> &boards, blue_msgs::MotorState* states, std::string port);
-    void update(std::map<comm_id_t, float>& commands);
+    void init(std::string port, std::vector<uint8_t> board_ids);
+    void update(std::unordered_map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states);
     void engageControl();
     void disengageControl();
     BLDCDriver();
 
   private:
-    blue_msgs::MotorState* states_;
-    std::vector<comm_id_t> boards_;
+    std::vector<comm_id_t> board_ids_;
 
     serial::Serial ser_;
     BLDCControllerClient device_;
@@ -45,3 +40,6 @@ class BLDCDriver {
     bool engaged_;
 };
 
+} // namespace blue_hardware_drivers
+
+#endif // BLDC_DRIVER

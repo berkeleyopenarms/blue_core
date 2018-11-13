@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 
+namespace blue_hardware_drivers {
 
 /**
  * Static table used for the table_driven implementation.
@@ -70,3 +71,5 @@ crc16_t crc16_update(crc16_t crc, const void *data, size_t data_len)
     }
     return crc & 0xffff;
 }
+
+} // namespace blue_hardware_drivers

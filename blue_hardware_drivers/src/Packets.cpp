@@ -4,6 +4,8 @@
 #include <sstream>
 #include <iostream>
 
+namespace blue_hardware_drivers {
+
 void Packet::dump(Buffer& buf) {
   buf.write(reinterpret_cast<uint8_t*> (&server_id_), sizeof(server_id_));
   buf.write(reinterpret_cast<uint8_t*> (&func_code_), sizeof(func_code_));
@@ -42,4 +44,4 @@ void JumpToAddrPacket::dump(Buffer& buf) {
   buf.write(reinterpret_cast<uint8_t*> (&jump_addr_), sizeof(jump_addr_));
 }
 
-
+} // namespace blue_hardware_drivers

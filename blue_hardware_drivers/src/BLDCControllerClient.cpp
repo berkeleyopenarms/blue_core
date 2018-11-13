@@ -16,6 +16,8 @@
 #include "blue_hardware_drivers/Buffer.h"
 #include "json/json.h"
 
+namespace blue_hardware_drivers {
+
 BLDCControllerClient::BLDCControllerClient() {
 }
 
@@ -575,3 +577,4 @@ crc16_t BLDCControllerClient::computeCRC( const uint8_t* buf, size_t len ) {
   return crc16_finalize(crc);
 }
 
+} // namespace blue_hardware_drivers

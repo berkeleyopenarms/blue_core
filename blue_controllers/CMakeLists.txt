@@ -9,9 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   kdl_parser
   control_toolbox
   realtime_tools
-  hardware_interface
   control_msgs
-  blue_hardware_drivers
 )
 
 find_package(
@@ -21,6 +19,7 @@ find_package(
 catkin_package(
    INCLUDE_DIRS include
    LIBRARIES ${PROJECT_NAME}
+   CATKIN_DEPENDS controller_interface kdl_parser roscpp urdf
 )
 
 include_directories(
@@ -28,7 +27,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME} src/BlueJointGroupPositionController.cpp src/CartesianPoseController.cpp)
+add_library(${PROJECT_NAME} src/BlueJointGroupPositionController.cpp src/CartesianPoseController.cpp src/BlueJointGroupCTC.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
