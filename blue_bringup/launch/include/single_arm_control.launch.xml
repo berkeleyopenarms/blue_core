@@ -38,11 +38,17 @@
     </node>
 
     <!-- Joint calibration -->
-    <node
-      name="simple_startup_calibration"
-      pkg="blue_bringup"
-      type="simple_startup_calibration.py"
-      output="screen" />
+    <!-- <node -->
+      <!-- name="simple_startup_calibration" -->
+      <!-- pkg="blue_bringup" -->
+      <!-- type="simple_startup_calibration.py" -->
+      <!-- output="screen" /> -->
+    <!-- Joint calibration -->
+    <!-- <node -->
+      <!-- name="simple_startup_calibration" -->
+      <!-- pkg="blue_bringup" -->
+      <!-- type="simple_startup_calibration.py" -->
+      <!-- output="screen" /> -->
 
   </group>
 </launch>
