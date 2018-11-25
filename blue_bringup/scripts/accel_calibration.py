@@ -22,16 +22,16 @@ from scipy.stats import multivariate_normal
 # http://docs.ros.org/indigo/api/message_filters/html/python/#message_filters.TimeSynchronizer
 # synch callbacks with this
 
-def measurement_likelihood(v_part, v_meas):
-    part = np.array([v_part.x(), v_part.y(), v_part.z()])
-    meas = np.array([v_meas.x, v_meas.y, v_meas.z])
-    return np.abs(part.dot(meas))
-
 # def measurement_likelihood(v_part, v_meas):
     # part = np.array([v_part.x(), v_part.y(), v_part.z()])
     # meas = np.array([v_meas.x, v_meas.y, v_meas.z])
-    # ml = multivariate_normal.pdf(part, mean=meas, cov=100.0*np.ones(3))
-    # return ml
+    # return np.abs(part.dot(meas))
+
+def measurement_likelihood(v_part, v_meas):
+    part = np.array([v_part.x(), v_part.y(), v_part.z()])
+    meas = np.array([v_meas.x, v_meas.y, v_meas.z])
+    ml = multivariate_normal.pdf(part, mean=meas, cov=100.0*np.ones(3))
+    return ml
 
 class ParticleGroup:
     def __init__(self, num_joints, num_particles, joint_min, joint_max, fk):
@@ -57,17 +57,19 @@ class ParticleGroup:
                 kdl_joints[j] = corrected_joints[j]
             self.fk_solver.JntToCart(kdl_joints, frame)
             # find the frame transformation
+            accel_base = accel_1
+            accel_end = accel_2
 
             grav_prev = kdl.Vector()
-            grav_prev.x(accel_1.x)
-            grav_prev.y(accel_1.y)
-            grav_prev.z(accel_1.z)
+            grav_prev.x(accel_2.x)
+            grav_prev.y(accel_2.y)
+            grav_prev.z(accel_2.z)
 
             # transform the gravity vector by the given frame
             grav_post = frame * grav_prev
 
             # append the measurement likelyhood
-            ml = measurement_likelihood(grav_post, accel_2)
+            ml = measurement_likelihood(grav_post, accel_base)
             measurement_likelihood_array.append(ml)
 
 
@@ -82,7 +84,7 @@ class ParticleGroup:
         # TODO implement roughening
         if True:
             mean = np.zeros(self.num_j)
-            sigma = 0.0001 * 2.0 * self.num_p**(-1.0/3.0) * np.ones((self.num_j, self.num_j))
+            sigma = 0.0001 * 1.0 * self.num_p**(-1.0/3.0) * np.ones((self.num_j, self.num_j))
             noise = np.random.multivariate_normal(mean, sigma, self.num_p)
             self.particle_offsets = self.particle_offsets + noise
         index = np.argmax(measurement_likelihood_array)
@@ -204,8 +206,8 @@ class BlueRobotFilter:
                 # rospy.logerr(all_particles.shape)
                 rospy.logerr(len(self.history))
                 self.history.append(all_particles)
-                if len(self.history) == 100:
-                    with open('/home/phil/gauss.pickle', 'wb') as handle:
+                if len(self.history) == 200:
+                    with open('/home/phil/fixed.pickle', 'wb') as handle:
                             pickle.dump(self.history, handle)
 
         self.best_estimate = np.array([item for sublist in best_estimate for item in sublist])
