@@ -27,7 +27,7 @@ BLDCControllerClient::BLDCControllerClient(std::string port, const std::vector<c
 }
 
 void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& boards) {
-  // First, manualy set the port to low latency mode
+  // First, manually set the port to low latency mode
   int fd = open(port.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
   struct serial_struct ser;
   ioctl(fd, TIOCGSERIAL, &ser);
