@@ -90,8 +90,8 @@
       name="${side}_gripper_joint"
       type="revolute">
       <origin
-        xyz="0 0.070147 -6.25E-05"
-        rpy="-1.5708 -2.4803E-15 -3.1416" />
+        xyz="0 0 -0.10"
+        rpy="0 0 0" />
       <parent
         link="${side}_${parent}" />
       <child
