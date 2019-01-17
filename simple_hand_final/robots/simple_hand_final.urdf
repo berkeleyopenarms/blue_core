@@ -1,0 +1,149 @@
+<robot
+  name="simple_hand_final">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.000474208559673067 0.000503359253757879 -0.0289375781734406"
+        rpy="0 0 0" />
+      <mass
+        value="0.20162055316494" />
+      <inertia
+        ixx="0.000414467454240991"
+        ixy="9.23252500795403E-08"
+        ixz="7.09602508390139E-21"
+        iyy="0.000403589671630985"
+        iyz="-1.68571151818527E-18"
+        izz="0.000270128778658774" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://simple_hand_final/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://simple_hand_final/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="finger_link">
+    <inertial>
+      <origin
+        xyz="0.00046733152633803 0.0122666320844707 1.16452530510985E-07"
+        rpy="0 0 0" />
+      <mass
+        value="0.0384620979765985" />
+      <inertia
+        ixx="1.93716279065148E-05"
+        ixy="-1.74835869619804E-06"
+        ixz="3.21020594362941E-11"
+        iyy="5.23390911087335E-06"
+        iyz="-5.04535602261134E-11"
+        izz="1.92560542157392E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://simple_hand_final/meshes/finger_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://simple_hand_final/meshes/finger_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="finger_joint"
+    type="continuous">
+    <origin
+      xyz="0.00047421 0.030703 -0.071979"
+      rpy="-1.5708 -0.63969 1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="finger_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="finger_tip_link">
+    <inertial>
+      <origin
+        xyz="0.000428096363398578 -6.3962924111774E-08 0.0162809660053768"
+        rpy="0 0 0" />
+      <mass
+        value="0.0096424502794395" />
+      <inertia
+        ixx="1.76146900164229E-06"
+        ixy="-1.63725174281941E-11"
+        ixz="-5.09403577370148E-07"
+        iyy="1.95368501856251E-06"
+        iyz="-2.7403586363238E-12"
+        izz="6.78506827465793E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://simple_hand_final/meshes/finger_tip_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://simple_hand_final/meshes/finger_tip_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="finger_tip_joint"
+    type="continuous">
+    <origin
+      xyz="0 0.06 0"
+      rpy="1.5708 -1.5754E-31 -2.5019" />
+    <parent
+      link="finger_link" />
+    <child
+      link="finger_tip_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+</robot>
