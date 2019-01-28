@@ -32,16 +32,23 @@ public:
   const std::vector<double>& getJointVel();
 
   // Joint calibration
+  std::vector<double> findBestJointOffsets(
+      const std::vector<double> &estimated_joint_offsets,
+      const std::vector<double> &actuator_zeros,
+      const std::vector<double> &softstop_min_angles,
+      const std::vector<double> &softstop_max_angles);
+
+  // Joint calibration
   void setJointOffsets(
       const std::vector<double> &offsets);
 
   //  Update internal actuator states
   void setActuatorStates(
-      const blue_msgs::MotorState &msg);
+      const blue_msgs::MotorState &motor_msg);
 
   // Which way is down??
   void getGravityVectors(
-      blue_msgs::GravityVectorArray &msg);
+      blue_msgs::GravityVectorArray &grav_msg);
 
   // Get desired actuator commands
   std::vector<double> getActuatorCommands(

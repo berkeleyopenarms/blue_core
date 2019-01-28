@@ -12,9 +12,9 @@ BlueKinematics::BlueKinematics() :
   is_calibrated_(false) {}
 
 void BlueKinematics::init(
-      const std::vector<std::string> &joint_names,
-      const std::vector<int> &differential_pairs,
-      const std::vector<double> &gear_ratios) {
+    const std::vector<std::string> &joint_names,
+    const std::vector<int> &differential_pairs,
+    const std::vector<double> &gear_ratios) {
 
   // How many joints do we have?
   num_joints_ = joint_names.size();
@@ -127,6 +127,87 @@ void BlueKinematics::init(
   }
 }
 
+std::vector<double> BlueKinematics::findBestJointOffsets(
+    const std::vector<double> &estimated_joint_offsets,
+    const std::vector<double> &actuator_zeros,
+    const std::vector<double> &softstop_min_angles,
+    const std::vector<double> &softstop_max_angles) {
+
+  // Output object
+  std::vector<double> best_joint_offsets(num_joints_, 0.0);
+
+  // We'll be using the existing transmission objects, so we
+  // need to temporarily mutate the actuator/joint positions
+  // ...back up the original values up so we can revert later:
+  std::vector<double> actuator_pos_orig = actuator_pos_;
+
+  std::vector<double> zeroed_actuator_offsets;
+  for (int i = 0; i < actuator_offsets_.size(); i++) {
+    if (i < actuator_zeros.size())
+      zeroed_actuator_offsets.push_back(actuator_offsets_[i] + actuator_zeros[i]);
+  }
+
+  int actuator_idx = 0;
+  for (int transmission_idx = 0; transmission_idx < num_transmissions_; transmission_idx++) {
+    if (transmissions_[transmission_idx]->numActuators() == 2) {
+      // Differential link
+      double best_error = DBL_MAX;
+      for (int i = 0; i < 7; i++) {
+        actuator_pos_[actuator_idx] = zeroed_actuator_offsets[actuator_idx] + 2 * M_PI * i;
+        for (int j = 0; j < 7; j++) {
+          actuator_pos_[actuator_idx + 1] = zeroed_actuator_offsets[actuator_idx + 1] + 2 * M_PI * j;
+          actuator_to_joint_interface_.propagate();
+
+          if (joint_pos_[actuator_idx] > softstop_max_angles[actuator_idx]
+              || joint_pos_[actuator_idx] < softstop_min_angles[actuator_idx]
+              || joint_pos_[actuator_idx + 1] > softstop_max_angles[actuator_idx + 1]
+              || joint_pos_[actuator_idx + 1] < softstop_min_angles[actuator_idx + 1])
+            continue;
+
+          double error =
+              pow(joint_pos_[actuator_idx] - estimated_joint_offsets[actuator_idx], 2) +
+              pow(joint_pos_[actuator_idx + 1] - estimated_joint_offsets[actuator_idx + 1], 2);
+
+          if (error < best_error) {
+            best_joint_offsets[actuator_idx] = joint_pos_[actuator_idx];
+            best_joint_offsets[actuator_idx + 1] = joint_pos_[actuator_idx + 1];
+            best_error = error;
+          }
+        }
+      }
+      actuator_idx += 2;
+    } else if (transmission_idx == 0) {
+      // Base link
+      double best_error = DBL_MAX;
+      for (int i = 0; i < 7; i++) {
+        actuator_pos_[actuator_idx] = zeroed_actuator_offsets[actuator_idx] + 2 * M_PI * i;
+        actuator_to_joint_interface_.propagate();
+
+        if (joint_pos_[actuator_idx] > softstop_max_angles[actuator_idx]
+            || joint_pos_[actuator_idx] < softstop_min_angles[actuator_idx])
+          continue;
+
+        double error =
+            pow(joint_pos_[actuator_idx] - estimated_joint_offsets[actuator_idx], 2);
+        if (error < best_error) {
+          best_joint_offsets[actuator_idx] = joint_pos_[actuator_idx];
+          best_error = error;
+        }
+      }
+      actuator_idx++;
+    } else if (transmission_idx == num_transmissions_ - 1) {
+      // Gripper link
+      best_joint_offsets[actuator_idx] = estimated_joint_offsets[actuator_idx];
+      actuator_idx++;
+    }
+  }
+
+  // Revert our actuator positions
+  actuator_pos_ = actuator_pos_orig;
+
+  return best_joint_offsets;
+}
+
 void BlueKinematics::setJointOffsets(
     const std::vector<double> &offsets) {
   joint_offsets_ = offsets;
@@ -142,14 +223,14 @@ const std::vector<double>& BlueKinematics::getJointVel() {
 }
 
 void BlueKinematics::setActuatorStates(
-    const blue_msgs::MotorState &msg) {
+    const blue_msgs::MotorState &motor_msg) {
 
   // Cast all float types to doubles
-  std::vector<double> positions(msg.position.begin(), msg.position.end());
-  std::vector<double> velocities(msg.velocity.begin(), msg.velocity.end());
-  std::vector<double> accel_x(msg.accel_x.begin(), msg.accel_x.end());
-  std::vector<double> accel_y(msg.accel_y.begin(), msg.accel_y.end());
-  std::vector<double> accel_z(msg.accel_z.begin(), msg.accel_z.end());
+  std::vector<double> positions(motor_msg.position.begin(), motor_msg.position.end());
+  std::vector<double> velocities(motor_msg.velocity.begin(), motor_msg.velocity.end());
+  std::vector<double> accel_x(motor_msg.accel_x.begin(), motor_msg.accel_x.end());
+  std::vector<double> accel_y(motor_msg.accel_y.begin(), motor_msg.accel_y.end());
+  std::vector<double> accel_z(motor_msg.accel_z.begin(), motor_msg.accel_z.end());
 
   updateTransmissions(positions, velocities);
   updateAccelerometers(accel_x, accel_y, accel_z);
@@ -182,6 +263,7 @@ void BlueKinematics::updateAccelerometers(
     const std::vector<double> &accel_x,
     const std::vector<double> &accel_y,
     const std::vector<double> &accel_z) {
+
   // Compute a gravity vector for each link/transmission
   // TODO: fix this, it's pretty hacky
   int actuator_idx = 0;
@@ -260,13 +342,13 @@ void BlueKinematics::updateAccelerometers(
 }
 
 void BlueKinematics::getGravityVectors(
-    blue_msgs::GravityVectorArray &msg) {
+    blue_msgs::GravityVectorArray &grav_msg) {
   // Convert vector of KDL vectors into standard C++ objects
-  msg.vectors.resize(accel_vectors_.size());
+  grav_msg.vectors.resize(accel_vectors_.size());
   for (int i = 0; i < accel_vectors_.size(); i++) {
-    msg.vectors[i].x = accel_vectors_[i][0];
-    msg.vectors[i].y = accel_vectors_[i][1];
-    msg.vectors[i].z = accel_vectors_[i][2];
+    grav_msg.vectors[i].x = accel_vectors_[i][0];
+    grav_msg.vectors[i].y = accel_vectors_[i][1];
+    grav_msg.vectors[i].z = accel_vectors_[i][2];
   }
 }
 

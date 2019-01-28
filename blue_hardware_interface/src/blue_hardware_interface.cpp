@@ -115,20 +115,24 @@ template <typename TParam>
 void BlueHW::getParam(const std::string name, TParam& dest) {
   // Try to find a parameter and explode if it doesn't exist
   ROS_ASSERT_MSG(
-    nh_.getParam(name, dest),
-    "Could not find %s parameter in namespace %s",
-    name.c_str(),
-    nh_.getNamespace().c_str()
-  );
+      nh_.getParam(name, dest),
+      "Could not find %s parameter in namespace %s",
+      name.c_str(),
+      nh_.getNamespace().c_str());
 }
 
 bool BlueHW::jointStartupCalibration(
     blue_msgs::JointStartupCalibration::Request &request,
     blue_msgs::JointStartupCalibration::Response &response
 ) {
-  kinematics_.setJointOffsets(request.joint_positions);
-  response.success = true;
+  kinematics_.setJointOffsets(
+      kinematics_.findBestJointOffsets(
+          request.joint_positions,
+          params_.actuator_zeros,
+          params_.softstop_min_angles,
+          params_.softstop_max_angles));
 
+  response.success = true;
   return true;
 }
 
@@ -167,4 +171,7 @@ void BlueHW::loadParams() {
 
   // Links to attach accelerometer measurements to
   getParam("blue_hardware/accel_links", params_.accel_links);
+
+  // Calibration
+  getParam("blue_hardware/actuator_zeros", params_.actuator_zeros);
 }
