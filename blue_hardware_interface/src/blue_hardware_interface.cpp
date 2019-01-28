@@ -79,7 +79,7 @@ void BlueHW::read() {
       accel_vector(1) = gravity_vectors_msg_.vectors[i].y;
       accel_vector(2) = gravity_vectors_msg_.vectors[i].z;
 
-      accel_rot.DoRotZ(M_PI / 4.0 * params_.accel_rotations[i]);
+      accel_rot.DoRotZ(M_PI / 2.0 * params_.accel_rotations[i]);
       accel_vector = accel_rot * accel_vector;
 
       gravity_vectors_msg_.vectors[i].x = accel_vector(0);

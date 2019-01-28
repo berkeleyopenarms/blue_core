@@ -13,9 +13,9 @@ blue_hardware:
     endlink: left_gripper_finger_link
     accel_links:
         - left_base_link
-        - left_shoulder_accel_link
-        - left_elbow_accel_link
-        - left_wrist_accel_link
+        - left_shoulder_roll_link
+        - left_elbow_roll_link
+        - left_wrist_roll_link
         - left_end_roll_link
     differential_pairs: [1, 2, 3, 4, 5, 6]
     gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 14.4]
