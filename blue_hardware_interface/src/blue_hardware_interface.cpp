@@ -72,6 +72,21 @@ void BlueHW::read() {
   };
   dynamics_.setGravityVector(gravity_vector);
 
+  for (int i = 0; i < gravity_vectors_msg_.vectors.size(); i++) {
+      KDL::Rotation accel_rot;
+      KDL::Vector accel_vector;
+      accel_vector(0) = gravity_vectors_msg_.vectors[i].x;
+      accel_vector(1) = gravity_vectors_msg_.vectors[i].y;
+      accel_vector(2) = gravity_vectors_msg_.vectors[i].z;
+
+      accel_rot.DoRotZ(M_PI / 4.0 * params_.accel_rotations[i]);
+      accel_vector = accel_rot * accel_vector;
+
+      gravity_vectors_msg_.vectors[i].x = accel_vector(0);
+      gravity_vectors_msg_.vectors[i].y = accel_vector(1);
+      gravity_vectors_msg_.vectors[i].z = accel_vector(2);
+  }
+
   // Publish gravity vectors
   gravity_vectors_msg_.header.stamp = ros::Time::now();
   gravity_vector_publisher_.publish(gravity_vectors_msg_);
@@ -167,4 +182,5 @@ void BlueHW::loadParams() {
 
   // Links to attach accelerometer measurements to
   getParam("blue_hardware/accel_links", params_.accel_links);
+  getParam("blue_hardware/accel_rotations", params_.accel_rotations);
 }
