@@ -125,8 +125,17 @@ bool BlueHW::jointStartupCalibration(
     blue_msgs::JointStartupCalibration::Request &request,
     blue_msgs::JointStartupCalibration::Response &response
 ) {
+
+  // Create a dummy kinematics object so we can use its transmissions etc
+  // TODO: possibly a little bit hacky?
+  BlueKinematics dummy_kinematics_;
+  dummy_kinematics_.init(
+      params_.joint_names,
+      params_.differential_pairs,
+      params_.gear_ratios);
+
   kinematics_.setJointOffsets(
-      kinematics_.findBestJointOffsets(
+      dummy_kinematics_.findBestJointOffsets(
           request.joint_positions,
           params_.actuator_zeros,
           params_.softstop_min_angles,
