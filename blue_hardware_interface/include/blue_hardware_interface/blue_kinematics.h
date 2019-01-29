@@ -10,6 +10,8 @@
 
 #include <kdl/frames.hpp>
 
+#include <mutex>
+
 namespace ti = transmission_interface;
 
 class BlueKinematics
@@ -79,6 +81,10 @@ private:
   int num_simple_transmissions_;
   int num_diff_transmissions_;
   int num_transmissions_;
+
+  // Only one thread should be accessing the robot kinematics at a time
+  // TODO: optimize or rethink this?
+  std::mutex kinematics_mutex_;
 
   // Transmission interfaces
   ti::ActuatorToJointStateInterface actuator_to_joint_interface_;

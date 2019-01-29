@@ -133,6 +133,9 @@ std::vector<double> BlueKinematics::findBestJointOffsets(
     const std::vector<double> &softstop_min_angles,
     const std::vector<double> &softstop_max_angles) {
 
+  // Acquire the kinematics lock
+  std::lock_guard<std::mutex> lock(kinematics_mutex_);
+
   // Output object
   std::vector<double> best_joint_offsets(num_joints_, 0.0);
 
@@ -210,6 +213,10 @@ std::vector<double> BlueKinematics::findBestJointOffsets(
 
 void BlueKinematics::setJointOffsets(
     const std::vector<double> &offsets) {
+
+  // Acquire the kinematics lock
+  std::lock_guard<std::mutex> lock(kinematics_mutex_);
+
   joint_offsets_ = offsets;
   is_calibrated_ = true;
 }
@@ -225,6 +232,9 @@ const std::vector<double>& BlueKinematics::getJointVel() {
 void BlueKinematics::setActuatorStates(
     const blue_msgs::MotorState &motor_msg) {
 
+  // Acquire the kinematics lock
+  std::lock_guard<std::mutex> lock(kinematics_mutex_);
+
   // Cast all float types to doubles
   std::vector<double> positions(motor_msg.position.begin(), motor_msg.position.end());
   std::vector<double> velocities(motor_msg.velocity.begin(), motor_msg.velocity.end());
@@ -239,6 +249,10 @@ void BlueKinematics::setActuatorStates(
 void BlueKinematics::updateTransmissions(
     const std::vector<double> &actuator_pos,
     const std::vector<double> &actuator_vel) {
+
+  // Acquire the kinematics lock
+  std::lock_guard<std::mutex> lock(kinematics_mutex_);
+
   // Update position and velocity
   // (Efforts are currently all zero)
   actuator_pos_ = actuator_pos;
@@ -358,6 +372,9 @@ std::vector<double> BlueKinematics::getActuatorCommands(
     const std::vector<double> &softstop_min_angles,
     const std::vector<double> &softstop_max_angles,
     double softstop_tolerance) {
+
+  // Acquire the kinematics lock
+  std::lock_guard<std::mutex> lock(kinematics_mutex_);
 
   if (!is_calibrated_) {
     // If not calibrated, zero out all actuator commands
