@@ -24,7 +24,7 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
 - Install Ubuntu 16.0.4
 - [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
   - Start from 1.2 to 1.7, just copy paste into terminal 
-  - For step 1.4, use bare bones unless you plan on developing using ROS visualization tools
+  - For step 1.4, use Desktop-Full if unsure
 - Create a workspace:
   ```bash
   mkdir -p ~/blue_ws/src && cd "$_"
@@ -51,25 +51,7 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   ```bash
   sudo addgroup $USER dialout
   ```
-- There are a handful of configuration that are specific to your arm that you need to set
-  ```bash
-  cd ~/.ros
-  touch blue_params.yaml
-  ```
-- In your newly created ```blue_params.yaml``` file add the following under the `right_arm/blue_hardware` namespace
-  - `serial_port`
-    - path to the serial port your arm is connected to
-  - `motor_ids`
-    - a list of the 8 motor ids, starting from the base to the gripper
-  - `simple_startup_angles`
-    - the intial starting joint angles of your robot upon startup
-- To get you started, here is what our blue_params.yaml file looks like:
-  ```
-  right_arm/blue_hardware:
-        serial_port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A506MP4W-if00-port0
-        motor_ids: [40, 76, 65, 70, 77, 20, 21, 52]
-        simple_startup_angles: [-0.6647, -2.1294, 0.8929, -2.1951, -2.0915, -0.5770, 0.0274, 0.0]
-  ```
+- Set up a configuration file (see the [blue_configs](https://github.com/berkeleyopenrobotics/blue_configs) repo for examples)
 
 - Proceed to setup the arm with power supply and USB adapter ("Electrical Setup" in Quick Start Guide)
 
