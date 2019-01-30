@@ -155,9 +155,9 @@ std::vector<double> BlueKinematics::findBestJointOffsets(
     if (transmissions_[transmission_idx]->numActuators() == 2) {
       // Differential link
       double best_error = DBL_MAX;
-      for (int i = 0; i < 7; i++) {
+      for (int i = -7; i <= 7; i++) {
         actuator_pos_[actuator_idx] = zeroed_actuator_offsets[actuator_idx] + 2 * M_PI * i;
-        for (int j = 0; j < 7; j++) {
+        for (int j = -7; j <= 7; j++) {
           actuator_pos_[actuator_idx + 1] = zeroed_actuator_offsets[actuator_idx + 1] + 2 * M_PI * j;
           actuator_to_joint_interface_.propagate();
 
@@ -178,11 +178,13 @@ std::vector<double> BlueKinematics::findBestJointOffsets(
           }
         }
       }
+      // TODO remove
+      ROS_ERROR("BEST ERROR %d = %f", actuator_idx, best_error);
       actuator_idx += 2;
     } else if (transmission_idx == 0) {
       // Base link
       double best_error = DBL_MAX;
-      for (int i = 0; i < 7; i++) {
+      for (int i = -7; i <= 7; i++) {
         actuator_pos_[actuator_idx] = zeroed_actuator_offsets[actuator_idx] + 2 * M_PI * i;
         actuator_to_joint_interface_.propagate();
 
@@ -192,11 +194,14 @@ std::vector<double> BlueKinematics::findBestJointOffsets(
 
         double error =
             pow(joint_pos_[actuator_idx] - estimated_joint_offsets[actuator_idx], 2);
+
         if (error < best_error) {
           best_joint_offsets[actuator_idx] = joint_pos_[actuator_idx];
           best_error = error;
         }
       }
+      // TODO remove
+      ROS_ERROR("BEST ERROR %d = %f", actuator_idx, best_error);
       actuator_idx++;
     } else if (transmission_idx == num_transmissions_ - 1) {
       // Gripper link
@@ -250,8 +255,7 @@ void BlueKinematics::updateTransmissions(
     const std::vector<double> &actuator_pos,
     const std::vector<double> &actuator_vel) {
 
-  // Acquire the kinematics lock
-  std::lock_guard<std::mutex> lock(kinematics_mutex_);
+  // This private helper assumes the kinematics lock is already acquired
 
   // Update position and velocity
   // (Efforts are currently all zero)
