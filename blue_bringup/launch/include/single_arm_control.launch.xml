@@ -45,9 +45,9 @@
       <!-- output="screen" /> -->
     <!-- Joint calibration -->
     <!-- <node -->
-      <!-- name="simple_startup_calibration" -->
+      <!-- name="simple_accel_calibration" -->
       <!-- pkg="blue_bringup" -->
-      <!-- type="simple_startup_calibration.py" -->
+      <!-- type="accel_calibration.py" -->
       <!-- output="screen" /> -->
 
   </group>
