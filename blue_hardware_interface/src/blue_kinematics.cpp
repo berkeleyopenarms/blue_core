@@ -147,7 +147,7 @@ std::vector<double> BlueKinematics::findBestJointOffsets(
   std::vector<double> zeroed_actuator_offsets;
   for (int i = 0; i < actuator_offsets_.size(); i++) {
     if (i < actuator_zeros.size())
-      zeroed_actuator_offsets.push_back(actuator_offsets_[i] - actuator_zeros[i]);
+      zeroed_actuator_offsets.push_back(-(actuator_offsets_[i] + actuator_zeros[i]));
   }
 
   int actuator_idx = 0;
