@@ -147,7 +147,7 @@ std::vector<double> BlueKinematics::findBestJointOffsets(
   std::vector<double> zeroed_actuator_offsets;
   for (int i = 0; i < actuator_offsets_.size(); i++) {
     if (i < actuator_zeros.size())
-      zeroed_actuator_offsets.push_back(actuator_offsets_[i] + actuator_zeros[i]);
+      zeroed_actuator_offsets.push_back(actuator_offsets_[i] - actuator_zeros[i]);
   }
 
   int actuator_idx = 0;
@@ -194,6 +194,7 @@ std::vector<double> BlueKinematics::findBestJointOffsets(
 
         double error =
             pow(joint_pos_[actuator_idx] - estimated_joint_offsets[actuator_idx], 2);
+        ROS_ERROR("GUESSING %f \t?\t %f", joint_pos_[actuator_idx], estimated_joint_offsets[actuator_idx]);
 
         if (error < best_error) {
           best_joint_offsets[actuator_idx] = joint_pos_[actuator_idx];
