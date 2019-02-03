@@ -33,7 +33,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   registerInterface(&kinematics_.joint_state_interface);
   registerInterface(&kinematics_.joint_effort_interface);
 
-  // ROS communications setup
+  // ROS publishers
   motor_states_msg_.name = params_.motor_names;
   motor_state_publisher_ = nh.advertise<blue_msgs::MotorState>(
       "blue_hardware/motor_states", 1);
@@ -42,6 +42,10 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   gravity_vector_publisher_ = nh.advertise<blue_msgs::GravityVectorArray>(
       "blue_hardware/gravity_vectors", 1);
 
+  // Load in some initial values
+  read();
+
+  // Calibration service
   joint_startup_calibration_service_ = nh.advertiseService(
       "blue_hardware/joint_startup_calibration",
       &BlueHW::jointStartupCalibration,
