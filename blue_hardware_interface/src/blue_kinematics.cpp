@@ -150,6 +150,7 @@ std::vector<double> BlueKinematics::findBestJointOffsets(
       zeroed_actuator_offsets.push_back(-(actuator_offsets_[i] + actuator_zeros[i]));
   }
 
+  // For each transmission, snap our estimated joint offsets to the closest possible value
   int actuator_idx = 0;
   for (int transmission_idx = 0; transmission_idx < num_transmissions_; transmission_idx++) {
     if (transmissions_[transmission_idx]->numActuators() == 2) {
@@ -178,8 +179,6 @@ std::vector<double> BlueKinematics::findBestJointOffsets(
           }
         }
       }
-      // TODO remove
-      ROS_ERROR("BEST ERROR %d = %f", actuator_idx, best_error);
       actuator_idx += 2;
     } else if (transmission_idx == 0) {
       // Base link
@@ -194,15 +193,12 @@ std::vector<double> BlueKinematics::findBestJointOffsets(
 
         double error =
             pow(joint_pos_[actuator_idx] - estimated_joint_offsets[actuator_idx], 2);
-        ROS_ERROR("GUESSING %f \t?\t %f", joint_pos_[actuator_idx], estimated_joint_offsets[actuator_idx]);
 
         if (error < best_error) {
           best_joint_offsets[actuator_idx] = joint_pos_[actuator_idx];
           best_error = error;
         }
       }
-      // TODO remove
-      ROS_ERROR("BEST ERROR %d = %f", actuator_idx, best_error);
       actuator_idx++;
     } else if (transmission_idx == num_transmissions_ - 1) {
       // Gripper link
