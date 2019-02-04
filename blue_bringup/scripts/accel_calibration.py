@@ -161,26 +161,26 @@ class BlueRobotFilter:
         self.jpg = joints_per_group
 
 
-        if self.debug:
-            pg = self.pg_array[1]
+        # if self.debug:
+            # pg = self.pg_array[1]
             # frame = kdl.Frame()
 
-            kdl_joints = kdl.JntArray(2)
-            kdl_joints[0] = 0
-            kdl_joints[1] = np.pi/2
-            pg.fk_solver.JntToCart(kdl_joints, frame)
+            # kdl_joints = kdl.JntArray(2)
+            # kdl_joints[0] = 0
+            # kdl_joints[1] = np.pi/2
+            # pg.fk_solver.JntToCart(kdl_joints, frame)
             # print(frame)
             # find the frame transformation
-            accel_base = np.array([0 , 0, 9.81])
-            accel_end  = np.array([0 , 0, 9.81])
-
-            grav_prev = kdl.Vector()
-            grav_prev.x(accel_end[0])
-            grav_prev.y(accel_end[1])
-            grav_prev.z(accel_end[2])
-
+            # accel_base = np.array([0 , 0, 9.81])
+            # accel_end  = np.array([0 , 0, 9.81])
+#
+            # grav_prev = kdl.Vector()
+            # grav_prev.x(accel_end[0])
+            # grav_prev.y(accel_end[1])
+            # grav_prev.z(accel_end[2])
+#
             # transform the gravity vector by the given frame
-            grav_post = frame * grav_prev
+            # grav_post = frame * grav_prev
             # print("gravity post:= {}".format(grav_post))
             # print("gravity orig:= {}".format(accel_base))
 
