@@ -10,6 +10,8 @@
 
 #include <kdl/frames.hpp>
 
+#include <mutex>
+
 namespace ti = transmission_interface;
 
 class BlueKinematics
@@ -32,16 +34,23 @@ public:
   const std::vector<double>& getJointVel();
 
   // Joint calibration
+  std::vector<double> findBestJointOffsets(
+      const std::vector<double> &estimated_joint_offsets,
+      const std::vector<double> &actuator_zeros,
+      const std::vector<double> &softstop_min_angles,
+      const std::vector<double> &softstop_max_angles);
+
+  // Joint calibration
   void setJointOffsets(
       const std::vector<double> &offsets);
 
   //  Update internal actuator states
   void setActuatorStates(
-      const blue_msgs::MotorState &msg);
+      const blue_msgs::MotorState &motor_msg);
 
   // Which way is down??
   void getGravityVectors(
-      blue_msgs::GravityVectorArray &msg);
+      blue_msgs::GravityVectorArray &grav_msg);
 
   // Get desired actuator commands
   std::vector<double> getActuatorCommands(
@@ -72,6 +81,10 @@ private:
   int num_simple_transmissions_;
   int num_diff_transmissions_;
   int num_transmissions_;
+
+  // Only one thread should be accessing the robot kinematics at a time
+  // TODO: optimize or rethink this?
+  std::mutex kinematics_mutex_;
 
   // Transmission interfaces
   ti::ActuatorToJointStateInterface actuator_to_joint_interface_;
