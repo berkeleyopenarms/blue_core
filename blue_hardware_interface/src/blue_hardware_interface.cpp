@@ -42,6 +42,10 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   gravity_vector_publisher_ = nh.advertise<blue_msgs::GravityVectorArray>(
       "blue_hardware/gravity_vectors", 1);
 
+  // Initialize motor commands
+  for (auto id : params_.motor_ids)
+    motor_commands_[id] = 0.0;
+
   // Load in some initial values
   read();
 
@@ -50,10 +54,6 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
       "blue_hardware/joint_startup_calibration",
       &BlueHW::jointStartupCalibration,
       this);
-
-  // Initialize motor commands
-  for (auto id : params_.motor_ids)
-    motor_commands_[id] = 0.0;
 }
 
 void BlueHW::read() {
