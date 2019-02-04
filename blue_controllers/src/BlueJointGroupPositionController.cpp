@@ -68,7 +68,7 @@ namespace blue_controllers
       }
     }
 
-    commands_buffer_.writeFromNonRT(std::vector<double>(n_joints_, 0.0));
+    first_update_ = true;
 
     sub_command_ = n.subscribe<std_msgs::Float64MultiArray>("command", 1, &BlueJointGroupPositionController::commandCB, this);
     ROS_INFO("Starting Controller");
@@ -77,49 +77,64 @@ namespace blue_controllers
 
   void BlueJointGroupPositionController::update(const ros::Time& time, const ros::Duration& period)
   {
-    std::vector<double> & commands = *commands_buffer_.readFromRT();
+    std::vector<double> commands;
+
+    if (first_update_)
+    {
+      for (unsigned int i=0; i<n_joints_; i++)
+      {
+        commands.push_back(joints_[i].getPosition());
+      }
+      commands_buffer_.writeFromNonRT(commands);
+
+      first_update_ = false;
+    }
+    else
+    {
+      commands = *commands_buffer_.readFromRT();
+    }
 
     // Check if the change between this position and previous position is greater than a threshhold.
     //antiJump(commands);
 
     for(unsigned int i=0; i<n_joints_; i++)
     {
-        double command_position = commands[i];
+      double command_position = commands[i];
 
-        double error; //, vel_error;
-        double commanded_effort;
+      double error; //, vel_error;
+      double commanded_effort;
 
-        double current_position = joints_[i].getPosition();
+      double current_position = joints_[i].getPosition();
 
-        // Make sure joint is within limits if applicable
-        enforceJointLimits(command_position, i);
+      // Make sure joint is within limits if applicable
+      enforceJointLimits(command_position, i);
 
-        // Compute position error
-        if (joint_urdfs_[i]->type == urdf::Joint::REVOLUTE)
-        {
-         angles::shortest_angular_distance_with_limits(
-            current_position,
-            command_position,
-            joint_urdfs_[i]->limits->lower,
-            joint_urdfs_[i]->limits->upper,
-            error);
-        }
-        else if (joint_urdfs_[i]->type == urdf::Joint::CONTINUOUS)
-        {
-          error = angles::shortest_angular_distance(current_position, command_position);
-        }
-        else //prismatic
-        {
-          error = command_position - current_position;
-        }
+      // Compute position error
+      if (joint_urdfs_[i]->type == urdf::Joint::REVOLUTE)
+      {
+        angles::shortest_angular_distance_with_limits(
+          current_position,
+          command_position,
+          joint_urdfs_[i]->limits->lower,
+          joint_urdfs_[i]->limits->upper,
+          error);
+      }
+      else if (joint_urdfs_[i]->type == urdf::Joint::CONTINUOUS)
+      {
+        error = angles::shortest_angular_distance(current_position, command_position);
+      }
+      else //prismatic
+      {
+        error = command_position - current_position;
+      }
 
-        // Set the PID error and compute the PID command with nonuniform
-        // time step size.
-        commanded_effort = pid_controllers_[i].computeCommand(error, -joints_[i].getVelocity(), period);
+      // Set the PID error and compute the PID command with nonuniform
+      // time step size.
+      commanded_effort = pid_controllers_[i].computeCommand(error, -joints_[i].getVelocity(), period);
 
-        // ROS_ERROR("%f", commanded_effort);
+      // ROS_ERROR("%f", commanded_effort);
 
-        joints_[i].setCommand(commanded_effort);
+      joints_[i].setCommand(commanded_effort);
     }
   }
 

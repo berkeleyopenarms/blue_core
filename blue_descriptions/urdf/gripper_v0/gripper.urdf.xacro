@@ -60,7 +60,7 @@
       type="fixed">
       <origin
         xyz="0 0.0 -0.18"
-        rpy="-3.14159 -0.0 1.5708" />
+        rpy="1.5708 1.5708 1.5708" />
       <parent
         link="${side}_${parent}" />
       <child

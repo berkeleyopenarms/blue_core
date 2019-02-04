@@ -116,7 +116,7 @@ namespace blue_controllers
       }
     }
 
-    commands_buffer_.writeFromNonRT(std::vector<double>(n_joints_, 0.0));
+    first_update_ = true;
 
     sub_command_ = n.subscribe<std_msgs::Float64MultiArray>("command", 1, &BlueJointGroupCTC::commandCB, this);
     ROS_INFO("Starting Controller");
@@ -125,7 +125,22 @@ namespace blue_controllers
 
   void BlueJointGroupCTC::update(const ros::Time& time, const ros::Duration& period)
   {
-    std::vector<double> & commands = *commands_buffer_.readFromRT();
+    std::vector<double> commands;
+
+    if (first_update_)
+    {
+      for (unsigned int i=0; i<n_joints_; i++)
+      {
+        commands.push_back(joints_[i].getPosition());
+      }
+      commands_buffer_.writeFromNonRT(commands);
+
+      first_update_ = false;
+    }
+    else
+    {
+      commands = *commands_buffer_.readFromRT();
+    }
 
     // Check if the change between this position and previous position is greater than a threshhold.
     //antiJump(commands);

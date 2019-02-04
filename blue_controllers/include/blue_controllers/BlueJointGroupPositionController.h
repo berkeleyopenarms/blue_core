@@ -31,6 +31,8 @@ public:
   unsigned int n_joints_;
 
 private:
+  bool first_update_;
+
   ros::Subscriber sub_command_;
 
   std::vector<control_toolbox::Pid> pid_controllers_;

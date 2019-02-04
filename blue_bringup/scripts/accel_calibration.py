@@ -30,7 +30,7 @@ from scipy.stats import multivariate_normal
 def measurement_likelihood(v_part, v_meas):
     part = np.array([v_part.x(), v_part.y(), v_part.z()])
     meas = np.array([v_meas.x, v_meas.y, v_meas.z])
-    ml = multivariate_normal.pdf(part, mean=meas, cov=100.0*np.ones(3))
+    ml = multivariate_normal.pdf(part, mean=meas, cov=10.0*np.ones(3))
     return ml
 
 class ParticleGroup:
@@ -56,6 +56,7 @@ class ParticleGroup:
             for j in range(self.num_j):
                 kdl_joints[j] = corrected_joints[j]
             self.fk_solver.JntToCart(kdl_joints, frame)
+            # print(frame)
             # find the frame transformation
             accel_base = accel_1
             accel_end = accel_2
@@ -84,7 +85,7 @@ class ParticleGroup:
         # TODO implement roughening
         if True:
             mean = np.zeros(self.num_j)
-            sigma = 0.0001 * 1.0 * self.num_p**(-1.0/3.0) * np.ones((self.num_j, self.num_j))
+            sigma = 1 * 0.0001 * self.num_p**(-1.0/3.0) * np.ones((self.num_j, self.num_j))
             noise = np.random.multivariate_normal(mean, sigma, self.num_p)
             self.particle_offsets = self.particle_offsets + noise
         index = np.argmax(measurement_likelihood_array)
@@ -124,12 +125,11 @@ class BlueRobotFilter:
         rospy.logerr(self.jmax)
 
 
-        self.accel_links.insert(0, self.baselink)
         self.best_estimate = np.zeros(self.num_joints)
         self.probability = 0
 
         # TODO make a rosparam
-        particles_per_joint = 200
+        particles_per_joint = 1000
 
         ppj = particles_per_joint
         p_groups = []
@@ -159,6 +159,30 @@ class BlueRobotFilter:
 
         self.pg_array = p_groups
         self.jpg = joints_per_group
+
+
+        if self.debug:
+            pg = self.pg_array[1]
+            # frame = kdl.Frame()
+
+            kdl_joints = kdl.JntArray(2)
+            kdl_joints[0] = 0
+            kdl_joints[1] = np.pi/2
+            pg.fk_solver.JntToCart(kdl_joints, frame)
+            # print(frame)
+            # find the frame transformation
+            accel_base = np.array([0 , 0, 9.81])
+            accel_end  = np.array([0 , 0, 9.81])
+
+            grav_prev = kdl.Vector()
+            grav_prev.x(accel_end[0])
+            grav_prev.y(accel_end[1])
+            grav_prev.z(accel_end[2])
+
+            # transform the gravity vector by the given frame
+            grav_post = frame * grav_prev
+            # print("gravity post:= {}".format(grav_post))
+            # print("gravity orig:= {}".format(accel_base))
 
     def __init__(self, debug=False):
         self.debug = debug
