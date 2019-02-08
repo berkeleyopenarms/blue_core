@@ -5,12 +5,12 @@
 
   <!-- ============================  link  ============================ -->
   <!-- Includes elbow flex, FA roll joints in macros below -->
-  <xacro:macro name="blue_link_v0" params="side stage child reflect wrist:=0">
-    <xacro:blue_roll_link_v0 side="${side}" stage="${stage}" reflect="${reflect}" wrist="${wrist}"/>
-    <xacro:blue_lift_link_v0 side="${side}" stage="${stage}" child="${child}" reflect="${reflect}" />
+  <xacro:macro name="blue_link_v1" params="side stage child reflect wrist:=0">
+    <xacro:blue_roll_link_v1 side="${side}" stage="${stage}" reflect="${reflect}" wrist="${wrist}"/>
+    <xacro:blue_lift_link_v1 side="${side}" stage="${stage}" child="${child}" reflect="${reflect}" />
   </xacro:macro>
 
-  <xacro:macro name="blue_roll_link_v0" params="side stage reflect wrist">
+  <xacro:macro name="blue_roll_link_v1" params="side stage reflect wrist">
     <link
       name="${side}_${stage}_roll_link">
       <inertial>
@@ -100,7 +100,7 @@
 
   </xacro:macro>
 
-  <xacro:macro name="blue_lift_link_v0" params="side stage child reflect">
+  <xacro:macro name="blue_lift_link_v1" params="side stage child reflect">
     <link
       name="${side}_${stage}_lift_link">
       <inertial>

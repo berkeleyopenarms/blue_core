@@ -4,13 +4,13 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
   <!-- ============================  End link and gripper ============================ -->
-  <xacro:macro name="blue_end_effector_v0" params="side name">
-    <xacro:blue_end_v0 side="${side}" name="${name}"/>
-    <xacro:blue_gripper_v0 side="${side}" parent="${name}"/>
-    <xacro:blue_gripper_finger_v0 side="${side}" parent="${name}"/>
+  <xacro:macro name="blue_end_effector_v1" params="side name">
+    <xacro:blue_end_v1 side="${side}" name="${name}"/>
+    <xacro:blue_gripper_v1 side="${side}" parent="${name}"/>
+    <xacro:blue_gripper_finger_v1 side="${side}" parent="${name}"/>
   </xacro:macro>
 
-  <xacro:macro name="blue_end_v0" params="side name">
+  <xacro:macro name="blue_end_v1" params="side name">
     <link
       name="${side}_${name}">
       <inertial>
@@ -51,7 +51,7 @@
     </link>
   </xacro:macro>
 
-  <xacro:macro name="blue_gripper_finger_v0" params="side parent">
+  <xacro:macro name="blue_gripper_finger_v1" params="side parent">
     <link
       name="${side}_gripper_finger_link">
     </link>
@@ -68,7 +68,7 @@
     </joint>
   </xacro:macro>
 
-  <xacro:macro name="blue_gripper_v0" params="side parent">
+  <xacro:macro name="blue_gripper_v1" params="side parent">
     <link
       name="${side}_gripper_link">
       <inertial>

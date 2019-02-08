@@ -12,7 +12,7 @@
 
   <!-- ============================  link  ============================ -->
   <!-- Includes elbow flex, FA roll joints in macros below -->
-  <xacro:macro name="blue_base_v0" params="side reflect child">
+  <xacro:macro name="blue_base_v1" params="side reflect child">
 
     <link name="${side}_base_link">
       <inertial>

@@ -7,7 +7,7 @@
 for URDF_Assembly robot</p>
   </description>
   <author>me</author>
-  <maintainer email="me2email.com" />
+  <maintainer email="phil80301@berkeley.edu">Philipp Wu</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roslaunch</build_depend>
