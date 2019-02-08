@@ -1,0 +1,202 @@
+<robot
+  name="URDF_Assembly">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.0492162970047413 5.95458071073196E-07 0.0529040285215721"
+        rpy="0 0 0" />
+      <mass
+        value="4.22878685506186" />
+      <inertia
+        ixx="0.0101055094560207"
+        ixy="1.00321741381127E-07"
+        ixz="0.00124057913167416"
+        iyy="0.0283241950900698"
+        iyz="-1.31569056983847E-07"
+        izz="0.0299885108806431" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://URDF_Assembly/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://URDF_Assembly/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="roll_link">
+    <inertial>
+      <origin
+        xyz="2.96915144581966E-07 -0.00817928723072138 0.120962910647003"
+        rpy="0 0 0" />
+      <mass
+        value="0.37905420680448" />
+      <inertia
+        ixx="0.00156534155265803"
+        ixy="7.86255262568044E-09"
+        ixz="1.53529042690406E-08"
+        iyy="0.00178123169436239"
+        iyz="1.62349609777295E-06"
+        izz="0.000959456942468469" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://URDF_Assembly/meshes/roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.843137254901961 0.815686274509804 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://URDF_Assembly/meshes/roll_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_link"
+    type="continuous">
+    <origin
+      xyz="0.128 0 0.083499"
+      rpy="-1.1928E-15 1.643E-15 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="roll_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="lift_link">
+    <inertial>
+      <origin
+        xyz="-3.66305969445868E-08 -0.000820052992464293 -6.62529991840577E-08"
+        rpy="0 0 0" />
+      <mass
+        value="1.02342370509176" />
+      <inertia
+        ixx="0.00185674588732204"
+        ixy="2.50286442134684E-09"
+        ixz="-3.11007993614261E-09"
+        iyy="0.00185731655609116"
+        iyz="2.89693722882194E-09"
+        izz="0.00152396319769825" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://URDF_Assembly/meshes/lift_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://URDF_Assembly/meshes/lift_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="lift_joint"
+    type="continuous">
+    <origin
+      xyz="0 0.012 0.23278"
+      rpy="1.5708 4.9887E-16 -1.5708" />
+    <parent
+      link="roll_link" />
+    <child
+      link="lift_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="roll_out_link">
+    <inertial>
+      <origin
+        xyz="2.95918343953816E-07 -0.00817929053321127 0.120962914055862"
+        rpy="0 0 0" />
+      <mass
+        value="0.379054155435228" />
+      <inertia
+        ixx="0.00156534149041716"
+        ixy="7.87124230687917E-09"
+        ixz="1.53521121042397E-08"
+        iyy="0.0017812314412631"
+        iyz="1.62346180124863E-06"
+        izz="0.000959456711865231" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://URDF_Assembly/meshes/roll_out_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.843137254901961 0.815686274509804 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://URDF_Assembly/meshes/roll_out_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="roll_out_joint"
+    type="continuous">
+    <origin
+      xyz="0 0.035953 0"
+      rpy="1.5708 -3.8798E-16 -3.1416" />
+    <parent
+      link="lift_link" />
+    <child
+      link="roll_out_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+</robot>
