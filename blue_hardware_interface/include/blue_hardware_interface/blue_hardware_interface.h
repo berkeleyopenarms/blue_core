@@ -50,6 +50,9 @@ typedef struct {
 
   // Links to attach accelerometer measurements to
   std::vector<std::string> accel_links;
+
+  // Calibration parameters
+  std::vector<double> actuator_zeros;
 } Params;
 
 class BlueHW: public hardware_interface::RobotHW

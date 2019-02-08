@@ -33,7 +33,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   registerInterface(&kinematics_.joint_state_interface);
   registerInterface(&kinematics_.joint_effort_interface);
 
-  // ROS communications setup
+  // ROS publishers
   motor_states_msg_.name = params_.motor_names;
   motor_state_publisher_ = nh.advertise<blue_msgs::MotorState>(
       "blue_hardware/motor_states", 1);
@@ -42,14 +42,18 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   gravity_vector_publisher_ = nh.advertise<blue_msgs::GravityVectorArray>(
       "blue_hardware/gravity_vectors", 1);
 
+  // Initialize motor commands
+  for (auto id : params_.motor_ids)
+    motor_commands_[id] = 0.0;
+
+  // Load in some initial values
+  read();
+
+  // Calibration service
   joint_startup_calibration_service_ = nh.advertiseService(
       "blue_hardware/joint_startup_calibration",
       &BlueHW::jointStartupCalibration,
       this);
-
-  // Initialize motor commands
-  for (auto id : params_.motor_ids)
-    motor_commands_[id] = 0.0;
 }
 
 void BlueHW::read() {
@@ -115,20 +119,25 @@ template <typename TParam>
 void BlueHW::getParam(const std::string name, TParam& dest) {
   // Try to find a parameter and explode if it doesn't exist
   ROS_ASSERT_MSG(
-    nh_.getParam(name, dest),
-    "Could not find %s parameter in namespace %s",
-    name.c_str(),
-    nh_.getNamespace().c_str()
-  );
+      nh_.getParam(name, dest),
+      "Could not find %s parameter in namespace %s",
+      name.c_str(),
+      nh_.getNamespace().c_str());
 }
 
 bool BlueHW::jointStartupCalibration(
     blue_msgs::JointStartupCalibration::Request &request,
     blue_msgs::JointStartupCalibration::Response &response
 ) {
-  kinematics_.setJointOffsets(request.joint_positions);
-  response.success = true;
 
+  kinematics_.setJointOffsets(
+      kinematics_.findBestJointOffsets(
+          request.joint_positions,
+          params_.actuator_zeros,
+          params_.softstop_min_angles,
+          params_.softstop_max_angles));
+
+  response.success = true;
   return true;
 }
 
@@ -167,4 +176,7 @@ void BlueHW::loadParams() {
 
   // Links to attach accelerometer measurements to
   getParam("blue_hardware/accel_links", params_.accel_links);
+
+  // Calibration
+  getParam("blue_hardware/actuator_zeros", params_.actuator_zeros);
 }
