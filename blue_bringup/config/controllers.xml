@@ -27,7 +27,7 @@
       stalled_velocity_threshold: 0.01
       stall_timeout: 0.2
       gains:
-        $(arg side)_gripper_joint: {p: 15, i: 5, d: 1.5, i_clamp: 1}
+        $(arg side)_gripper_joint: {p: 15, i: 5, d: 10.5, i_clamp: 1}
 
     ### Joint controllers
 
