@@ -29,6 +29,9 @@ class BLDCControllerClient {
 
     void queuePacket(comm_id_t server_id, Packet* packet);
 
+    // Initialize Board ID for Disco Bus Protocol
+    void queueEnumerate(comm_id_t server_id);
+
     // Program Counter Adjustments
     void queueLeaveBootloader(comm_id_t server_id, uint32_t jump_addr);
 

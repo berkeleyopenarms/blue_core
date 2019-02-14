@@ -13,12 +13,30 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
 
   device_.init(port, board_ids);
 
-  // Kick all board_ids_ out of bootloader!
+  // Assign boards IDs!
   bool success;
   for (auto id : board_ids_) {
     success = false;
     while (!success && ros::ok()) {
       try {
+        device_.queueEnumerate(id);
+        device_.exchange();
+        success = true;
+      } catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not assign board id %d, retrying...", id);
+        ros::Duration(0.2).sleep();
+      }
+    }
+  }
+
+
+  // Kick all board_ids_ out of bootloader!
+  for (auto id : board_ids_) {
+    success = false;
+    while (!success && ros::ok()) {
+      try {
+        // 0 jumps to default firmware address
         device_.queueLeaveBootloader(id, 0);
         device_.exchange();
         success = true;
