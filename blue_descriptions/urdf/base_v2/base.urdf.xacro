@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+
+<!-- XML namespaces -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Inertial properties differ slightly for left vs right arm -->
+  <xacro:property name="base_left_min"  value="-2.3412" />
+  <xacro:property name="base_left_max"  value= "3.3999" />
+
+  <xacro:property name="base_right_min"  value="-3.3999" />
+  <xacro:property name="base_right_max"  value= "2.3412" />
+
+  <!-- ============================  link  ============================ -->
+  <!-- Includes elbow flex, FA roll joints in macros below -->
+  <xacro:macro name="blue_base_v2" params="side reflect child">
+    <!-- ad -->
+    <link name="${side}_base_link">
+      <inertial>
+        <origin
+          xyz="0.0492162970047413 5.95458071073196E-07 0.0529040285215721"
+          rpy="0 0 0" />
+        <mass
+          value="4.22878685506186" />
+        <inertia
+          ixx="0.0101055094560207"
+          ixy="1.00321741381127E-07"
+          ixz="0.00124057913167416"
+          iyy="0.0283241950900698"
+          iyz="-1.31569056983847E-07"
+          izz="0.0299885108806431" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://blue_descriptions/meshes/arm_base_link.STL" />
+        </geometry>
+        <material name="">
+          <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://blue_descriptions/meshes/arm_base_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint
+      name="${side}_base_roll_joint"
+      type="revolute">
+      <origin
+        xyz="0 0 0.087371"
+        rpy="3.1416 -2.2011E-29 0.0" />
+      <parent
+        link="${side}_base_link" />
+      <child
+        link="${side}_${child}" />
+      <axis
+        xyz="0 0 1" />
+      <limit
+        lower="${0.5*((reflect+1)*base_left_min+(1-reflect)*base_right_min)}"
+        upper="${0.5*((reflect+1)*base_left_max+(1-reflect)*base_right_max)}"
+        effort="800"
+        velocity="50" />
+    </joint>
+
+    <xacro:if value="${is_gazebo}">
+      <transmission name="${side}_base_roll_joint_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}_base_roll_joint">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}_base_roll_motor">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+    </xacro:if>
+
+  </xacro:macro>
+
+</robot>
