@@ -1,13 +1,14 @@
 <launch>
   <arg name="param_file" />
+  <arg name="version" default="2" doc="1 or 2" />
 
   <rosparam
     file="$(arg param_file)"
     command="load" />
 
   <include
-    file="$(find blue_bringup)/launch/include/run.launch.xml">
+    file="$(find blue_bringup)/launch/include/run.launch.xml"
+    pass_all_args="true">
     <arg name="configuration" value="left" />
-    <arg name="version" value="2" />
   </include>
 </launch>
