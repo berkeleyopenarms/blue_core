@@ -34,11 +34,11 @@
         <geometry>
           <xacro:if value="${is_gazebo == 'false'}">
             <mesh
-              filename="package://blue_descriptions/meshes/gripper_full_link.STL" />
+              filename="package://blue_descriptions/meshes/hand_base_link.STL" />
           </xacro:if>
           <xacro:if value="${is_gazebo}">
             <mesh
-              filename="package://blue_descriptions/meshes/hand_base_link.STL" />
+              filename="package://blue_descriptions/meshes/gripper_full_link.STL" />
           </xacro:if>
         </geometry>
         <material name="">
@@ -52,11 +52,11 @@
         <geometry>
           <xacro:if value="${is_gazebo == 'false'}">
             <mesh
-              filename="package://blue_descriptions/meshes/gripper_full_link.STL" />
+              filename="package://blue_descriptions/meshes/hand_base_link.STL" />
           </xacro:if>
           <xacro:if value="${is_gazebo}">
             <mesh
-              filename="package://blue_descriptions/meshes/hand_base_link.STL" />
+              filename="package://blue_descriptions/meshes/gripper_full_link.STL" />
           </xacro:if>
         </geometry>
       </collision>
