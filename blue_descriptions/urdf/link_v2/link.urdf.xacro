@@ -5,27 +5,27 @@
 
   <!-- ============================  link  ============================ -->
   <!-- Includes elbow flex, FA roll joints in macros below -->
-  <xacro:macro name="blue_link_v1" params="side stage child reflect wrist:=0">
-    <xacro:blue_roll_link_v1 side="${side}" stage="${stage}" reflect="${reflect}" wrist="${wrist}"/>
-    <xacro:blue_lift_link_v1 side="${side}" stage="${stage}" child="${child}" reflect="${reflect}" />
+  <xacro:macro name="blue_link_v2" params="side stage child reflect wrist:=0">
+    <xacro:blue_roll_link_v2 side="${side}" stage="${stage}" reflect="${reflect}" wrist="${wrist}"/>
+    <xacro:blue_lift_link_v2 side="${side}" stage="${stage}" child="${child}" reflect="${reflect}" />
   </xacro:macro>
 
-  <xacro:macro name="blue_roll_link_v1" params="side stage reflect wrist">
+  <xacro:macro name="blue_roll_link_v2" params="side stage reflect wrist">
     <link
       name="${side}_${stage}_roll_link">
       <inertial>
         <origin
-          xyz="0.00526385736219506 2.70691865020822E-05 -0.0641638075944594"
+          xyz="2.96915144581966E-07 -0.00817928723072138 0.120962910647003"
           rpy="0 0 0" />
         <mass
-          value="${1.91396434922939 - 0.50028 * wrist}" />
+          value="0.37905420680448" />
         <inertia
-          ixx="0.0057866591250737"
-          ixy="3.71515699629511E-07"
-          ixz="-6.32890111626103E-05"
-          iyy="0.00530223654324281"
-          iyz="8.9999884666805E-07"
-          izz="0.00342399181200673" />
+          ixx="0.00156534155265803"
+          ixy="7.86255262568044E-09"
+          ixz="1.53529042690406E-08"
+          iyy="0.00178123169436239"
+          iyz="1.62349609777295E-06"
+          izz="0.000959456942468469" />
       </inertial>
       <visual>
         <origin
@@ -33,7 +33,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/roll_link.STL" />
+            filename="package://blue_descriptions/meshes/roll_link_v2.STL" />
         </geometry>
         <material name="">
           <color rgba="1 1 1 1" />
@@ -45,7 +45,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/roll_link.STL" />
+            filename="package://blue_descriptions/meshes/roll_link_v2.STL" />
         </geometry>
       </collision>
     </link>
@@ -54,8 +54,8 @@
       name="${side}_${stage}_lift_joint"
       type="revolute">
       <origin
-        xyz="-0.01143 0 -0.18056"
-        rpy="-1.5708 4.4409E-16 3.1416" />
+        xyz="0 0.012 0.23278"
+        rpy="1.5708 4.9887E-16 -1.5708" />
       <parent
         link="${side}_${stage}_roll_link"/>
       <child
@@ -97,25 +97,24 @@
       <axis
         xyz="0 0 0" />
     </joint>
-
   </xacro:macro>
 
-  <xacro:macro name="blue_lift_link_v1" params="side stage child reflect">
+  <xacro:macro name="blue_lift_link_v2" params="side stage child reflect">
     <link
       name="${side}_${stage}_lift_link">
       <inertial>
         <origin
-          xyz="-5.0083559080677E-06 0.000232928456050885 -1.77451392545103E-05"
+          xyz="-3.66305969445868E-08 -0.000820052992464293 -6.62529991840577E-08"
           rpy="0 0 0" />
         <mass
-          value="0.448307108622636" />
+          value="1.02342370509176" />
         <inertia
-          ixx="0.000804272985961788"
-          ixy="4.84548777859872E-08"
-          ixz="2.09160815704306E-06"
-          iyy="0.000818260636171894"
-          iyz="-1.44954778549764E-08"
-          izz="0.000550840705045094" />
+          ixx="0.00185674588732204"
+          ixy="2.50286442134684E-09"
+          ixz="-3.11007993614261E-09"
+          iyy="0.00185731655609116"
+          iyz="2.89693722882194E-09"
+          izz="0.00152396319769825" />
       </inertial>
       <visual>
         <origin
@@ -123,7 +122,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/lift_link.STL" />
+            filename="package://blue_descriptions/meshes/lift_link_v2.STL" />
         </geometry>
         <material name="">
           <color rgba="0.116747 0.862745 1.0 1" />
@@ -135,7 +134,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/lift_link.STL" />
+            filename="package://blue_descriptions/meshes/lift_link_v2.STL" />
         </geometry>
       </collision>
     </link>
@@ -144,8 +143,8 @@
       name="${side}_${stage}_roll_joint"
       type="revolute">
       <origin
-        xyz="0 0.070147 -6.25E-05"
-        rpy="-1.5708 ${reflect*1.5673} -3.1416" />
+        xyz="0 0.035953 0"
+        rpy="1.5708 -3.8798E-16 -3.1416" />
       <parent
         link="${side}_${stage}_lift_link"/>
       <child
@@ -158,6 +157,7 @@
         effort="800"
         velocity="50" />
     </joint>
+
 
     <xacro:if value="${is_gazebo}">
       <transmission name="${side}_${stage}_roll_joint_transmission">

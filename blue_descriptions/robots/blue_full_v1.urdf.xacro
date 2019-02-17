@@ -13,6 +13,6 @@
   <!-- ====== Build base ====== -->
   <xacro:blue_robot_base_v1 cam_height="${base_camera_height}" cam_angle="${camera_angle}" is_gazebo="${is_gazebo}"/>
   <!-- ====== Build right and left arms====== -->
-  <xacro:include filename="$(find blue_descriptions)/robots/blue_right.urdf.xacro" />
-  <xacro:include filename="$(find blue_descriptions)/robots/blue_left.urdf.xacro" />
+  <xacro:include filename="$(find blue_descriptions)/robots/blue_right_v1.urdf.xacro" />
+  <xacro:include filename="$(find blue_descriptions)/robots/blue_left_v1.urdf.xacro" />
 </robot>

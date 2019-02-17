@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="blue_descriptions_right">
+  <xacro:arg name="is_gazebo" default="false" />
+  <xacro:property name="is_gazebo" value="$(arg is_gazebo)" />
+
+  <xacro:include filename="$(find blue_descriptions)/urdf/base_v2/base.urdf.xacro" />
+  <xacro:include filename="$(find blue_descriptions)/urdf/link_v2/link.urdf.xacro" />
+  <xacro:include filename="$(find blue_descriptions)/urdf/gripper_v1/gripper.urdf.xacro" />
+
+  <xacro:blue_base_v2 side="right" reflect="-1" child="shoulder_roll_link"/>
+  <xacro:blue_link_v2 side="right" stage="shoulder" child="elbow_roll_link" reflect="-1" />
+  <xacro:blue_link_v2 side="right" stage="elbow" child="wrist_roll_link" reflect="1" />
+  <xacro:blue_link_v2 side="right" stage="wrist" child="end_roll_link" reflect="0" wrist="1"/>
+  <xacro:blue_end_effector_v1 side="right" name="end_roll_link"/>
+
+  <xacro:if value="${is_gazebo}">
+    <gazebo>
+      <plugin
+        name="gazebo_ros_control"
+        filename="libgazebo_ros_control.so">
+        <robotNamespace>/right_arm</robotNamespace>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+</robot>

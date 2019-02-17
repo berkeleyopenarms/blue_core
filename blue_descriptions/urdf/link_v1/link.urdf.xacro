@@ -33,7 +33,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/roll_link.STL" />
+            filename="package://blue_descriptions/meshes/roll_link_v1.STL" />
         </geometry>
         <material name="">
           <color rgba="1 1 1 1" />
@@ -45,7 +45,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/roll_link.STL" />
+            filename="package://blue_descriptions/meshes/roll_link_v1.STL" />
         </geometry>
       </collision>
     </link>
@@ -123,7 +123,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/lift_link.STL" />
+            filename="package://blue_descriptions/meshes/lift_link_v1.STL" />
         </geometry>
         <material name="">
           <color rgba="0.116747 0.862745 1.0 1" />
@@ -135,7 +135,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/lift_link.STL" />
+            filename="package://blue_descriptions/meshes/lift_link_v1.STL" />
         </geometry>
       </collision>
     </link>
