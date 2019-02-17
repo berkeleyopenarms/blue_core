@@ -8,5 +8,6 @@
   <include
     file="$(find blue_bringup)/launch/include/run.launch.xml">
     <arg name="configuration" value="left" />
+    <arg name="version" value="2" />
   </include>
 </launch>
