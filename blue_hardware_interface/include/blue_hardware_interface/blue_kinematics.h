@@ -33,8 +33,8 @@ public:
   const std::vector<double>& getJointPos();
   const std::vector<double>& getJointVel();
 
-  // Joint calibration
-  std::vector<double> findBestJointOffsets(
+  // Joint calibration - snap estimated offsets to closest feasible values
+  std::vector<double> snapJointOffsets(
       const std::vector<double> &estimated_joint_offsets,
       const std::vector<double> &actuator_zeros,
       const std::vector<double> &softstop_min_angles,
