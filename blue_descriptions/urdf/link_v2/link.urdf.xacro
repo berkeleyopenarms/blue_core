@@ -54,8 +54,8 @@
       name="${side}_${stage}_lift_joint"
       type="revolute">
       <origin
-        xyz="0 0.012 0.23278"
-        rpy="1.5708 4.9887E-16 -1.5708" />
+        xyz="-0.012 0 -0.232779056600415"
+        rpy="-1.5707963267949 -4.98868359282976E-16 2.07570761486143E-16" />
       <parent
         link="${side}_${stage}_roll_link"/>
       <child
@@ -143,8 +143,8 @@
       name="${side}_${stage}_roll_joint"
       type="revolute">
       <origin
-        xyz="0 0.035953 0"
-        rpy="1.5708 -3.8798E-16 -3.1416" />
+        xyz="0 0.0359531521130187 0"
+        rpy="1.5707963267949 ${reflect*-1.56798} 0" />
       <parent
         link="${side}_${stage}_lift_link"/>
       <child
