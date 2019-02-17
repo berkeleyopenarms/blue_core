@@ -33,7 +33,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/wrist_roll_link.STL" />
+            filename="package://blue_descriptions/meshes/hand_base_link.STL" />
         </geometry>
         <material name="">
           <color rgba="1 1 1 1" />
@@ -45,7 +45,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/wrist_roll_link.STL" />
+            filename="package://blue_descriptions/meshes/hand_base_link.STL" />
         </geometry>
       </collision>
     </link>
@@ -118,6 +118,7 @@
       </transmission>
     </xacro:if>
 
+    <xacro:if value="${is_gazebo == 'false'}">
     <!-- right finger -->
     <link
       name="${side}_r_finger_link">
@@ -351,6 +352,6 @@
         joint="${side}_gripper_joint"
         multiplier="-1"/>
     </joint>
-
+    </xacro:if>
   </xacro:macro>
 </robot>

@@ -7,7 +7,7 @@
   <!-- Includes elbow flex, FA roll joints in macros below -->
   <xacro:macro name="blue_link_v2" params="side stage child reflect wrist:=0">
     <xacro:blue_roll_link_v2 side="${side}" stage="${stage}" reflect="${reflect}" wrist="${wrist}"/>
-    <xacro:blue_lift_link_v2 side="${side}" stage="${stage}" child="${child}" reflect="${reflect}" />
+    <xacro:blue_lift_link_v2 side="${side}" stage="${stage}" child="${child}" reflect="${reflect}" wrist="${wrist}"/>
   </xacro:macro>
 
   <xacro:macro name="blue_roll_link_v2" params="side stage reflect wrist">
@@ -18,7 +18,7 @@
           xyz="2.96915144581966E-07 -0.00817928723072138 0.120962910647003"
           rpy="0 0 0" />
         <mass
-          value="0.37905420680448" />
+          value="${1.91396434922939 - 0.50028 * wrist}" />
         <inertia
           ixx="0.00156534155265803"
           ixy="7.86255262568044E-09"
@@ -99,7 +99,7 @@
     </joint>
   </xacro:macro>
 
-  <xacro:macro name="blue_lift_link_v2" params="side stage child reflect">
+  <xacro:macro name="blue_lift_link_v2" params="side stage child reflect wrist">
     <link
       name="${side}_${stage}_lift_link">
       <inertial>
@@ -143,7 +143,7 @@
       name="${side}_${stage}_roll_joint"
       type="revolute">
       <origin
-        xyz="0 0.0359531521130187 0"
+        xyz="0 ${0.0359531521130187+wrist*0.03419} 0"
         rpy="1.5707963267949 ${reflect*-1.56798} 0" />
       <parent
         link="${side}_${stage}_lift_link"/>
