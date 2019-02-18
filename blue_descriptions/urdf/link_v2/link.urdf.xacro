@@ -61,7 +61,7 @@
       <child
         link="${side}_${stage}_lift_link"/>
       <axis
-        xyz="0 0 1" />
+        xyz="0 0 -1" />
       <limit
         lower="-2.2944"
         upper="0"
