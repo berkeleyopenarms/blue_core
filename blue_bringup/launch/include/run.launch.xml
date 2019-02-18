@@ -2,11 +2,12 @@
 
   <!-- What kind of robot am I? -->
   <arg name="configuration" default="full" doc="left, right, or full" />
+  <arg name="version" default="2" doc="1 or 2" />
 
   <!-- Load URDF -->
   <param
     name="robot_description"
-    command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_full.urdf.xacro'" />
+    command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_full_v$(arg version).urdf.xacro'" />
 
   <!-- Run core control stack -->
   <include
