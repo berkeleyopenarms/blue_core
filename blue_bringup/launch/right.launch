@@ -7,8 +7,8 @@
     command="load" />
 
   <include
-    file="$(find blue_bringup)/launch/include/run.launch.xml"
-    pass_all_args="true">
+    file="$(find blue_bringup)/launch/include/run.launch.xml">
     <arg name="configuration" value="right" />
+    <arg name="version" value="$(arg version)" />
   </include>
 </launch>
