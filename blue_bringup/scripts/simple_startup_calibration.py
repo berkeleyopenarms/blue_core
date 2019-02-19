@@ -11,7 +11,7 @@ if __name__ == "__main__":
     # Read startup angles from parameter server
     rospy.loginfo("Reading desired joint angles...")
     startup_positions = rospy.get_param("blue_hardware/simple_startup_angles")
-    disable_snap = rospy.get_param("blue_hardware/disable_snap")
+    disable_snap = rospy.get_param("blue_hardware/disable_snap", False)
 
     # Wait for calibration service to come up
     rospy.loginfo("Waiting for calibration service...")
