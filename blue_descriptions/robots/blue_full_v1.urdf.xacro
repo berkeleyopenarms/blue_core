@@ -4,15 +4,15 @@
   <xacro:property name="is_gazebo" value="$(arg is_gazebo)" />
 
   <!-- ====== Load in robot base macro ====== -->
-  <xacro:include filename="$(find blue_descriptions)/urdf/robot_base_v0/robot_base.urdf.xacro" />
+  <xacro:include filename="$(find blue_descriptions)/urdf/robot_base_v1/robot_base.urdf.xacro" />
 
   <!-- ====== Robot camera height and angle parameters  ====== -->
   <xacro:property name="base_camera_height"  value="0.303506965011826" />
   <xacro:property name="camera_angle"  value= "0.0" />
 
   <!-- ====== Build base ====== -->
-  <xacro:blue_robot_base_v0 cam_height="${base_camera_height}" cam_angle="${camera_angle}" is_gazebo="${is_gazebo}"/>
+  <xacro:blue_robot_base_v1 cam_height="${base_camera_height}" cam_angle="${camera_angle}" is_gazebo="${is_gazebo}"/>
   <!-- ====== Build right and left arms====== -->
-  <xacro:include filename="$(find blue_descriptions)/robots/blue_right.urdf.xacro" />
-  <xacro:include filename="$(find blue_descriptions)/robots/blue_left.urdf.xacro" />
+  <xacro:include filename="$(find blue_descriptions)/robots/blue_right_v1.urdf.xacro" />
+  <xacro:include filename="$(find blue_descriptions)/robots/blue_left_v1.urdf.xacro" />
 </robot>

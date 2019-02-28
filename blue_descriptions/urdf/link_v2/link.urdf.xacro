@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+
+<!-- XML namespaces -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- ============================  link  ============================ -->
+  <!-- Includes elbow flex, FA roll joints in macros below -->
+  <xacro:macro name="blue_link_v2" params="side stage child reflect wrist:=0">
+    <xacro:blue_roll_link_v2 side="${side}" stage="${stage}" reflect="${reflect}" wrist="${wrist}"/>
+    <xacro:blue_lift_link_v2 side="${side}" stage="${stage}" child="${child}" reflect="${reflect}" wrist="${wrist}"/>
+  </xacro:macro>
+
+  <xacro:macro name="blue_roll_link_v2" params="side stage reflect wrist">
+    <link
+      name="${side}_${stage}_roll_link">
+      <inertial>
+        <origin
+          xyz="0.00796477695300502 6.88164958628779E-07 -0.101494834817991"
+          rpy="0 0 0" />
+        <mass
+          value="${2.21396434922939 - 0.50028 * wrist}" />
+        <inertia
+          ixx="0.00679831005755363"
+          ixy="1.94467524206434E-07"
+          ixz="2.74630653290751E-05"
+          iyy="0.00680773361807756"
+          iyz="-1.04132142581304E-06"
+          izz="0.00633659691024078" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://blue_descriptions/meshes/roll_link_v2.STL" />
+        </geometry>
+        <material name="">
+          <color rgba="1 1 1 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://blue_descriptions/meshes/roll_link_v2.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint
+      name="${side}_${stage}_lift_joint"
+      type="revolute">
+      <origin
+        xyz="-0.012 0 -0.232779056600415"
+        rpy="-1.5707963267949 -4.98868359282976E-16 2.07570761486143E-16" />
+      <parent
+        link="${side}_${stage}_roll_link"/>
+      <child
+        link="${side}_${stage}_lift_link"/>
+      <axis
+        xyz="0 0 -1" />
+      <limit
+        lower="-2.2944"
+        upper="0"
+        effort="800"
+        velocity="50" />
+    </joint>
+
+    <xacro:if value="${is_gazebo}">
+      <transmission name="${side}_${stage}_lift_joint_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}_${stage}_lift_joint">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}_${stage}_lift_motor">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+    </xacro:if>
+
+    <link
+      name="${side}_${stage}_accel_link"/>
+    <joint
+      name="${side}_${stage}_accel_joint"
+      type="fixed">
+      <origin
+        xyz="-0.020008330615085 -0.000510000000000066 -0.111067108096273"
+        rpy="1.5707963267949 0.328491802364426 5.16250107234938E-16" />
+      <parent
+        link="${side}_${stage}_roll_link" />
+      <child
+        link="${side}_${stage}_accel_link" />
+      <axis
+        xyz="0 0 0" />
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="blue_lift_link_v2" params="side stage child reflect wrist">
+    <link
+      name="${side}_${stage}_lift_link">
+      <inertial>
+        <origin
+          xyz="-1.32380411116961E-05 0.00162983872685052 3.71221554922307E-05"
+          rpy="0 0 0" />
+        <mass
+          value="0.415577078118737" />
+        <inertia
+          ixx="0.000835910502384406"
+          ixy="2.36578561626853E-07"
+          ixz="2.13858156359985E-06"
+          iyy="0.000846892587114994"
+          iyz="1.23149095856232E-07"
+          izz="0.000571368010807835" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://blue_descriptions/meshes/lift_link_v2.STL" />
+        </geometry>
+        <material name="">
+          <color rgba="0.116747 0.862745 1.0 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://blue_descriptions/meshes/lift_link_v2.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint
+      name="${side}_${stage}_roll_joint"
+      type="revolute">
+      <origin
+        xyz="0 ${0.0359531521130187+wrist*0.03419} 0"
+        rpy="1.5707963267949 ${reflect*-1.56798} 0" />
+      <parent
+        link="${side}_${stage}_lift_link"/>
+      <child
+        link="${side}_${child}" />
+      <axis
+        xyz="0 0 1" />
+      <limit
+        lower="-2.6761"
+        upper="2.6761"
+        effort="800"
+        velocity="50" />
+    </joint>
+
+
+    <xacro:if value="${is_gazebo}">
+      <transmission name="${side}_${stage}_roll_joint_transmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}_${stage}_roll_joint">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}_${stage}_roll_motor">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+    </xacro:if>
+
+  </xacro:macro>
+</robot>

@@ -130,12 +130,21 @@ bool BlueHW::jointStartupCalibration(
     blue_msgs::JointStartupCalibration::Response &response
 ) {
 
-  kinematics_.setJointOffsets(
-      kinematics_.findBestJointOffsets(
-          request.joint_positions,
-          params_.actuator_zeros,
-          params_.softstop_min_angles,
-          params_.softstop_max_angles));
+  if (request.disable_snap) {
+    // Set joint offsets naively
+    kinematics_.setJointOffsets(request.joint_positions);
+  } else {
+    // Set joint offsets to closest feasible values, based on actuator zeros
+    //
+    // This relies on the fact that we have a ~7:1 reduction, and absolute position
+    // sensors on the actuators
+    kinematics_.setJointOffsets(
+        kinematics_.snapJointOffsets(
+            request.joint_positions,
+            params_.actuator_zeros,
+            params_.softstop_min_angles,
+            params_.softstop_max_angles));
+  }
 
   response.success = true;
   return true;

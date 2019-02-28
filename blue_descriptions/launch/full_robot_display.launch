@@ -4,8 +4,15 @@
   <arg
     name="gui"
     default="True" />
+  <arg
+    name="ver"
+    default="2" />
+  <param
+    name="version"
+    value="$(arg ver)" />
+
   <param name="robot_description"
-      command="$(find xacro)/xacro '$(find blue_descriptions)/robots/blue_full.urdf.xacro'" />
+      command="$(find xacro)/xacro '$(find blue_descriptions)/robots/blue_full_v$(arg ver).urdf.xacro'" />
   <param
     name="use_gui"
     value="$(arg gui)" />

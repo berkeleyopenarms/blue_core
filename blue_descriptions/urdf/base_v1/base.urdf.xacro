@@ -12,7 +12,7 @@
 
   <!-- ============================  link  ============================ -->
   <!-- Includes elbow flex, FA roll joints in macros below -->
-  <xacro:macro name="blue_base_v0" params="side reflect child">
+  <xacro:macro name="blue_base_v1" params="side reflect child">
 
     <link name="${side}_base_link">
       <inertial>
@@ -35,7 +35,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/arm_base_link.STL" />
+            filename="package://blue_descriptions/meshes/arm_base_link_v1.STL" />
         </geometry>
         <material name="">
           <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -47,7 +47,7 @@
           rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="package://blue_descriptions/meshes/arm_base_link.STL" />
+            filename="package://blue_descriptions/meshes/arm_base_link_v1.STL" />
         </geometry>
       </collision>
     </link>
