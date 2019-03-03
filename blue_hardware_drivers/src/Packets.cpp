@@ -44,4 +44,9 @@ void JumpToAddrPacket::dump(Buffer& buf) {
   buf.write(reinterpret_cast<uint8_t*> (&jump_addr_), sizeof(jump_addr_));
 }
 
+void EnumeratePacket::dump(Buffer& buf) {
+  Packet::dump(buf);
+  buf.write(reinterpret_cast<uint8_t*> (&target_id_), sizeof(target_id_));
+}
+
 } // namespace blue_hardware_drivers
