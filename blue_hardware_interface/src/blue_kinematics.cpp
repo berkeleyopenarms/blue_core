@@ -395,12 +395,21 @@ std::vector<double> BlueKinematics::getActuatorCommands(
 
     // Soft stops
     // TODO: hacky and temporary
-    if(joint_pos_[i] > softstop_max_angles[i] - softstop_tolerance) {
-      double offset = joint_pos_[i] - softstop_max_angles[i] + softstop_tolerance;
-      joint_cmd_[i] += -1.0 * softstop_torque_limit * pow(offset, 2);
-    } else if (joint_pos_[i] < softstop_min_angles[i] + softstop_tolerance) {
-      double offset = softstop_min_angles[i] + softstop_tolerance - joint_pos_[i];
-      joint_cmd_[i] += softstop_torque_limit * pow(offset, 2);
+    if(joint_pos_[i] > (softstop_max_angles[i] - softstop_tolerance) ) {
+      double offset = joint_pos_[i] - (softstop_max_angles[i] - softstop_tolerance);
+      joint_cmd_[i] += -1.0 * softstop_torque_limit * abs(offset, 2);
+
+      // apply d term to softstop
+      if (joint_vel_[i] > 0)
+        joint_cmd_[i] += -10.0 * softstop_torque_limit * abs(joint_vel_[i]);
+
+    } else if (joint_pos_[i] < (softstop_min_angles[i] + softstop_tolerance) ) {
+      double offset = (softstop_min_angles[i] + softstop_tolerance) - joint_pos_[i];
+      joint_cmd_[i] += softstop_torque_limit * abs(offset, 2);
+
+      // apply d term to softstop
+      if (joint_vel_[i] < 0)
+        joint_cmd_[i] += 10.0 * softstop_torque_limit * abs(joint_vel_[i]);
     }
   }
 
