@@ -385,18 +385,15 @@ std::vector<double> BlueKinematics::getActuatorCommands(
 
   // Compute joint commands
   for (int i = 0; i < num_joints_; i++) {
-    // Add feedforward if it exists
-    if (i < feedforward_torques.size())
-      joint_cmd_[i] = raw_joint_cmd_[i] + feedforward_torques[i];
-    else
-      joint_cmd_[i] = raw_joint_cmd_[i];
-
+    joint_cmd_[i] = raw_joint_cmd_[i];
     raw_joint_cmd_[i] = 0.0;
 
     // Soft stops
     // TODO: hacky and temporary
     if(joint_pos_[i] > (softstop_max_angles[i] - softstop_tolerance) ) {
       double offset = joint_pos_[i] - (softstop_max_angles[i] - softstop_tolerance);
+      double rational = 1.0 / pow(offset, 2);
+      joint_cmd_[i] = max(joint_cmd_[i], -rational)
       joint_cmd_[i] += -1.0 * softstop_torque_limit * abs(offset, 2);
 
       // apply d term to softstop
@@ -405,12 +402,18 @@ std::vector<double> BlueKinematics::getActuatorCommands(
 
     } else if (joint_pos_[i] < (softstop_min_angles[i] + softstop_tolerance) ) {
       double offset = (softstop_min_angles[i] + softstop_tolerance) - joint_pos_[i];
+      double rational = 1.0 / pow(offset, 2);
+      joint_cmd_[i] = min(joint_cmd_[i], rational)
       joint_cmd_[i] += softstop_torque_limit * abs(offset, 2);
 
       // apply d term to softstop
       if (joint_vel_[i] < 0)
         joint_cmd_[i] += 10.0 * softstop_torque_limit * abs(joint_vel_[i]);
     }
+
+    // Add feedforward if it exists
+    if (i < feedforward_torques.size())
+      joint_cmd_[i] = joint_cmd_[i] + feedforward_torques[i];
   }
 
   // Propagate through transmissions to compute actuator commands
