@@ -22,7 +22,7 @@ blue_hardware:
     joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     id_torque_gains: [1.12, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     softstop_min_angles: [-3.3, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -1.45]
-    softstop_max_angles: [2.2, 0.5, 2.6, 0.5, 2.6, 0.2, 2.6, 1.45]
+    softstop_max_angles: [ 2.2, 0.5, 2.6, 0.5, 2.6, 0.2, 2.6, 1.45]
     softstop_tolerance: 0.19
     softstop_torque_limit: 95.0
 
