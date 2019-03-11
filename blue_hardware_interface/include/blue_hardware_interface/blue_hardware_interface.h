@@ -43,7 +43,7 @@ typedef struct {
 
   // Soft stops
   // TODO: hacky and temporary
-  double softstop_torque_limit;
+  std::vector<double> softstop_torque_gains;
   std::vector<double> softstop_min_angles;
   std::vector<double> softstop_max_angles;
   double softstop_tolerance;

@@ -369,7 +369,7 @@ void BlueKinematics::getGravityVectors(
 
 std::vector<double> BlueKinematics::getActuatorCommands(
     const std::vector<double> &feedforward_torques,
-    double softstop_torque_limit, // TODO: clean up softstop code
+    const std::vector<double> &softstop_torque_gains,
     const std::vector<double> &softstop_min_angles,
     const std::vector<double> &softstop_max_angles,
     double softstop_tolerance) {
@@ -390,29 +390,26 @@ std::vector<double> BlueKinematics::getActuatorCommands(
 
     // Soft stops
     // TODO: hacky and temporary
+    double eps_vel = 0.1;
     if(joint_pos_[i] > (softstop_max_angles[i] - softstop_tolerance)) {
-      double offset = joint_pos_[i] - (softstop_max_angles[i] - softstop_tolerance);
-      if (joint_vel_[i] > 0) {
-        double rational = 1.0 / pow(offset, 2);
-        joint_cmd_[i] = std::max(joint_cmd_[i], -rational);
-        joint_cmd_[i] += -0.2 * softstop_torque_limit * abs(offset);
-      } else {
-        // apply d term to softstop, scaled by the offset to keep continuity
-        joint_cmd_[i] += offset * (-0.3 * softstop_torque_limit * joint_vel_[i]);
-        joint_cmd_[i] += -0.2 * softstop_torque_limit * pow(offset, 2);
+      if(joint_pos_[i] > softstop_max_angles[i] - softstop_tolerance/2.0) {
+        joint_cmd_[i] += -0.5 * softstop_torque_gains[i] * joint_vel_[i];
+      } else if (joint_vel_[i] < 0) {
+        joint_cmd_[i] += -1.0 * softstop_torque_gains[i] * joint_vel_[i];
       }
+      double offset = joint_pos_[i] - (softstop_max_angles[i] - softstop_tolerance);
+      joint_cmd_[i] += -0.1 * softstop_torque_gains[i] * pow(offset, 1);
+      // joint_cmd_[i] += -0.5 * softstop_torque_gains[i] * joint_vel_[i];
 
     } else if (joint_pos_[i] < (softstop_min_angles[i] + softstop_tolerance)) {
-      double offset = (softstop_min_angles[i] + softstop_tolerance) - joint_pos_[i];
-      if (joint_vel_[i] < 0) {
-        double rational = 1.0 / pow(offset, 2);
-        joint_cmd_[i] = std::min(joint_cmd_[i], rational);
-        joint_cmd_[i] += 0.2 * softstop_torque_limit * abs(offset);
-      } else {
-        // apply d term to softstop
-        joint_cmd_[i] += offset * (-0.3 * softstop_torque_limit * joint_vel_[i]);
-        joint_cmd_[i] += 0.2 * softstop_torque_limit * pow(offset, 2);
+      if(joint_pos_[i] < softstop_min_angles[i] + softstop_tolerance/2.0) {
+        joint_cmd_[i] += -0.5 * softstop_torque_gains[i] * joint_vel_[i];
+      } else if (joint_vel_[i] > 0) {
+        joint_cmd_[i] += -1.0 * softstop_torque_gains[i] * joint_vel_[i];
       }
+      double offset = (softstop_min_angles[i] + softstop_tolerance) - joint_pos_[i];
+      joint_cmd_[i] += 0.1 * softstop_torque_gains[i] * pow(offset, 1);
+      // joint_cmd_[i] += -0.5 * softstop_torque_gains[i] * joint_vel_[i];
     }
 
     // Add feedforward if it exists

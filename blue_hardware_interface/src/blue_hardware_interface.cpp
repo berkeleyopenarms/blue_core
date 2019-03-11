@@ -94,7 +94,7 @@ void BlueHW::write() {
   // Get actuator commands, using the gravity comp torques as a feedforward
   auto actuator_commands = kinematics_.getActuatorCommands(
       feedforward_torques,
-      params_.softstop_torque_limit, // TODO: clean up softstop code
+      params_.softstop_torque_gains, // TODO: clean up softstop code
       params_.softstop_min_angles,
       params_.softstop_max_angles,
       params_.softstop_tolerance);
@@ -178,7 +178,7 @@ void BlueHW::loadParams() {
 
   // Soft stops
   // TODO: hacky and temporary
-  getParam("blue_hardware/softstop_torque_limit", params_.softstop_torque_limit);
+  getParam("blue_hardware/softstop_torque_gains", params_.softstop_torque_gains);
   getParam("blue_hardware/softstop_min_angles", params_.softstop_min_angles);
   getParam("blue_hardware/softstop_max_angles", params_.softstop_max_angles);
   getParam("blue_hardware/softstop_tolerance", params_.softstop_tolerance);

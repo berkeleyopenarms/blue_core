@@ -55,7 +55,7 @@ public:
   // Get desired actuator commands
   std::vector<double> getActuatorCommands(
       const std::vector<double> &feedforward_torques,
-      double softstop_torque_limit, // TODO: clean up softstop code
+      const std::vector<double> &softstop_torque_gains,
       const std::vector<double> &softstop_min_angles,
       const std::vector<double> &softstop_max_angles,
       double softstop_tolerance);
