@@ -24,7 +24,7 @@ blue_hardware:
     softstop_min_angles: [-2.2, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -1.45]
     softstop_max_angles: [ 2.8,  0.1,   2.6,   0.1,  2.6,   0.1,  2.6, 1.45]
     softstop_tolerance: 0.2
-    softstop_torque_gains: [65,  10,  10,   5,  5,   1,  1, 0]
+    softstop_torque_gains: [65,  20,  20,   10,  10,   4,  4, 0]
 
     ### Motor configuration
     motor_names:
