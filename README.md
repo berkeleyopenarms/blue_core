@@ -31,7 +31,7 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   ```
 - Clone the code:
   ```bash
-  git clone https://github.com/berkeley-open-robotics/blue_core.git
+  git clone https://github.com/berkeleyopenarms/blue_core.git
   ```
 - Install dependencies:
   ```bash
@@ -51,7 +51,7 @@ The software stack is set up as a ROS metapackage, which organizes our codebase 
   ```bash
   sudo addgroup $USER dialout
   ```
-- Set up a configuration file (see the [blue_configs](https://github.com/berkeleyopenrobotics/blue_configs) repo for examples)
+- Set up a configuration file (see the [blue_configs](https://github.com/berkeleyopenarms/blue_configs) repo for examples)
 
 - Proceed to setup the arm with power supply and USB adapter ("Electrical Setup" in Quick Start Guide)
 
