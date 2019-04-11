@@ -21,12 +21,17 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
       try {
         device_.queueEnumerate(id);
         device_.exchange();
-        success = true;
+        comm_id_t response_id = 0;
+        device_.getEnumerateResponse(id, &response_id);
+        if (response_id == id)
+          success = true;
       } catch (comms_error e) {
         ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not assign board id %d, retrying...", id);
         ros::Duration(0.2).sleep();
+        continue;
       }
+      ros::Duration(1).sleep();
     }
   }
 
