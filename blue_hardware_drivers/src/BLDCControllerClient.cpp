@@ -403,6 +403,10 @@ void BLDCControllerClient::queueEnumerate(comm_id_t server_id) {
   queuePacket(server_id, packet);
 }
 
+void BLDCControllerClient::getEnumerateResponse(comm_id_t server_id, comm_id_t* response_id) {
+  rx_bufs_[server_id].read(reinterpret_cast<uint8_t*>(response_id), sizeof(*response_id));
+}
+
 void BLDCControllerClient::queueLeaveBootloader(comm_id_t server_id, uint32_t jump_addr) {
   if (jump_addr == 0) {
     jump_addr = COMM_FIRMWARE_OFFSET;
