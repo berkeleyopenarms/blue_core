@@ -98,13 +98,12 @@ class JumpToAddrPacket : public Packet {
 /* Disco Bus ID Init */
 class EnumeratePacket : public Packet {
   private:
-    comm_full_addr_t jump_addr_;
+    comm_id_t target_id_;
   public:
     EnumeratePacket (comm_id_t id) :
-      Packet( id, COMM_FC_ENUMERATE ) {}
+      Packet( 0, COMM_FC_ENUMERATE ), target_id_(id) {}
 
-    // Empty dump function
-    void dump(Buffer& buf){}
+    void dump(Buffer& buf);
 };
 
 } // namespace blue_hardware_drivers

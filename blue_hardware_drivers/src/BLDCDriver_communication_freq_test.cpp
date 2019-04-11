@@ -33,27 +33,49 @@ float get_period() {
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "comms", ros::init_options::AnonymousName);
+  ROS_ERROR("h");
 
   ros::NodeHandle n;
   std::vector<comm_id_t> board_list;
+  ROS_ERROR("1");
   std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
+  ROS_ERROR("2");
   board_list.push_back(40); // BASE
+  ROS_ERROR("3");
   board_list.push_back(43);
-  board_list.push_back(38);
-  board_list.push_back(16);
-  board_list.push_back(33);
-  board_list.push_back(41);
-  board_list.push_back(42);
-  board_list.push_back(52);
+  ROS_ERROR("4");
+  // board_list.push_back(38);
+  // board_list.push_back(16);
+  // board_list.push_back(33);
+  // board_list.push_back(41);
+  // board_list.push_back(42);
+  // board_list.push_back(52);
 
   char* port = argv[1];
   BLDCControllerClient device;
   try {
     device.init(port, board_list);
-  } catch (std::exception& e) { ROS_ERROR("%s\n", e.what()); }
+  } catch (std::exception& e) { ROS_ERROR("Please Provide USB\n%s\n", e.what()); }
+
+  // Assign boards IDs!
+  bool success;
+  for (auto id : board_list) {
+    success = false;
+    while (!success && ros::ok()) {
+      try {
+        device.queueEnumerate(id);
+        device.exchange();
+        success = true;
+      } catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not assign board id %d, retrying...", id);
+        ros::Duration(0.2).sleep();
+      }
+      ros::Duration(0.2).sleep();
+    }
+  }
 
   // Kick all boards out of bootloader!
-  bool success;
   for (auto id : board_list) {
     success = false;
     while (!success) {

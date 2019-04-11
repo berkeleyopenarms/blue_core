@@ -1,3 +1,7 @@
+# Estimated joint positions
 float64[] joint_positions
+
+# By default, snap joint positions to closest feasible values (based on actuator zeros)
+bool disable_snap
 ---
 bool success

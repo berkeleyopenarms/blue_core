@@ -127,7 +127,7 @@ void BlueKinematics::init(
   }
 }
 
-std::vector<double> BlueKinematics::findBestJointOffsets(
+std::vector<double> BlueKinematics::snapJointOffsets(
     const std::vector<double> &estimated_joint_offsets,
     const std::vector<double> &actuator_zeros,
     const std::vector<double> &softstop_min_angles,
