@@ -1,13 +1,14 @@
 # Blue Core Software
-This repository provides the core software needed to run a Blue robot arm with ROS.
+This repository provides all of the mid-level software needed to run a Blue robot arm with ROS.
 
-The software stack is set up as a ROS metapackage, which organizes our codebase into five individual packages:
+The stack is set up as a ROS metapackage, which organizes our codebase into the following packages:
 - **blue_bringup**
-  - Launch and configuration files used to start up the processes needed for our robot to run
+  - Launch files, configurations, and scripts used to start up the robot
 - **blue_controller_manager**
   - Higher level control code, built off the [ros_control framework](http://wiki.ros.org/ros_control)
-  - Contains our controller manager, which provides infrastructure for dynamically starting and stopping different types of controllers: end effector pose control, joint position control, velocity control, etc.
-  - Also contains the controller manager's hardware interface, which acts as an abstraction barrier between our joint and motor messages
+  - Provides infrastructure for dynamically starting and stopping different types of controllers: end effector pose control, joint position control, velocity control, etc.
+- **blue_hardware_interface**
+  - Abstraction barrier between joint messages and actuator messages (see [ros_control](http://wiki.ros.org/ros_control))
 - **blue_controllers**
   - Source code for our custom controller plugins
 - **blue_hardware_drivers**
