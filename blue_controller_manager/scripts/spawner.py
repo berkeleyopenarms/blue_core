@@ -100,8 +100,10 @@ def main():
     start_controllers = rospy.get_param("~start_controllers", [])
     stop_controllers = rospy.get_param("~stop_controllers", [])
 
-    rospy.logerr(str(start_controllers));
-    rospy.logerr(str(stop_controllers));
+    if start_controllers:
+        rospy.loginfo("Controller spawner: Starting controllers -- " + str(start_controllers));
+    if stop_controllers:
+        rospy.loginfo("Controller spawner: Stopping controllers -- " + str(stop_controllers));
 
     if args.shutdown_timeout is not None:
       rospy.logwarn("DEPRECATION warning: --shutdown-timeout has no effect.")
