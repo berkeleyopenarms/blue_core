@@ -13,20 +13,6 @@
   <xacro:macro name="blue_end_v1" params="side name">
     <link
       name="${side}_${name}">
-      <inertial>
-        <origin
-          xyz="0.00526385736219506 2.70691865020822E-05 -0.0641638075944594"
-          rpy="0 0 0" />
-        <mass
-          value="0.657109755986862" />
-        <inertia
-          ixx="0.0057866591250737"
-          ixy="3.71515699629511E-07"
-          ixz="-6.32890111626103E-05"
-          iyy="0.00530223654324281"
-          iyz="8.9999884666805E-07"
-          izz="0.00342399181200673" />
-      </inertial>
       <visual>
         <origin
           xyz="0 0 0"

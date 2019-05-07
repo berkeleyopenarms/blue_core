@@ -87,6 +87,7 @@ void BlueHW::write() {
       kinematics_.getJointPos(),
       kinematics_.getJointVel());
 
+
   // Apply gravity compensation fine tuning terms
   for (int i = 0; i < feedforward_torques.size(); i++)
     feedforward_torques[i] *= params_.id_torque_gains[i];
