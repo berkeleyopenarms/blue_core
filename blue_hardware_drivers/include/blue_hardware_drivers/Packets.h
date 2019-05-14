@@ -17,6 +17,7 @@ class Packet {
     Packet (comm_id_t id, comm_fc_t fc) : server_id_( id ), func_code_ (fc){}
 
     virtual void dump(Buffer& buf);
+    inline comm_id_t getID() {return server_id_;}
 };
 
 /* Virtual Register Mutator/Accessor Packets */
@@ -71,14 +72,13 @@ class ReadWriteRegPacket : public Packet {
 };
 /* End of Virtual Register Mutator/Accessor Packets */
 
-/* Flash Mutator/Accessor Packets */
-class ReadFlashPacket : public Packet {
+/* Reset System */
+class ResetPacket : public Packet {
   private:
-    comm_full_addr_t read_start_addr_;
-    uint32_t read_count_;
+    comm_id_t target_id_;
   public:
-    ReadFlashPacket (comm_id_t id, comm_full_addr_t addr, uint32_t count) :
-      Packet( id, COMM_FC_FLASH_READ ), read_start_addr_( addr ), read_count_( count ){}
+    ResetPacket (comm_id_t id) :
+      Packet( id, COMM_FC_SYSTEM_RESET ) {}
 
     void dump(Buffer& buf);
 };
@@ -94,6 +94,28 @@ class JumpToAddrPacket : public Packet {
     void dump(Buffer& buf);
 };
 
+/* Flash Mutator/Accessor Packets */
+class ReadFlashPacket : public Packet {
+  private:
+    comm_full_addr_t read_start_addr_;
+    uint32_t read_count_;
+  public:
+    ReadFlashPacket (comm_id_t id, comm_full_addr_t addr, uint32_t count) :
+      Packet( id, COMM_FC_FLASH_READ ), read_start_addr_( addr ), read_count_( count ){}
+
+    void dump(Buffer& buf);
+};
+
+/* Disco Bus Confirm ID */
+class ConfirmIDPacket : public Packet {
+  private:
+    comm_id_t target_id_;
+  public:
+    ConfirmIDPacket (comm_id_t id) :
+      Packet( id, COMM_FC_CONFIRM_ID ) {}
+
+    void dump(Buffer& buf);
+};
 
 /* Disco Bus ID Init */
 class EnumeratePacket : public Packet {

@@ -13,6 +13,18 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
 
   device_.init(port, board_ids);
 
+  // Put all boards into bootloader!
+  int count = 0;
+  while (count < 3) {
+    try {
+      device_.resetBoards();
+    } catch (comms_error e) {
+      ROS_ERROR("%s\n", e.what());
+    }
+    count++;
+    ros::Duration(0.2).sleep();
+  }
+
   // Assign boards IDs!
   bool success;
   for (auto id : board_ids_) {
@@ -23,8 +35,13 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
         device_.exchange();
         comm_id_t response_id = 0;
         device_.getEnumerateResponse(id, &response_id);
-        if (response_id == id)
+        if (response_id == id) {
+          ros::Duration(0.2).sleep();
+          device_.queueConfirmID(id);
+          device_.exchange();
+          ROS_INFO("Enumerated Board %d\n", id);
           success = true;
+        }
       } catch (comms_error e) {
         ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not assign board id %d, retrying...", id);
