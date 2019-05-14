@@ -6,8 +6,8 @@ namespace blue_hardware_drivers {
 // Defined here: https://github.com/berkeley-open-robotics/bldc-controller/docs/
 // Current Protocol = Version 3
 
-#define DEBUG_TRANSMIT
-#define DEBUG_RECEIVE
+//#define DEBUG_TRANSMIT
+//#define DEBUG_RECEIVE
 //#define DEBUG_RECEIVE_CRC
 //#define DEBUG_CALIBRATION_DATA
 //#define DEBUG_ALLOCS
@@ -64,6 +64,7 @@ constexpr comm_fc_t COMM_FC_FLASH_PROGRAM = 0x86;
 constexpr comm_fc_t COMM_FC_FLASH_READ = 0x87;
 constexpr comm_fc_t COMM_FC_FLASH_VERIFY = 0x88;
 constexpr comm_fc_t COMM_FC_FLASH_VERIFY_ERASED = 0x89;
+constexpr comm_fc_t COMM_FC_CONFIRM_ID = 0xFE;
 constexpr comm_fc_t COMM_FC_ENUMERATE = 0xFF;
 
 using comm_addr_t = uint16_t;
