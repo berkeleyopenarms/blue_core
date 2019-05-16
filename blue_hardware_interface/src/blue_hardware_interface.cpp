@@ -111,7 +111,8 @@ void BlueHW::write() {
         -params_.motor_current_limits[i]);
 
     // Update our command map
-    motor_commands_[params_.motor_ids[i]] = actuator_commands[i];
+    // motor_commands_[params_.motor_ids[i]] = actuator_commands[i];
+    motor_commands_[params_.motor_ids[i]] = 0.0;
   }
 }
 

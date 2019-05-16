@@ -9,7 +9,7 @@ namespace blue_hardware_drivers {
 //#define DEBUG_TRANSMIT
 //#define DEBUG_RECEIVE
 //#define DEBUG_RECEIVE_CRC
-//#define DEBUG_CALIBRATION_DATA
+#define DEBUG_CALIBRATION_DATA
 //#define DEBUG_ALLOCS
 
 constexpr uint8_t COMM_SYNC_FLAG = 0xFF;
