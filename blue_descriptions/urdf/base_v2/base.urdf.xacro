@@ -4,11 +4,11 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
   <!-- Inertial properties differ slightly for left vs right arm -->
-  <xacro:property name="base_left_min"  value="-2.3412" />
-  <xacro:property name="base_left_max"  value= "3.3999" />
+  <xacro:property name="base_left_min"  value="-3.14159" />
+  <xacro:property name="base_left_max"  value="3.1" />
 
-  <xacro:property name="base_right_min"  value="-3.3999" />
-  <xacro:property name="base_right_max"  value= "2.3412" />
+  <xacro:property name="base_right_min"  value="-3.1" />
+  <xacro:property name="base_right_max"  value="3.14159" />
 
   <!-- ============================  link  ============================ -->
   <!-- Includes elbow flex, FA roll joints in macros below -->
