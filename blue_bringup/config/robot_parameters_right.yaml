@@ -8,7 +8,7 @@ blue_hardware:
         - right_elbow_roll_joint
         - right_wrist_lift_joint
         - right_wrist_roll_joint
-        - right_gripper_joint
+        # - right_gripper_joint
     baselink: right_base_link
     endlink: right_gripper_finger_link
     accel_links:
@@ -18,6 +18,7 @@ blue_hardware:
         - right_wrist_roll_link
         - right_end_roll_link
     differential_pairs: [1, 2, 3, 4, 5, 6]
+    # gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 14.4]
     gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 14.4]
     joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     id_torque_gains: [1.12, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

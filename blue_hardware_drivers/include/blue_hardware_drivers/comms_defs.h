@@ -125,8 +125,8 @@ using comm_reg_count_t = uint8_t;
 
 using comm_full_addr_t = uint32_t;
 constexpr comm_full_addr_t COMM_BOOTLOADER_OFFSET = 0x08000000;
-constexpr comm_full_addr_t COMM_NVPARAMS_OFFSET = 0x08004000;
-constexpr comm_full_addr_t COMM_FIRMWARE_OFFSET = 0x08008000;
+constexpr comm_full_addr_t COMM_NVPARAMS_OFFSET = 0x08008000;
+constexpr comm_full_addr_t COMM_FIRMWARE_OFFSET = 0x08010000;
 constexpr comm_full_addr_t COMM_DEFAULT_BAUD_RATE = 1000000;
 
 constexpr size_t COMM_MAX_BUF = 256;
