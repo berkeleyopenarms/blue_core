@@ -29,12 +29,12 @@ blue_hardware:
     ### Motor configuration
     motor_names:
         - base_roll_motor
-        - right_motor1
         - left_motor1
-        - right_motor2
+        - right_motor1
         - left_motor2
-        - right_motor3
+        - right_motor2
         - left_motor3
+        - right_motor3
         - gripper_motor
     motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0]
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.67, 1.67, 1.67]

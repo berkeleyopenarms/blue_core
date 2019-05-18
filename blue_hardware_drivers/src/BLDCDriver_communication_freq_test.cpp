@@ -39,13 +39,13 @@ int main(int argc, char **argv) {
   std::vector<comm_id_t> board_list;
   std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
   board_list.push_back(1); // BASE
-  board_list.push_back(2);
-  board_list.push_back(3);
-  board_list.push_back(4);
-  board_list.push_back(5);
-  board_list.push_back(6);
-  board_list.push_back(7);
-  board_list.push_back(8);
+  //board_list.push_back(2);
+  //board_list.push_back(3);
+  //board_list.push_back(4);
+  //board_list.push_back(5);
+  //board_list.push_back(6);
+  //board_list.push_back(7);
+  //board_list.push_back(8);
 
   char* port = argv[1];
   BLDCControllerClient device;
@@ -106,6 +106,39 @@ int main(int argc, char **argv) {
       }
     }
   }
+
+  // Command the motor to 0 before initializing it.
+  for (auto id : board_list) {
+    success = false;
+    while (!success) {
+      try { 
+        device.queueSetCommand(id, 0);
+        device.exchange();
+        success = true;
+      }
+      catch(comms_error e) {
+          ROS_ERROR("%s\n", e.what());
+          ROS_ERROR("Could not set board %d to 0 torque, retrying...", id);
+      }
+    }
+  }
+
+  // Command the motor to 0 before initializing it.
+  for (auto id : board_list) {
+    success = false;
+    while (!success) {
+      try { 
+        device.queueSetControlMode(id, COMM_CTRL_MODE_CURRENT);
+        device.exchange();
+        success = true;
+      }
+      catch(comms_error e) {
+          ROS_ERROR("%s\n", e.what());
+          ROS_ERROR("Could not set board %d to 0 torque, retrying...", id);
+      }
+    }
+  }
+
 
   for (auto id : board_list) {
     success = false; // set to false to initialize boards (doing this because some test boards are not calibrated)

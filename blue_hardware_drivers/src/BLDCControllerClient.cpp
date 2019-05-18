@@ -58,7 +58,7 @@ void BLDCControllerClient::initMotor(comm_id_t board_id){
   std::cout << "Calibrating board: " << (int) board_id << std::endl;
 #endif
 
-  readFlash(board_id, COMM_NVPARAMS_OFFSET+1, 2, data);
+  readFlash(board_id, COMM_NVPARAMS_OFFSET, 2, data);
 #ifdef DEBUG_CALIBRATION_DATA
   for (unsigned char c : data)
     printf("%02x:", c);
@@ -73,7 +73,7 @@ void BLDCControllerClient::initMotor(comm_id_t board_id){
   std::cout << "Calibration length: " << len << std::endl;
 #endif
   data = "";
-  readFlash(board_id, COMM_NVPARAMS_OFFSET+3, len, data);
+  readFlash(board_id, COMM_NVPARAMS_OFFSET+2, len, data);
 
   Json::Reader reader;
   Json::Value calibrations;
@@ -152,13 +152,13 @@ void BLDCControllerClient::initMotor(comm_id_t board_id){
     }
   }
 
-  queueSetDirectCurrentControllerKp(board_id, 0.5f);
+  queueSetDirectCurrentControllerKp(board_id, 1.0f);
   exchange();
-  queueSetDirectCurrentControllerKi(board_id, 0.001f);
+  queueSetDirectCurrentControllerKi(board_id, 0.0f);
   exchange();
-  queueSetQuadratureCurrentControllerKp(board_id, 0.5f);
+  queueSetQuadratureCurrentControllerKp(board_id, 1.0f);
   exchange();
-  queueSetQuadratureCurrentControllerKi(board_id, 0.001f);
+  queueSetQuadratureCurrentControllerKi(board_id, 0.0f);
   exchange();
 
 #ifdef DEBUG_CALIBRATION_DATA
