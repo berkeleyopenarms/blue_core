@@ -3,6 +3,9 @@
   <xacro:arg name="is_gazebo" default="false" />
   <xacro:property name="is_gazebo" value="$(arg is_gazebo)" />
 
+  <xacro:arg name="set_base_link" default="false" />
+  <xacro:property name="set_base_link" value="$(arg set_base_link)" />
+
   <!-- ====== Load in robot base macro ====== -->
   <xacro:include filename="$(find blue_descriptions)/urdf/robot_base_v1/robot_base.urdf.xacro" />
 
