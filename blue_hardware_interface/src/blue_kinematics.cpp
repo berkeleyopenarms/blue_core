@@ -58,7 +58,7 @@ void BlueKinematics::init(
       // Differential transmissions (ie links, two joints each)
       std::vector<double> transmission_actuator_ratios{-1.0, 1.0};
       std::vector<double> transmission_gear_ratios{
-          -gear_ratios[joint_idx],
+          gear_ratios[joint_idx],
           -gear_ratios[joint_idx + 1]};
 
       transmissions_[transmission_idx] = new ti::DifferentialTransmission(
