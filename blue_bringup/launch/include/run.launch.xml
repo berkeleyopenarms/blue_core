@@ -7,7 +7,7 @@
   <!-- Load URDF -->
   <param
     name="robot_description"
-    command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_full_v$(arg version).urdf.xacro'" />
+    command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_$(arg configuration)_v$(arg version).urdf.xacro'" />
 
   <!-- Run core control stack -->
   <include

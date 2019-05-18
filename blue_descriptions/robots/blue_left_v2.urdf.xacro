@@ -3,6 +3,27 @@
   <xacro:arg name="is_gazebo" default="false" />
   <xacro:property name="is_gazebo" value="$(arg is_gazebo)" />
 
+  <xacro:arg name="set_base_link" default="true" />
+  <xacro:property name="set_base_link" value="$(arg set_base_link)" />
+  <xacro:if value="${set_base_link}">
+    <link
+      name="base_link">
+    </link>
+    <joint
+      name="left_fixed_joint"
+      type="fixed">
+      <origin
+        xyz="0.0 0.0 0.0"
+        rpy="0.0 0.0 0.0" />
+      <parent
+        link="base_link" />
+      <child
+        link="left_base_link" />
+      <axis
+        xyz="0.0 0.0 0.0" />
+    </joint>
+  </xacro:if>
+
   <xacro:include filename="$(find blue_descriptions)/urdf/base_v2/base.urdf.xacro" />
   <xacro:include filename="$(find blue_descriptions)/urdf/link_v2/link.urdf.xacro" />
   <xacro:include filename="$(find blue_descriptions)/urdf/gripper_v1/gripper.urdf.xacro" />
