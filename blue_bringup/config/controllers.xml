@@ -27,7 +27,7 @@
       stalled_velocity_threshold: 0.01
       stall_timeout: 0.2
       gains:
-        $(arg side)_gripper_joint: {p: 4, i: 0, d: 1, i_clamp: 0}
+        $(arg side)_gripper_joint: {p: 4, i: 0, d: 0.3, i_clamp: 0}
 
     ### Joint controllers
 
@@ -53,19 +53,19 @@
         - $(arg side)_wrist_lift_joint
         - $(arg side)_wrist_roll_joint
       $(arg side)_base_roll_joint:
-        pid: {p: 15, i: 0.0, d: 3, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 28, i: 0.0, d: 8, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_shoulder_lift_joint:
-        pid: {p: 10, i: 0, d: 2, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 25, i: 0, d: 5, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_shoulder_roll_joint:
-        pid: {p: 5, i: 0, d: 1, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 25, i: 0, d: 2, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_elbow_lift_joint:
-        pid: {p: 5, i: 0, d: 1, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 25, i: 0, d: 2, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_elbow_roll_joint:
-        pid: {p: 4, i: 0, d: 1, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 25, i: 0, d: 2, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_wrist_lift_joint:
-        pid: {p: 4, i: 0, d: 0, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 3.5, i: 0, d: 0, i_clamp_min: -1, i_clamp_max: 1}
       $(arg side)_wrist_roll_joint:
-        pid: {p: 2, i: 0, d: 0, i_clamp_min: -1, i_clamp_max: 1}
+        pid: {p: 2.5, i: 0, d: 0, i_clamp_min: -1, i_clamp_max: 1}
 
     joint_ctc:
       type: blue_controllers/BlueJointGroupCTC
