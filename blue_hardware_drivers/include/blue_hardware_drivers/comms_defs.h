@@ -9,7 +9,7 @@ namespace blue_hardware_drivers {
 //#define DEBUG_TRANSMIT
 //#define DEBUG_RECEIVE
 //#define DEBUG_RECEIVE_CRC
-//#define DEBUG_CALIBRATION_DATA
+#define DEBUG_CALIBRATION_DATA
 //#define DEBUG_ALLOCS
 
 constexpr uint8_t COMM_SYNC_FLAG = 0xFF;
@@ -94,6 +94,9 @@ constexpr comm_addr_t COMM_REG_CAL_V_FILTER = 0x1040;
 constexpr comm_addr_t COMM_REG_CAL_EAC_SCALE = 0x1100;
 constexpr comm_addr_t COMM_REG_CAL_EAC_OFFSET = 0x1101;
 constexpr comm_addr_t COMM_REG_CAL_EAC_TABLE = 0x1200;
+constexpr comm_addr_t COMM_REG_CAL_IA_OFF = 0x1050;
+constexpr comm_addr_t COMM_REG_CAL_IB_OFF = 0x1051;
+constexpr comm_addr_t COMM_REG_CAL_IC_OFF = 0x1052;
 
 // Volatile Registers (0x2***)
 constexpr comm_addr_t COMM_REG_VOL_CTRL_MODE = 0x2000;

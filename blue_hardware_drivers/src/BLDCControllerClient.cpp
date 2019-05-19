@@ -109,6 +109,22 @@ void BLDCControllerClient::initMotor(comm_id_t board_id){
   queueSetPositionOffset(board_id, calibrations["zero"].asFloat());
   exchange();
 
+// #ifdef DEBUG_CALIBRATION_DATA
+  // std::cout << "Phases A Current: " << calibrations["ia_off"].asFloat() << std::endl;
+// #endif
+  // queueSetIAOffset(board_id, (uint8_t) calibrations["ia_off"].asFloat());
+  // exchange();
+// #ifdef DEBUG_CALIBRATION_DATA
+  // std::cout << "Phases B Current: " << calibrations["ib_off"].asFloat() << std::endl;
+// #endif
+  // queueSetIBOffset(board_id, (uint8_t) calibrations["ib_off"].asFloat());
+  // exchange();
+// #ifdef DEBUG_CALIBRATION_DATA
+  // std::cout << "Phases C Current: " << calibrations["ic_off"].asFloat() << std::endl;
+// #endif
+  // queueSetICOffset(board_id, (uint8_t) calibrations["ic_off"].asFloat());
+  // exchange();
+
   if (calibrations.isMember("eac_type")) {
     std::string eac_type = calibrations["eac_type"].asString();
 
@@ -116,6 +132,8 @@ void BLDCControllerClient::initMotor(comm_id_t board_id){
 #ifdef DEBUG_CALIBRATION_DATA
       std::cout << "EAC calibration available" << std::endl;
 #endif
+
+
 
       Json::Value eac_table = calibrations["eac_table"];
 
@@ -152,14 +170,27 @@ void BLDCControllerClient::initMotor(comm_id_t board_id){
     }
   }
 
-  queueSetDirectCurrentControllerKp(board_id, 1.0f);
-  exchange();
-  queueSetDirectCurrentControllerKi(board_id, 0.0f);
-  exchange();
-  queueSetQuadratureCurrentControllerKp(board_id, 1.0f);
-  exchange();
-  queueSetQuadratureCurrentControllerKi(board_id, 0.0f);
-  exchange();
+  if (calibrations["torque"].asFloat() < 1) {
+    queueSetDirectCurrentControllerKp(board_id, 0.1f);
+    exchange();
+    queueSetDirectCurrentControllerKi(board_id, 0.0f);
+    exchange();
+    queueSetQuadratureCurrentControllerKp(board_id, 0.1f);
+    exchange();
+    queueSetQuadratureCurrentControllerKi(board_id, 0.0f);
+    exchange();
+  } else {
+    queueSetDirectCurrentControllerKp(board_id, 1.0f);
+    exchange();
+    queueSetDirectCurrentControllerKi(board_id, 0.0f);
+    exchange();
+    queueSetQuadratureCurrentControllerKp(board_id, 1.0f);
+    exchange();
+    queueSetQuadratureCurrentControllerKi(board_id, 0.0f);
+    exchange();
+  }
+
+
 
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Setting control mode" << std::endl;
@@ -525,6 +556,19 @@ void BLDCControllerClient::queueSetPositionControllerKp(comm_id_t board_id, floa
 
 void BLDCControllerClient::queueSetPositionControllerKi(comm_id_t board_id, float value) {
   Packet* packet = new WriteRegPacket(board_id, COMM_REG_CAL_P_KI, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(board_id, packet);
+}
+
+void BLDCControllerClient::queueSetIAOffset(comm_id_t board_id, float value) {
+  Packet* packet = new WriteRegPacket(board_id, COMM_REG_CAL_IA_OFF, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(board_id, packet);
+}
+void BLDCControllerClient::queueSetIBOffset(comm_id_t board_id, float value) {
+  Packet* packet = new WriteRegPacket(board_id, COMM_REG_CAL_IA_OFF, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(board_id, packet);
+}
+void BLDCControllerClient::queueSetICOffset(comm_id_t board_id, float value) {
+  Packet* packet = new WriteRegPacket(board_id, COMM_REG_CAL_IA_OFF, sizeof(value), reinterpret_cast<uint8_t*> (&value));
   queuePacket(board_id, packet);
 }
 

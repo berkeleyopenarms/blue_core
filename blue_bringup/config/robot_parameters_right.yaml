@@ -21,9 +21,11 @@ blue_hardware:
     gear_ratios: [7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 14.4]
     joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     # id_torque_gains: [0.0, 0.8, 0.8, 0.8, 0.8, 0.2, 0.2]
-    id_torque_gains: [0.0, 1.25, 1.10, 1.10, 1.10, 0.5, 0.5]
+    # id_torque_gains: [0.0, 1.28, 1.10, 1.10, 1.10, 0.5, 0.5]
+    id_torque_gains: [0.0, 1.26, 1.10, 1.10, 1.10, 0.5, 0.5]
     # id_torque_gains: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    # id_torque_gains: [0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    # id_torque_gains: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    # id_torque_gains: [0.0, 0.17, 0.17, 0.17, 0.17, 0.17, 0.17]
     softstop_min_angles: [-3.3, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -1.45]
     softstop_max_angles: [2.2, 0.5, 2.6, 0.5, 2.6, 0.2, 2.6, 1.45]
     softstop_tolerance: 0.19
@@ -42,6 +44,7 @@ blue_hardware:
         - gripper_motor
     motor_current_limits: [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0]
     current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.67, 1.67, 1.67]
+    # current_to_torque_ratios: [1., 1., 1., 1., 1., 1., 1., 1.]
 
     ### Posture control parameters for gradient descent ik pose controller
     posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90, -1.0, 0.0]

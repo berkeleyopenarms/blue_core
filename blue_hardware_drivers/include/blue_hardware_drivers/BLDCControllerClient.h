@@ -56,6 +56,9 @@ class BLDCControllerClient {
     void queueSetVelocityControllerKi(comm_id_t board_id, float value);
     void queueSetPositionControllerKp(comm_id_t board_id, float value);
     void queueSetPositionControllerKi(comm_id_t board_id, float value);
+    void queueSetIAOffset(comm_id_t board_id, float value);
+    void queueSetIBOffset(comm_id_t board_id, float value);
+    void queueSetICOffset(comm_id_t board_id, float value);
     // Drive Commands
     void queueSetCommand(comm_id_t board_id, float value);
     void queueGetRotorPosition(comm_id_t board_id);
