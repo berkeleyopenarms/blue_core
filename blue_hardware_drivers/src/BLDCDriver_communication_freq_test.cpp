@@ -33,27 +33,66 @@ float get_period() {
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "comms", ros::init_options::AnonymousName);
+  ROS_ERROR("h");
 
   ros::NodeHandle n;
   std::vector<comm_id_t> board_list;
   std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
-  board_list.push_back(40); // BASE
-  board_list.push_back(43);
-  board_list.push_back(38);
-  board_list.push_back(16);
-  board_list.push_back(33);
-  board_list.push_back(41);
-  board_list.push_back(42);
-  board_list.push_back(52);
+  board_list.push_back(1); // BASE
+  //board_list.push_back(2);
+  //board_list.push_back(3);
+  //board_list.push_back(4);
+  //board_list.push_back(5);
+  //board_list.push_back(6);
+  //board_list.push_back(7);
+  //board_list.push_back(8);
 
   char* port = argv[1];
   BLDCControllerClient device;
   try {
     device.init(port, board_list);
-  } catch (std::exception& e) { ROS_ERROR("%s\n", e.what()); }
+  } catch (std::exception& e) { ROS_ERROR("Please Provide USB\n%s\n", e.what()); }
+
+  // Put all boards into bootloader!
+  int count = 0;
+  while (count < 3) {
+    try {
+      device.resetBoards();
+    } catch (comms_error e) {
+      ROS_ERROR("%s\n", e.what());
+    }
+    count++;
+    ros::Duration(0.2).sleep();
+  }
+
+  // Assign boards IDs!
+  bool success;
+  for (auto id : board_list) {
+    success = false;
+    while (!success && ros::ok()) {
+      try {
+        device.queueEnumerate(id);
+        device.exchange();
+        comm_id_t response_id = 0;
+        device.getEnumerateResponse(id, &response_id);
+        if (response_id == id) {
+          ros::Duration(0.2).sleep();
+          device.queueConfirmID(id);
+          device.exchange();
+          ROS_INFO("Enumerated Board %d\n", id);
+          success = true;
+        }
+      } catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not assign board id %d, retrying...", id);
+        ros::Duration(0.2).sleep();
+        continue;
+      }
+      ros::Duration(1).sleep();
+    }
+  }
 
   // Kick all boards out of bootloader!
-  bool success;
   for (auto id : board_list) {
     success = false;
     while (!success) {
@@ -67,6 +106,39 @@ int main(int argc, char **argv) {
       }
     }
   }
+
+  // Command the motor to 0 before initializing it.
+  for (auto id : board_list) {
+    success = false;
+    while (!success) {
+      try { 
+        device.queueSetCommand(id, 0);
+        device.exchange();
+        success = true;
+      }
+      catch(comms_error e) {
+          ROS_ERROR("%s\n", e.what());
+          ROS_ERROR("Could not set board %d to 0 torque, retrying...", id);
+      }
+    }
+  }
+
+  // Command the motor to 0 before initializing it.
+  for (auto id : board_list) {
+    success = false;
+    while (!success) {
+      try { 
+        device.queueSetControlMode(id, COMM_CTRL_MODE_CURRENT);
+        device.exchange();
+        success = true;
+      }
+      catch(comms_error e) {
+          ROS_ERROR("%s\n", e.what());
+          ROS_ERROR("Could not set board %d to 0 torque, retrying...", id);
+      }
+    }
+  }
+
 
   for (auto id : board_list) {
     success = false; // set to false to initialize boards (doing this because some test boards are not calibrated)
