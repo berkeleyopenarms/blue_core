@@ -10,6 +10,25 @@
     <xacro:blue_gripper_finger_v1 side="${side}" parent="${name}"/>
   </xacro:macro>
 
+  <xacro:macro name="mimic_joint_plugin_gazebo" params="name_prefix parent_joint mimic_joint has_pid:=false multiplier:=1.0 offset:=0 sensitiveness:=0.0 max_effort:=1.0 robot_namespace:=''">
+    <gazebo>
+      <plugin name="${name_prefix}_mimic_joint_plugin" filename="libroboticsgroup_gazebo_mimic_joint_plugin.so">
+        <joint>${parent_joint}</joint>
+        <mimicJoint>${mimic_joint}</mimicJoint>
+        <xacro:if value="${has_pid}">                     <!-- if set to true, PID parameters from "/gazebo_ros_control/pid_gains/${mimic_joint}" are loaded -->
+          <hasPID />
+        </xacro:if>
+        <multiplier>${multiplier}</multiplier>
+        <offset>${offset}</offset>
+        <sensitiveness>${sensitiveness}</sensitiveness>   <!-- if absolute difference between setpoint and process value is below this threshold, do nothing; 0.0 = disable [rad] -->
+        <maxEffort>${max_effort}</maxEffort>              <!-- only taken into account if has_pid:=true [Nm] -->
+        <xacro:unless value="${robot_namespace == ''}">
+          <robotNamespace>($robot_namespace)</robotNamespace>
+        </xacro:unless>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
   <xacro:macro name="blue_end_v1" params="side name">
     <link
       name="${side}_${name}">
@@ -32,14 +51,8 @@
           xyz="0 0 0"
           rpy="0 0 0" />
         <geometry>
-          <xacro:if value="${is_gazebo == 'false'}">
-            <mesh
-              filename="package://blue_descriptions/meshes/hand_base_link.STL" />
-          </xacro:if>
-          <xacro:if value="${is_gazebo}">
-            <mesh
-              filename="package://blue_descriptions/meshes/gripper_full_link.STL" />
-          </xacro:if>
+          <mesh
+            filename="package://blue_descriptions/meshes/hand_base_link.STL" />
         </geometry>
         <material name="">
           <color rgba="1 1 1 1" />
@@ -50,14 +63,8 @@
           xyz="0 0 0"
           rpy="0 0 0" />
         <geometry>
-          <xacro:if value="${is_gazebo == 'false'}">
-            <mesh
-              filename="package://blue_descriptions/meshes/hand_base_link.STL" />
-          </xacro:if>
-          <xacro:if value="${is_gazebo}">
-            <mesh
-              filename="package://blue_descriptions/meshes/gripper_full_link.STL" />
-          </xacro:if>
+          <mesh
+            filename="package://blue_descriptions/meshes/hand_base_link.STL" />
         </geometry>
       </collision>
     </link>
@@ -194,6 +201,9 @@
         multiplier="1"/>
     </joint>
 
+    <xacro:mimic_joint_plugin_gazebo name_prefix="${side}_r_finger_joint"
+      parent_joint="${side}_gripper_joint" mimic_joint="${side}_r_finger_joint"
+      has_pid="false" multiplier="1.0" max_effort="10.0" />
 
     <link
       name="${side}_r_finger_tip_link">
@@ -237,7 +247,8 @@
     </link>
     <joint
       name="${side}_r_finger_tip_joint"
-      type="continuous">
+      type="revolute">
+      <limit lower="0.5" upper="1" velocity="0.7" effort="100" />
         <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 0.06 0"
@@ -253,6 +264,9 @@
         multiplier="-1"/>
     </joint>
 
+    <xacro:mimic_joint_plugin_gazebo name_prefix="${side}_r_finger_tip_joint"
+      parent_joint="${side}_gripper_joint" mimic_joint="${side}_r_finger_tip_joint"
+      has_pid="true" multiplier="-0.25" offset="0.85" max_effort="20" />
 
     <!-- left finger -->
     <link
@@ -356,7 +370,8 @@
     </link>
     <joint
       name="${side}_l_finger_tip_joint"
-      type="continuous">
+      type="revolute">
+      <limit lower="0.5" upper="1" velocity="0.7" effort="100" />
       <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 0.06 0"
@@ -371,6 +386,9 @@
         joint="${side}_gripper_joint"
         multiplier="-1"/>
     </joint>
+    <xacro:mimic_joint_plugin_gazebo name_prefix="${side}_l_finger_tip_joint"
+      parent_joint="${side}_gripper_joint" mimic_joint="${side}_l_finger_tip_joint"
+      has_pid="true" multiplier="-0.25" offset="0.85" max_effort="20" />
     </xacro:if>
   </xacro:macro>
 </robot>
