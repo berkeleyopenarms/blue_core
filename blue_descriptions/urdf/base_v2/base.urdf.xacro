@@ -55,6 +55,7 @@
     <joint
       name="${side}_base_roll_joint"
       type="revolute">
+          <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 0 0.0834989807730001"
         rpy="3.14159265358979 -1.1927577496737E-15 2.81382558958119E-17" />
@@ -75,6 +76,7 @@
       <transmission name="${side}_base_roll_joint_transmission">
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="${side}_base_roll_joint">
+          <dynamics damping="0.7" friction="10.0"/>
           <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
         </joint>
         <actuator name="${side}_base_roll_motor">

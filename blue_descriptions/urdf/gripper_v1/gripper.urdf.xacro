@@ -70,6 +70,7 @@
     <joint
       name="${side}_gripper_finger_joint"
       type="fixed">
+        <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 0.0 -0.18"
         rpy="1.5708 1.5708 1.5708" />
@@ -101,6 +102,7 @@
     <joint
       name="${side}_gripper_joint"
       type="revolute">
+        <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 0 -0.10"
         rpy="1.5 1.5 0" />
@@ -121,6 +123,7 @@
       <transmission name="${side}_gripper_transmission">
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="${side}_gripper_joint">
+        <dynamics damping="0.7" friction="10.0"/>
           <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
         </joint>
         <actuator name="${side}_gripper_motor">
@@ -176,6 +179,7 @@
     <joint
       name="${side}_r_finger_joint"
       type="continuous">
+        <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0.000 0.030703 -0.071979"
         rpy="-1.5708 -0.63969 1.5708" />
@@ -234,6 +238,7 @@
     <joint
       name="${side}_r_finger_tip_joint"
       type="continuous">
+        <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 0.06 0"
         rpy="1.5708 -1.5754E-31 -2.5019" />
@@ -293,6 +298,7 @@
     <joint
       name="${side}_l_finger_joint"
       type="continuous">
+        <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0.000 -0.030703 -0.071979"
         rpy="-1.5708 -0.63969 -1.5708" />
