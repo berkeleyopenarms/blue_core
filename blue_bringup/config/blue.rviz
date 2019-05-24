@@ -7,6 +7,9 @@ Panels:
         - /Global Options1
         - /Status1
         - /TF1/Frames1
+        - /PlanningScene1
+        - /PlanningScene1/Scene Geometry1
+        - /PlanningScene1/Scene Robot1
       Splitter Ratio: 0.4754459857940674
     Tree Height: 728
   - Class: rviz/Selection
@@ -67,96 +70,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        camera_view_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        left_base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_elbow_accel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        left_elbow_lift_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_elbow_roll_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_end_roll_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_gripper_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        left_gripper_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        left_l_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_l_finger_tip_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_r_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_r_finger_tip_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_shoulder_accel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        left_shoulder_lift_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_shoulder_roll_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_wrist_accel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        left_wrist_lift_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_wrist_roll_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         right_base_link:
           Alpha: 1
           Show Axes: false
@@ -330,96 +243,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-            Value: true
-          camera_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          camera_view_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          left_base_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          left_elbow_accel_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          left_elbow_lift_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          left_elbow_roll_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          left_end_roll_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          left_gripper_finger_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          left_gripper_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          left_l_finger_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          left_l_finger_tip_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          left_r_finger_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          left_r_finger_tip_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          left_shoulder_accel_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          left_shoulder_lift_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          left_shoulder_roll_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          left_wrist_accel_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          left_wrist_lift_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          left_wrist_roll_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
           right_base_link:
             Alpha: 1
             Show Axes: false
@@ -502,7 +325,7 @@ Visualization Manager:
             Value: true
         Robot Alpha: 1
         Show Robot Collision: false
-        Show Robot Visual: true
+        Show Robot Visual: false
       Value: true
   Enabled: true
   Global Options:
@@ -532,25 +355,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.111658573150635
+      Distance: 1.1451008319854736
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.250080943107605
-        Y: 0.14886552095413208
-        Z: 0.3196883201599121
+        X: 0.41360390186309814
+        Y: 0.1389961689710617
+        Z: 0.27398693561553955
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.09479634463787079
+      Pitch: 0.5047965049743652
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.4760249853134155
+      Yaw: 0.11102519184350967
     Saved: ~
 Window Geometry:
   Displays:
