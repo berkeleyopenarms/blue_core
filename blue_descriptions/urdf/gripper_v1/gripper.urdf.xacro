@@ -248,8 +248,7 @@
     </link>
     <joint
       name="${side}_r_finger_tip_joint"
-      type="revolute">
-      <limit lower="0.5" upper="1" velocity="0.7" effort="5" />
+      type="continuous">
       <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 0.06 0"
@@ -270,7 +269,7 @@
     <xacro:if value="${is_gazebo}">
       <xacro:mimic_joint_plugin_gazebo name_prefix="${side}_r_finger_tip_joint"
         parent_joint="${side}_gripper_joint" mimic_joint="${side}_r_finger_tip_joint"
-        has_pid="true" multiplier="-0.25" offset="0.85" max_effort="5" />
+        has_pid="false" multiplier="-1" offset="0" max_effort="0.1" />
     </xacro:if>
 
     <!-- left finger -->
@@ -380,8 +379,7 @@
     </link>
     <joint
       name="${side}_l_finger_tip_joint"
-      type="revolute">
-      <limit lower="0.5" upper="1" velocity="0.7" effort="5" />
+      type="continuous">
       <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 0.06 0"
@@ -402,7 +400,7 @@
     <xacro:if value="${is_gazebo}">
       <xacro:mimic_joint_plugin_gazebo name_prefix="${side}_l_finger_tip_joint"
         parent_joint="${side}_gripper_joint" mimic_joint="${side}_l_finger_tip_joint"
-        has_pid="true" multiplier="-0.5" offset="0.85" max_effort="5" />
+        has_pid="false" multiplier="-1" offset="0" max_effort="0.1" />
     </xacro:if>
   </xacro:macro>
 </robot>
