@@ -18,9 +18,10 @@
 
     <!-- Start the control stack -->
     <!-- http://wiki.ros.org/ros_control -->
-    <include
-      file="$(find blue_bringup)/config/controllers.xml"
-      pass_all_args="true" />
+    <rosparam
+      param="blue_controllers"
+      file="$(find blue_bringup)/config/controllers.yaml"
+      subst_value="true" />
     <node
       name="blue_controller_manager"
       pkg="blue_controller_manager"
