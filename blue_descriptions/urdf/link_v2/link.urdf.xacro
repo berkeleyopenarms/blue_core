@@ -53,7 +53,7 @@
     <joint
       name="${side}_${stage}_lift_joint"
       type="revolute">
-        <dynamics damping="0.7" friction="10.0"/>
+      <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="-0.012 0 -0.232779056600415"
         rpy="-1.5707963267949 -4.98868359282976E-16 2.07570761486143E-16" />
@@ -89,7 +89,7 @@
     <joint
       name="${side}_${stage}_accel_joint"
       type="fixed">
-        <dynamics damping="0.7" friction="10.0"/>
+      <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="-0.020008330615085 -0.000510000000000066 -0.111067108096273"
         rpy="1.5707963267949 0.328491802364426 5.16250107234938E-16" />
@@ -145,7 +145,7 @@
     <joint
       name="${side}_${stage}_roll_joint"
       type="revolute">
-        <dynamics damping="0.7" friction="10.0"/>
+      <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 ${0.0359531521130187+wrist*0.03419} 0"
         rpy="1.5707963267949 ${reflect*-1.56798} 0" />
