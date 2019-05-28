@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
     else:
         rospy.logerr("usage:")
-        rospy.logerr("rosrun blue_bringup get_calibration_angles.py <side (left or right)> <version (1 or 2)>")
+        rospy.logerr("rosrun blue_bringup calibrate_joint_offsets.py <side (left or right)> <version (1 or 2)>")
         exit()
 
     print(rot1)
@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     arm = Arm(side)
 
-    raw_input("Press enter to save base state ")
+    raw_input("Press enter to save base state")
     ms = arm.get_motor_state()
     a0 = ms[0]
 
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     a3 = ms[3] +  rot1 * gr1 + rot2 * gr2
     a4 = ms[4] + -rot1 * gr1 + rot2 * gr2
 
-    raw_input("Press enter to save thrid link state")
+    raw_input("Press enter to save third link state")
     ms = arm.get_motor_state()
     a5 = ms[5] +  rot1 * gr1 + rot2 * gr2
     a6 = ms[6] + -rot1 * gr1 + rot2 * gr2
