@@ -109,7 +109,7 @@
     <joint
       name="${side}_gripper_joint"
       type="revolute">
-        <dynamics damping="0.7" friction="10.0"/>
+      <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 0 -0.10"
         rpy="1.5 1.5 0" />
