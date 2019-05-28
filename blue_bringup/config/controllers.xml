@@ -22,14 +22,58 @@
 
     gripper_controller:
       type: effort_controllers/GripperActionController
-      joint:  $(arg side)_gripper_joint
+      joints:
+        - $(arg side)_gripper_joint
+      joint: $(arg side)_gripper_joint
       goal_tolerance: 0.01
       stalled_velocity_threshold: 0.01
       stall_timeout: 0.2
       gains:
-        $(arg side)_gripper_joint: {p: 15, i: 5, d: 10.5, i_clamp: 1}
+        $(arg side)_gripper_joint: {p: 15, i: 5, d: 10.5, i_clamp_min: -1, i_clamp_max: 1}
 
     ### Joint controllers
+
+    joint_trajectory_controller:
+      type: effort_controllers/JointTrajectoryController
+      joints:
+        - $(arg side)_base_roll_joint
+        - $(arg side)_shoulder_lift_joint
+        - $(arg side)_shoulder_roll_joint
+        - $(arg side)_elbow_lift_joint
+        - $(arg side)_elbow_roll_joint
+        - $(arg side)_wrist_lift_joint
+        - $(arg side)_wrist_roll_joint
+      constraints:
+        goal_time: 0.5
+        $(arg side)_base_roll_joint:
+          trajectory: 0.5
+          goal: 0.02
+        $(arg side)_shoulder_lift_joint:
+          trajectory: 0.5
+          goal: 0.02
+        $(arg side)_shoulder_roll_joint:
+          trajectory: 0.5
+          goal: 0.02
+        $(arg side)_elbow_lift_joint:
+          trajectory: 0.5
+          goal: 0.02
+        $(arg side)_elbow_roll_joint:
+          trajectory: 0.5
+          goal: 0.02
+        $(arg side)_wrist_lift_joint:
+          trajectory: 0.5
+          goal: 0.02
+        $(arg side)_wrist_roll_joint:
+          trajectory: 0.5
+          goal: 0.02
+      gains:
+        $(arg side)_base_roll_joint: {p: 750, i: 150, d: 5, i_clamp_min: -500, i_clamp_max: 500}
+        $(arg side)_shoulder_lift_joint: {p: 750, i: 150, d: 5, i_clamp_min: -500, i_clamp_max: 500}
+        $(arg side)_shoulder_roll_joint: {p: 750, i: 125, d: 5, i_clamp_min: -500, i_clamp_max: 500}
+        $(arg side)_elbow_lift_joint: {p: 750, i: 130, d: 5, i_clamp_min: -500, i_clamp_max: 500}
+        $(arg side)_elbow_roll_joint: {p: 750, i: 125, d: 5, i_clamp_min: -500, i_clamp_max: 500}
+        $(arg side)_wrist_lift_joint: {p: 750, i: 120, d: 5, i_clamp_min: -500, i_clamp_max: 500}
+        $(arg side)_wrist_roll_joint: {p: 750, i: 120, d: 5, i_clamp_min: -500, i_clamp_max: 500}
 
     joint_torque_controller:
       type: effort_controllers/JointGroupEffortController
