@@ -253,7 +253,7 @@
       <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 0.06 0"
-        rpy="1.5708 -1.5754E-31 -3.5019" />
+        rpy="1.5708 -1.5754E-31 -2.5019" />
       <parent
         link="${side}_r_finger_link" />
       <child
@@ -262,8 +262,8 @@
         xyz="0 1 0" />
       <mimic
         joint="${side}_gripper_joint"
-        multiplier="-0.25"
-        offset="0.85"
+        multiplier="-1"
+        offset="0"
         max_effort="5"/>
     </joint>
 
@@ -385,7 +385,7 @@
       <dynamics damping="0.7" friction="10.0"/>
       <origin
         xyz="0 0.06 0"
-        rpy="1.5708 -1.5754E-31 -3.5019" />
+        rpy="1.5708 -1.5754E-31 -2.5019" />
       <parent
         link="${side}_l_finger_link" />
       <child
@@ -394,8 +394,8 @@
         xyz="0 1 0" />
       <mimic
         joint="${side}_gripper_joint"
-        multiplier="-0.25"
-        offset="0.85"
+        multiplier="-1"
+        offset="0"
         max_effort="5"/>
     </joint>
 
