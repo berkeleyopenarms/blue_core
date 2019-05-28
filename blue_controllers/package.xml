@@ -28,6 +28,7 @@
   <build_depend>effort_controllers</build_depend>
   <build_depend>joint_state_controller</build_depend>
   <build_depend>gripper_action_controller</build_depend>
+  <build_depend>joint_trajectory_controller</build_depend>
   <build_depend>kdl_parser</build_depend>
   <build_depend>orocos_kdl</build_depend>
 
@@ -43,6 +44,7 @@
   <run_depend>effort_controllers</run_depend>
   <run_depend>joint_state_controller</run_depend>
   <run_depend>gripper_action_controller</run_depend>
+  <run_depend>joint_trajectory_controller</run_depend>
   <run_depend>kdl_parser</run_depend>
   <run_depend>orocos_kdl</run_depend>
 
