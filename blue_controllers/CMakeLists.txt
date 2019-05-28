@@ -27,7 +27,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME} src/BlueJointGroupPositionController.cpp src/CartesianPoseController.cpp src/BlueJointGroupCTC.cpp)
+add_library(${PROJECT_NAME} src/BlueJointGroupPositionController.cpp src/BlueJointGroupCTC.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 

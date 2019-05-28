@@ -1,7 +1,4 @@
 <library path="lib/libblue_controllers">
-  <class name="blue_controllers/CartesianPoseController"
-         type="blue_controllers::CartesianPoseController"
-         base_class_type="controller_interface::ControllerBase"/>
   <class name="blue_controllers/BlueJointGroupPositionController"
          type="blue_controllers::BlueJointGroupPositionController"
          base_class_type="controller_interface::ControllerBase"/>
