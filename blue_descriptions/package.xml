@@ -1,22 +1,21 @@
-<package>
+<package format="2">
   <name>blue_descriptions</name>
   <version>1.0.0</version>
   <description>URDF files, 3D models, and other physical descriptors</description>
 
   <maintainer email="phil80301@berkeley.edu">Philipp Wu</maintainer>
 
+  <license>MIT</license>
+
   <author email="brentyi@berkeley.edu">Brent Yi</author>
   <author email="phil80301@berkeley.edu">Philipp Wu</author>
 
-  <license>BSD</license>
-
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roslaunch</build_depend>
-  <run_depend>robot_state_publisher</run_depend>
-  <run_depend>rviz</run_depend>
-  <run_depend>xacro</run_depend>
-  <run_depend>joint_state_publisher</run_depend>
-  <run_depend>gazebo</run_depend>
+
+  <depend>xacro</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>joint_state_publisher</depend>
+  <depend>gazebo</depend>
 
   <export>
     <architecture_independent />
