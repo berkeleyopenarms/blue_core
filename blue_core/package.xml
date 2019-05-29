@@ -1,16 +1,14 @@
-<?xml version="1.0"?>
-<package>
+<package format="2">
   <name>blue_core</name>
   <version>0.0.0</version>
   <description>The blue_core metapackage contains all the basic software for running and using a Blue robot arm</description>
 
   <maintainer email="phil80301@berkeley.edu">Philipp Wu</maintainer>
 
-  <license>BSD</license>
+  <license>MIT</license>
 
   <author email="zhaoallan@berkeley.edu">Allan Zhao</author>
   <author email="brentyi@berkeley.edu">Brent Yi</author>
-  <author email="lxd20@berkeley.edu">Lear Du</author>
   <author email="phil80301@berkeley.edu">Philipp Wu</author>
   <author email="zoemccarthy12@gmail.com">Zoe McCarthy</author>
 
