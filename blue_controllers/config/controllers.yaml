@@ -53,13 +53,13 @@ joint_trajectory_controller:
       trajectory: 0.5
       goal: 0.02
   gains:
-    $(arg side)_base_roll_joint: {p: 75, i: 0, d: 5}
-    $(arg side)_shoulder_lift_joint: {p: 75, i: 0, d: 5}
-    $(arg side)_shoulder_roll_joint: {p: 75, i: 0, d: 5}
-    $(arg side)_elbow_lift_joint: {p: 75, i: 0, d: 5}
-    $(arg side)_elbow_roll_joint: {p: 75, i: 0, d: 5}
-    $(arg side)_wrist_lift_joint: {p: 75, i: 0, d: 5}
-    $(arg side)_wrist_roll_joint: {p: 75, i: 0, d: 5}
+    $(arg side)_base_roll_joint: {p: 50, i: 3, d: 3.5, i_clamp_min: -100, i_clamp_max: 100}
+    $(arg side)_shoulder_lift_joint: {p: 40, i: 3, d: 5, i_clamp_min: -30, i_clamp_max: 30}
+    $(arg side)_shoulder_roll_joint: {p: 40, i: 5, d: 4, i_clamp_min: -50, i_clamp_max: 50}
+    $(arg side)_elbow_lift_joint: {p: 40, i: 3, d: 5, i_clamp_min: -10, i_clamp_max: 10}
+    $(arg side)_elbow_roll_joint: {p: 30, i: 7, d: 4, i_clamp_min: -50, i_clamp_max: 50}
+    $(arg side)_wrist_lift_joint: {p: 30, i: 3, d: 2, i_clamp_min: -10, i_clamp_max: 10}
+    $(arg side)_wrist_roll_joint: {p: 25, i: 5, d: 1, i_clamp_min: -50, i_clamp_max: 50}
 
 joint_torque_controller:
   type: effort_controllers/JointGroupEffortController
