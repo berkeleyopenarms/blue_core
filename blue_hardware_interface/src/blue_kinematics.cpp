@@ -68,7 +68,7 @@ void BlueKinematics::init(
     } else {
       // Not differential pair (base or gripper, one joint each)
       transmissions_[transmission_idx] = new ti::SimpleTransmission(
-          -gear_ratios[joint_idx],
+          gear_ratios[joint_idx],
           0.0);
       joints_in_transmission = 1;
     }
