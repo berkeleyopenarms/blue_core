@@ -220,6 +220,8 @@ void BlueKinematics::setJointOffsets(
   std::lock_guard<std::mutex> lock(kinematics_mutex_);
 
   joint_offsets_ = offsets;
+  // set the gripper offset to be a realtive offset to allow for gripper calibration
+  joint_offsets_[num_joints_ - 1]  -= joint_pos_[num_joints_ - 1];
   is_calibrated_ = true;
 }
 

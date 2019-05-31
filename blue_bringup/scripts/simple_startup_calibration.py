@@ -4,11 +4,16 @@
 
 import rospy
 import numpy as np
+import actionlib
 from blue_msgs.srv import JointStartupCalibration
 from controller_manager_msgs.srv import SwitchController
 from controller_manager_msgs.srv import LoadController
 from blue_msgs.msg import MotorState
 from std_msgs.msg import Float64MultiArray
+from control_msgs.msg import (
+    GripperCommandAction,
+    GripperCommandGoal,
+)
 
 def update_motors(motor_msg):
     global gripper_state
@@ -16,7 +21,6 @@ def update_motors(motor_msg):
     for i, n in enumerate(motor_msg.name):
         if n == motor_names[-1]:
             gripper_state = motor_msg.position[i]
-            # rospy.logerr(gripper_state)
             break
 
 
@@ -43,7 +47,6 @@ if __name__ == "__main__":
         # set simple calibration angles
         joint_startup_calibration = rospy.ServiceProxy('blue_hardware/joint_startup_calibration', JointStartupCalibration)
         response = joint_startup_calibration(startup_positions, disable_snap)
-
         if response.success:
             rospy.loginfo("Joint startup calibration succeeded!")
         else:
@@ -56,10 +59,11 @@ if __name__ == "__main__":
         cmd_pub = rospy.Publisher("blue_controllers/gripper_torque_controller/command", Float64MultiArray, queue_size=1)
 
         load_controller('blue_controllers/gripper_torque_controller')
+        load_controller('blue_controllers/gripper_controller')
         gripper_controller_response = switch_controller(['blue_controllers/gripper_torque_controller'], [], 2)
 
         cmd = Float64MultiArray()
-        cmd.data = [3.5]
+        cmd.data = [2.0]
         # apply positive torque
         for i in range(5):
             cmd_pub.publish(cmd)
@@ -68,24 +72,15 @@ if __name__ == "__main__":
 
         current_position = gripper_state + 10
         # busy wait until gripper is closed
-        rospy.logerr(np.abs(current_position - gripper_state))
         while not rospy.is_shutdown() and np.abs(current_position - gripper_state) > 1e-5:
-            rospy.logerr(np.abs(current_position - gripper_state))
             # apply positive torque
             # gripper still closing
             cmd_pub.publish(cmd)
             current_position = gripper_state
             rospy.wait_for_message("blue_hardware/motor_states", MotorState)
-            rospy.wait_for_message("blue_hardware/motor_states", MotorState)
-            rospy.logerr(np.abs(current_position - gripper_state))
-
-        for i in range(5):
-            cmd_pub.publish(cmd)
-            rate.sleep()
 
         # set simple calibration angles again to calibrate gripper
         response = joint_startup_calibration(startup_positions, disable_snap)
-
         if response.success:
             rospy.loginfo("Joint startup calibration succeeded!")
         else:
@@ -93,13 +88,33 @@ if __name__ == "__main__":
 
         cmd.data = [0.0]
         # apply positive torque
-        for i in range(10):
+        for i in range(5):
             cmd_pub.publish(cmd)
             rate.sleep()
 
-        gripper_controller_response = switch_controller([], [], 2)
+        # switch out controllers to reset position
+        gripper_controller_response = switch_controller(['blue_controllers/gripper_controller'], ['blue_controllers/gripper_torque_controller'], 2)
 
+        client = actionlib.SimpleActionClient(
+            "blue_controllers/gripper_controller/gripper_cmd",
+            GripperCommandAction,
+        )
 
+        # Wait 10 Seconds for the gripper action server to start or exit
+        if not client.wait_for_server(rospy.Duration(10.0)):
+            rospy.logerr("Exiting - Gripper Action Server Not Found")
+            rospy.signal_shutdown("Action Server not found")
+            sys.exit(1)
+
+        goal = GripperCommandGoal()
+        goal.command.position = 0.0
+        goal.command.max_effort = 2.0
+        client.send_goal(goal)
+        client.wait_for_result()
+
+        # clear gripper controllers
+        gripper_controller_response = switch_controller([], ['blue_controllers/gripper_controller'], 2)
+        rospy.loginfo("Gripper Calibration Succeeded!")
 
     except rospy.ServiceException as e:
         rospy.logerr("Joint startup calibration failed: %s" % e)
