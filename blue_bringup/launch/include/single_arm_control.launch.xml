@@ -44,6 +44,12 @@
       pkg="blue_bringup"
       type="simple_startup_calibration.py"
       output="screen" />
+    <!-- Gripper calibration service -->
+    <node
+      name="gripper_calibration"
+      pkg="blue_bringup"
+      type="gripper_calibration_service.py"
+      output="screen" />
 
   </group>
 </launch>
