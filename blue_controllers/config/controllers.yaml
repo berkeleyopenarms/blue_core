@@ -17,6 +17,11 @@ gripper_controller:
   gains:
     $(arg side)_gripper_joint: {p: 15, i: 5, d: 10.5, i_clamp_min: -1, i_clamp_max: 1}
 
+gripper_torque_controller:
+  type: effort_controllers/JointGroupEffortController
+  joints:
+    - $(arg side)_gripper_joint
+
 ### Joint controllers
 
 joint_trajectory_controller:
