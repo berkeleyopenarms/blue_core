@@ -5,7 +5,7 @@
 import rospy
 import numpy as np
 import actionlib
-from blue_msgs.srv import JointStartupCalibration
+from blue_msgs.srv import GripperPositionCalibration
 from controller_manager_msgs.srv import SwitchController
 from controller_manager_msgs.srv import LoadController
 from controller_manager_msgs.srv import ListControllers
@@ -56,40 +56,38 @@ def handle_calibration_service(input_request):
         if unload_list == False:
             return TriggerResponse(False, "Gripper Calibration Failed. Gripper resource must be free.")
         gripper_controller_response = switch_controller(['blue_controllers/gripper_torque_controller'], [], 2)
-        # TODO check if controllers are loaded/
 
+        # Close the gripper
         cmd = Float64MultiArray()
         cmd.data = [5.0]
-        # apply positive torque
         for i in range(5):
             cmd_pub.publish(cmd)
             rospy.sleep(0.1)
 
+        # Wait until gripper is closed/stops moving
         gripper_state = get_gripper_state(motor_names)
-
         current_position = gripper_state + 10
-        # busy wait until gripper is closed
         while not rospy.is_shutdown() and np.abs(current_position - gripper_state) > 1e-5:
-            # apply positive torque
-            # gripper still closing
             cmd_pub.publish(cmd)
             current_position = gripper_state
             gripper_state = get_gripper_state(motor_names)
 
-        # set simple calibration angles again to calibrate gripper
-        response = joint_startup_calibration(startup_positions, disable_snap)
-        if response.success:
-            rospy.loginfo("Joint startup calibration succeeded!")
-        else:
-            rospy.logerr("Joint startup calibration failed!")
-
+        # Stop applying force
         cmd.data = [0.0]
-        # apply positive torque
         for i in range(5):
             cmd_pub.publish(cmd)
             rospy.sleep(0.1)
 
-        # switch out controllers to reset position
+        # Calibrate gripper to closed position
+        # TODO: don't hardcode this value -- read from yaml? URDF?
+        response = gripper_position_calibration(1.0)
+
+        if response.success:
+            rospy.loginfo("Gripper position calibration succeeded!")
+        else:
+            rospy.logerr("Gripper position calibration failed!")
+
+        # Switch out controllers to reset position
         gripper_controller_response = switch_controller(['blue_controllers/gripper_controller'], ['blue_controllers/gripper_torque_controller'], 2)
 
         client = actionlib.SimpleActionClient(
@@ -109,11 +107,11 @@ def handle_calibration_service(input_request):
         client.send_goal(goal)
         client.wait_for_result()
 
-        # clear gripper controllers
+        # Clear gripper controllers
         gripper_controller_response = switch_controller([], ['blue_controllers/gripper_controller'], 2)
         rospy.loginfo("Gripper Calibration Succeeded!")
 
-        # unload controllers that were loaded
+        # Unload controllers that were loaded
         for controller in unload_list:
             unload_controller(controller)
 
@@ -130,14 +128,11 @@ if __name__ == "__main__":
 
     # Read startup angles from parameter server
     rospy.loginfo("Reading desired joint angles...")
-    startup_positions = rospy.get_param("blue_hardware/simple_startup_angles")
-    startup_positions[-1] = 1.0
     motor_names = rospy.get_param("blue_hardware/motor_names")
-    disable_snap = rospy.get_param("blue_hardware/disable_snap", False)
 
     # Wait for calibration service to come up
     rospy.loginfo("Waiting for calibration service...")
-    rospy.wait_for_service('blue_hardware/joint_startup_calibration')
+    rospy.wait_for_service('blue_hardware/gripper_position_calibration')
     rospy.wait_for_service('controller_manager/switch_controller')
 
     # Controller Services
@@ -146,7 +141,7 @@ if __name__ == "__main__":
     list_controllers = rospy.ServiceProxy('controller_manager/list_controllers', ListControllers)
 
     # gripper calibration procedure, first switch to torque controller
-    joint_startup_calibration = rospy.ServiceProxy('blue_hardware/joint_startup_calibration', JointStartupCalibration)
+    gripper_position_calibration = rospy.ServiceProxy('blue_hardware/gripper_position_calibration', GripperPositionCalibration)
     switch_controller = rospy.ServiceProxy('controller_manager/switch_controller', SwitchController)
     cmd_pub = rospy.Publisher("blue_controllers/gripper_torque_controller/command", Float64MultiArray, queue_size=1)
 
