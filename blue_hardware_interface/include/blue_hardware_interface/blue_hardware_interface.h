@@ -15,6 +15,7 @@
 
 #include "blue_hardware_drivers/BLDCDriver.h"
 #include "blue_msgs/JointStartupCalibration.h"
+#include "blue_msgs/GripperPositionCalibration.h"
 #include "blue_msgs/MotorState.h"
 #include "blue_msgs/GravityVectorArray.h"
 
@@ -85,12 +86,17 @@ private:
   blue_msgs::GravityVectorArray gravity_vectors_msg_;
   ros::Publisher gravity_vector_publisher_;
 
-  // Calibration service
+  // Calibration services
   bool jointStartupCalibration(
     blue_msgs::JointStartupCalibration::Request &request,
     blue_msgs::JointStartupCalibration::Response &response
   );
+  bool gripperPositionCalibration(
+    blue_msgs::GripperPositionCalibration::Request &request,
+    blue_msgs::GripperPositionCalibration::Response &response
+  );
   ros::ServiceServer joint_startup_calibration_service_;
+  ros::ServiceServer gripper_position_calibration_service_;
 
   // Helpers for reading params
   template <typename TParam>
