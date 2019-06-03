@@ -70,6 +70,17 @@ After running the above setup steps, the following will boot the arm and put it 
   ```bash
   roslaunch blue_bringup left.launch param_file:=blue_params.yaml
   ```
+-----
+
+## How do I calibrate the gripper?
+
+The starup calibration assumes the gripper is open. If Blue was started with the gripper open then no additional steps are needed!
+
+However, if Blue is started in any arbitray orentation, then an optional gripper calibration service can be called. From the command line
+- ```bash
+  rosservice call /<insert side>_arm/calibrate_gripper "{}"
+  ```
+- Note that the gripper controllers cannot be running in order for this to work. Any gripper controllers should be switched off before calling this service.
 
 -----
 ## Experimental two arm
