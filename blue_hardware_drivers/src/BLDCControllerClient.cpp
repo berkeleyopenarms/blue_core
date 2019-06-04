@@ -109,21 +109,21 @@ void BLDCControllerClient::initMotor(comm_id_t board_id){
   queueSetPositionOffset(board_id, calibrations["zero"].asFloat());
   exchange();
 
-// #ifdef DEBUG_CALIBRATION_DATA
-  // std::cout << "Phases A Current: " << calibrations["ia_off"].asFloat() << std::endl;
-// #endif
-  // queueSetIAOffset(board_id, (uint8_t) calibrations["ia_off"].asFloat());
-  // exchange();
-// #ifdef DEBUG_CALIBRATION_DATA
-  // std::cout << "Phases B Current: " << calibrations["ib_off"].asFloat() << std::endl;
-// #endif
-  // queueSetIBOffset(board_id, (uint8_t) calibrations["ib_off"].asFloat());
-  // exchange();
-// #ifdef DEBUG_CALIBRATION_DATA
-  // std::cout << "Phases C Current: " << calibrations["ic_off"].asFloat() << std::endl;
-// #endif
-  // queueSetICOffset(board_id, (uint8_t) calibrations["ic_off"].asFloat());
-  // exchange();
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Phases A Current: " << calibrations["ia_off"].asFloat() << std::endl;
+#endif
+  queueSetIAOffset(board_id, (uint8_t) calibrations["ia_off"].asFloat());
+  exchange();
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Phases B Current: " << calibrations["ib_off"].asFloat() << std::endl;
+#endif
+  queueSetIBOffset(board_id, (uint8_t) calibrations["ib_off"].asFloat());
+  exchange();
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << "Phases C Current: " << calibrations["ic_off"].asFloat() << std::endl;
+#endif
+  queueSetICOffset(board_id, (uint8_t) calibrations["ic_off"].asFloat());
+  exchange();
 
   if (calibrations.isMember("eac_type")) {
     std::string eac_type = calibrations["eac_type"].asString();
@@ -170,25 +170,25 @@ void BLDCControllerClient::initMotor(comm_id_t board_id){
     }
   }
 
-  if (calibrations["torque"].asFloat() < 1) {
-    queueSetDirectCurrentControllerKp(board_id, 0.1f);
+  // if (calibrations["torque"].asFloat() < 1) {
+    queueSetDirectCurrentControllerKp(board_id, 5.0f);
     exchange();
     queueSetDirectCurrentControllerKi(board_id, 0.0f);
     exchange();
-    queueSetQuadratureCurrentControllerKp(board_id, 0.1f);
+    queueSetQuadratureCurrentControllerKp(board_id, 10.0f);
     exchange();
     queueSetQuadratureCurrentControllerKi(board_id, 0.0f);
     exchange();
-  } else {
-    queueSetDirectCurrentControllerKp(board_id, 1.0f);
-    exchange();
-    queueSetDirectCurrentControllerKi(board_id, 0.0f);
-    exchange();
-    queueSetQuadratureCurrentControllerKp(board_id, 1.0f);
-    exchange();
-    queueSetQuadratureCurrentControllerKi(board_id, 0.0f);
-    exchange();
-  }
+  // } else {
+    // queueSetDirectCurrentControllerKp(board_id, 1.0f);
+    // exchange();
+    // queueSetDirectCurrentControllerKi(board_id, 0.0f);
+    // exchange();
+    // queueSetQuadratureCurrentControllerKp(board_id, 1.0f);
+    // exchange();
+    // queueSetQuadratureCurrentControllerKi(board_id, 0.0f);
+    // exchange();
+  // }
 
 
 
