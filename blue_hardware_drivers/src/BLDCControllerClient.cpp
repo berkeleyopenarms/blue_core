@@ -171,22 +171,22 @@ void BLDCControllerClient::initMotor(comm_id_t board_id){
   }
 
   if (calibrations["torque"].asFloat() > 1) {
-    queueSetDirectCurrentControllerKp(board_id, 5.0f);
+    queueSetDirectCurrentControllerKp(board_id, 0.5f);
     exchange();
-    queueSetDirectCurrentControllerKi(board_id, 0.0f);
+    queueSetDirectCurrentControllerKi(board_id, 0.1f);
     exchange();
-    queueSetQuadratureCurrentControllerKp(board_id, 10.0f);
+    queueSetQuadratureCurrentControllerKp(board_id, 1.0f);
     exchange();
-    queueSetQuadratureCurrentControllerKi(board_id, 0.0f);
+    queueSetQuadratureCurrentControllerKi(board_id, 0.2f);
     exchange();
   } else {
-    queueSetDirectCurrentControllerKp(board_id, 1.0f);
+    queueSetDirectCurrentControllerKp(board_id, 0.5f);
     exchange();
-    queueSetDirectCurrentControllerKi(board_id, 0.0f);
+    queueSetDirectCurrentControllerKi(board_id, 0.1f);
     exchange();
-    queueSetQuadratureCurrentControllerKp(board_id, 2.0f);
+    queueSetQuadratureCurrentControllerKp(board_id, 1.0f);
     exchange();
-    queueSetQuadratureCurrentControllerKi(board_id, 0.0f);
+    queueSetQuadratureCurrentControllerKi(board_id, 0.2f);
     exchange();
   }
 
