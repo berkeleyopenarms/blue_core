@@ -227,7 +227,7 @@ void BLDCControllerClient::clearQueue() {
       it->second = nullptr;
     }
   }
-  //ser_.flush();
+  ser_.flush();
   packet_queue_.clear();
 }
 

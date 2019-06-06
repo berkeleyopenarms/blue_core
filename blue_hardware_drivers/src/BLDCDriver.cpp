@@ -48,7 +48,7 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
         ros::Duration(0.2).sleep();
         continue;
       }
-      ros::Duration(1).sleep();
+      ros::Duration(0.1).sleep();
     }
   }
 
@@ -112,7 +112,7 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
       } catch (comms_error e) {
         ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not get initial state of board %d, retrying...", id);
-        ros::Duration(0.2).sleep();
+        ros::Duration(0.5).sleep();
       }
     }
   }
