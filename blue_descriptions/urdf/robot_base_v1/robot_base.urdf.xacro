@@ -6,6 +6,15 @@
   <!-- ============================  Robot Base  ============================ -->
   <xacro:macro name="blue_robot_base_v1" params="cam_height cam_angle is_gazebo:=false">
 
+  <xacro:if value="${is_gazebo}">
+    <link name="world"/>
+    <joint name ="world_joint" type= "fixed">
+      <origin xyz="0 0 0.965" rpy="0 0 0" />
+      <parent link="world"/>
+      <child link="base_link"/>
+    </joint>
+  </xacro:if>
+
 
   <link
     name="base_link">
