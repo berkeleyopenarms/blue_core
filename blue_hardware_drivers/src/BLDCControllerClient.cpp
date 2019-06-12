@@ -445,6 +445,10 @@ void BLDCControllerClient::resetBoards() {
   exchange();
 }
 
+void BLDCControllerClient::resetInputBuffer() {
+  ser_.flush();
+}
+
 /*              Start of Transmission Packet Abstract Functions                 */
 
 void BLDCControllerClient::queueConfirmID(comm_id_t board_id) {

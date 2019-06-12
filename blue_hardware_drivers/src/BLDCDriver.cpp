@@ -20,6 +20,7 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
       device_.resetBoards();
     } catch (comms_error e) {
       ROS_ERROR("%s\n", e.what());
+      device_.resetInputBuffer();
     }
     count++;
     ros::Duration(0.2).sleep();
@@ -46,6 +47,7 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
         ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not assign board id %d, retrying...", id);
         ros::Duration(0.2).sleep();
+        device_.resetInputBuffer();
         continue;
       }
       ros::Duration(0.1).sleep();
@@ -66,6 +68,7 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
         ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not kick board %d out of bootloader, retrying...", id);
         ros::Duration(0.2).sleep();
+        device_.resetInputBuffer();
       }
     }
   }
@@ -82,6 +85,7 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
         ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not initialize motor %d, retrying...", id);
         ros::Duration(0.2).sleep();
+        device_.resetInputBuffer();
       }
     }
     // Set motor timeout to 1 second
@@ -97,6 +101,7 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
         ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not set timeout on motor %d, retrying...", id);
         ros::Duration(0.2).sleep();
+        device_.resetInputBuffer();
       }
     }
     ROS_DEBUG("Initialized board: %d", id);
@@ -106,13 +111,15 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
     success = false;
     while (!success && ros::ok()) {
       try {
-        device_.queueGetState(id);
+        device_.queueSetCommandAndGetState(id, 0.0);
+        //device_.queueGetState(id);
         device_.exchange();
         success = true;
       } catch (comms_error e) {
         ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not get initial state of board %d, retrying...", id);
-        ros::Duration(0.5).sleep();
+        ros::Duration(0.2).sleep();
+        device_.resetInputBuffer();
       }
     }
   }
