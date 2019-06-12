@@ -3,13 +3,13 @@
 
 namespace blue_hardware_drivers {
 
-// Defined here: https://github.com/berkeley-open-robotics/bldc-controller/docs/
+// Defined here: https://github.com/berkeleyopenarms/bldc-controller/docs/
 // Current Protocol = Version 3
 
 //#define DEBUG_TRANSMIT
 //#define DEBUG_RECEIVE
 //#define DEBUG_RECEIVE_CRC
-#define DEBUG_CALIBRATION_DATA
+//#define DEBUG_CALIBRATION_DATA
 //#define DEBUG_ALLOCS
 
 constexpr uint8_t COMM_SYNC_FLAG = 0xFF;

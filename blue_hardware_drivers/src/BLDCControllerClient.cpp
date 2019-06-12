@@ -50,9 +50,9 @@ void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& 
   }
 }
 
-void BLDCControllerClient::initMotor(comm_id_t board_id){
+bool BLDCControllerClient::initMotor(comm_id_t board_id){
   uint32_t len = 0;
-  std::string data;
+  std::string data = "";
 
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Calibrating board: " << (int) board_id << std::endl;
@@ -74,16 +74,32 @@ void BLDCControllerClient::initMotor(comm_id_t board_id){
 #endif
   data = "";
   readFlash(board_id, COMM_NVPARAMS_OFFSET+2, len, data);
+  
+#ifdef DEBUG_CALIBRATION_DATA
+  std::cout << data << std::endl;
+#endif
 
   Json::Reader reader;
   Json::Value calibrations;
   reader.parse(data, calibrations);
 
+  if ( calibrations["angle"].isNull()
+    || calibrations["inv"].isNull()
+    || calibrations["epm"].isNull()
+    || calibrations["torque"].isNull()
+    || calibrations["zero"].isNull()
+    || calibrations["ia_off"].isNull()
+    || calibrations["ib_off"].isNull()
+    || calibrations["ic_off"].isNull()
+    ) {
+    return false;
+  }
+
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Zero Angle: " << calibrations["angle"].asUInt() << std::endl;
 #endif
-  queueSetZeroAngle(board_id, (uint16_t) calibrations["angle"].asUInt());
-  exchange();
+    queueSetZeroAngle(board_id, (uint16_t) calibrations["angle"].asUInt());
+    exchange();
 
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Invert Phases: " << calibrations["inv"].asUInt() << std::endl;
@@ -190,14 +206,14 @@ void BLDCControllerClient::initMotor(comm_id_t board_id){
     exchange();
   }
 
-
-
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Setting control mode" << std::endl;
 #endif
 
   queueSetControlMode(board_id, COMM_CTRL_MODE_CURRENT);
   exchange();
+
+  return true;
 }
 
 // Sends packets to boards and collects data
@@ -445,7 +461,7 @@ void BLDCControllerClient::resetBoards() {
   exchange();
 }
 
-void BLDCControllerClient::resetInputBuffer() {
+void BLDCControllerClient::resetBuffer() {
   ser_.flush();
 }
 

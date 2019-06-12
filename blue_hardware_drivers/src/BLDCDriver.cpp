@@ -13,6 +13,8 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
 
   device_.init(port, board_ids);
 
+  device_.resetBuffer();
+
   // Put all boards into bootloader!
   int count = 0;
   while (count < 3) {
@@ -20,11 +22,13 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
       device_.resetBoards();
     } catch (comms_error e) {
       ROS_ERROR("%s\n", e.what());
-      device_.resetInputBuffer();
+      device_.resetBuffer();
     }
     count++;
     ros::Duration(0.2).sleep();
   }
+
+  device_.resetBuffer();
 
   // Assign boards IDs!
   bool success;
@@ -47,13 +51,14 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
         ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not assign board id %d, retrying...", id);
         ros::Duration(0.2).sleep();
-        device_.resetInputBuffer();
+        device_.resetBuffer();
         continue;
       }
       ros::Duration(0.1).sleep();
     }
   }
 
+  device_.resetBuffer();
 
   // Kick all board_ids_ out of bootloader!
   for (auto id : board_ids_) {
@@ -63,29 +68,50 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
         // 0 jumps to default firmware address
         device_.queueLeaveBootloader(id, 0);
         device_.exchange();
+        ROS_INFO("Board %d left bootloader.\n", id);
         success = true;
       } catch (comms_error e) {
-        ROS_ERROR("%s\n", e.what());
-        ROS_ERROR("Could not kick board %d out of bootloader, retrying...", id);
+        //ROS_ERROR("%s\n", e.what());
+        //ROS_ERROR("Could not kick board %d out of bootloader, retrying...", id);
         ros::Duration(0.2).sleep();
-        device_.resetInputBuffer();
+        device_.resetBuffer();
       }
     }
   }
+
+  device_.resetBuffer();
+
+  for (auto id : board_ids_) {
+    success = false;
+    while (!success && ros::ok()) {
+      try {
+        device_.queueGetState(id);
+        device_.exchange();
+        ROS_INFO("Board %d returned state.\n", id);
+        success = true;
+      } catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not get initial state of board %d, retrying...", id);
+        ros::Duration(0.2).sleep();
+        device_.resetBuffer();
+      }
+    }
+  }
+
+  device_.resetBuffer();
 
   for (auto id : board_ids_) {
     success = false; // set to false to initialize board_ids_ (doing this because some test board_ids_ are not calibrated)
     while (!success && ros::ok()) {
       // Initialize the motor
       try {
-        device_.initMotor(id);
-        success = true;
+        success = device_.initMotor(id);
       }
       catch (comms_error e) {
         ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not initialize motor %d, retrying...", id);
         ros::Duration(0.2).sleep();
-        device_.resetInputBuffer();
+        device_.resetBuffer();
       }
     }
     // Set motor timeout to 1 second
@@ -95,36 +121,23 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
       try {
         device_.queueSetTimeout(id, 1000);
         device_.exchange();
+        ROS_DEBUG("Initialized board: %d", id);
         success = true;
       }
       catch (comms_error e) {
         ROS_ERROR("%s\n", e.what());
         ROS_ERROR("Could not set timeout on motor %d, retrying...", id);
         ros::Duration(0.2).sleep();
-        device_.resetInputBuffer();
-      }
-    }
-    ROS_DEBUG("Initialized board: %d", id);
-  }
-
-  for (auto id : board_ids_) {
-    success = false;
-    while (!success && ros::ok()) {
-      try {
-        device_.queueSetCommandAndGetState(id, 0.0);
-        //device_.queueGetState(id);
-        device_.exchange();
-        success = true;
-      } catch (comms_error e) {
-        ROS_ERROR("%s\n", e.what());
-        ROS_ERROR("Could not get initial state of board %d, retrying...", id);
-        ros::Duration(0.2).sleep();
-        device_.resetInputBuffer();
+        device_.resetBuffer();
       }
     }
   }
 
-  engaged_ = true;
+  if (ros::ok()) {
+    engaged_ = true;
+    ros::Duration(0.5).sleep();
+    device_.resetBuffer();
+  }
 }
 
 BLDCDriver::BLDCDriver(){

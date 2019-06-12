@@ -27,6 +27,7 @@ class BLDCDriver {
     void update(std::unordered_map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states);
     void engageControl();
     void disengageControl();
+
     BLDCDriver();
 
   private:

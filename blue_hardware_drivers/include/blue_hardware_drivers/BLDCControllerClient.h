@@ -77,14 +77,14 @@ class BLDCControllerClient {
     void resetBoards();
 
     // Clear the RS485 Buffer
-    void resetInputBuffer();
+    void resetBuffer();
 
     // Result Commands
     void resultGetRotorPosition(comm_id_t board_id, float* result);
     void resultGetState(comm_id_t board_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, int32_t* acc_x, int32_t* acc_y, int32_t* acc_z);
 
     // Setup/Programming Commands
-    void initMotor(comm_id_t board_id);
+    bool initMotor(comm_id_t board_id);
 
   private:
     serial::Serial ser_;

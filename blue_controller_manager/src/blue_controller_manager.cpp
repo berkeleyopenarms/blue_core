@@ -40,7 +40,7 @@ int main(int argc, char** argv)
       robot.read();
       num_errors = 0;
     } catch (blue_hardware_drivers::comms_error e) {
-      ROS_WARN_THROTTLE(1.0, "%s\n", e.what());
+      ROS_WARN_THROTTLE(1.0, "Manager - %s\n", e.what());
       num_errors++;
       if (num_errors == 100) {
         ROS_ERROR("100 consecutive communication errors, exiting...");
