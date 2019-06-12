@@ -3,8 +3,8 @@
 """This node provides a service to calibrate the grippers."""
 
 import rospy
-import numpy as np
 import actionlib
+import numpy as np
 from blue_msgs.srv import GripperPositionCalibration
 from controller_manager_msgs.srv import SwitchController
 from controller_manager_msgs.srv import LoadController
@@ -23,7 +23,7 @@ def get_gripper_actuator_position():
 
 def handle_load_controllers():
     unload_list = []
-    load_controllers_list = ['blue_controllers/gripper_torque_controller', 'blue_controllers/gripper_controller']
+    load_controllers_list = ['blue_controllers/gripper_torque_controller']
     loaded_controllers = list_controllers()
     for controller in load_controllers_list:
         load = True
@@ -52,7 +52,7 @@ def handle_calibration_service(input_request):
 
         # Close the gripper
         cmd = Float64MultiArray()
-        cmd.data = [5.0]
+        cmd.data = [3.0]
         for i in range(5):
             cmd_pub.publish(cmd)
             rospy.sleep(0.1)
@@ -65,45 +65,24 @@ def handle_calibration_service(input_request):
             gripper_position_current = gripper_position_previous
             gripper_position_previous = get_gripper_actuator_position()
 
+        # Calibrate gripper to closed position
+        # TODO: don't hardcode this value -- read from yaml? URDF?
+        response = gripper_position_calibration(1.05)
+        if response.success:
+            rospy.loginfo("Gripper calibration succeeded!")
+        else:
+            rospy.logerr("Gripper calibration failed!")
+            return TriggerResponse(False, "Fail")
+
         # Stop applying force
         cmd.data = [0.0]
         for i in range(5):
             cmd_pub.publish(cmd)
             rospy.sleep(0.1)
-
-        # Calibrate gripper to closed position
-        # TODO: don't hardcode this value -- read from yaml? URDF?
-        response = gripper_position_calibration(1.0)
-
-        if response.success:
-            rospy.loginfo("Gripper calibration succeeded!")
-        else:
-            rospy.logerr("Gripper calibration failed!")
-
-        # Switch out controllers to reset position
-        gripper_controller_response = switch_controller(['blue_controllers/gripper_controller'], ['blue_controllers/gripper_torque_controller'], 2)
-
-        client = actionlib.SimpleActionClient(
-            "blue_controllers/gripper_controller/gripper_cmd",
-            GripperCommandAction,
-        )
-
-        # Wait 10 Seconds for the gripper action server to start or exit
-        if not client.wait_for_server(rospy.Duration(10.0)):
-            rospy.logerr("Exiting - Gripper Action Server Not Found")
-            rospy.signal_shutdown("Action Server not found")
-            sys.exit(1)
-
-        goal = GripperCommandGoal()
-        goal.command.position = 0.0
-        goal.command.max_effort = 6.0
-        client.send_goal(goal)
-        client.wait_for_result()
-
-        # Clear gripper controllers
-        gripper_controller_response = switch_controller([], ['blue_controllers/gripper_controller'], 2)
         rospy.loginfo("Gripper calibration succeeded!")
 
+        # Switch out controllers
+        gripper_controller_response = switch_controller([], ['blue_controllers/gripper_torque_controller'], 2)
         # Unload controllers that were loaded
         for controller in unload_list:
             unload_controller(controller)

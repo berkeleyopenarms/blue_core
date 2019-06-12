@@ -233,7 +233,7 @@ void BlueKinematics::setGripperPosition(double position) {
 
   // At the next control cycle, the position of the gripper joint
   // should be equal to <position>
-  joint_offsets_[num_joints_ - 1] = position - joint_pos_[num_joints_ - 1];
+  joint_offsets_[num_joints_ - 1] = position - joint_pos_[num_joints_ - 1] + joint_offsets_[num_joints_ - 1];
 }
 
 const std::vector<double>& BlueKinematics::getJointPos() {
