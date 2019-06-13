@@ -4,6 +4,8 @@
   <arg name="configuration" default="full" doc="left, right, or full" />
   <arg name="version" default="2" doc="1 or 2" />
 
+  <arg name="port" default="9090" doc="port for rosbridge_server" />
+
   <!-- Load URDF -->
   <param
     name="robot_description"
@@ -28,7 +30,9 @@
     type="state_publisher" />
 
   <!-- Support external applications via rosbridge -->
-  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+    <arg name="port" value="$(arg port)" />
+  </include>
   <node name="tf2_web_republisher"
     pkg="tf2_web_republisher"
     type="tf2_web_republisher" />
