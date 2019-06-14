@@ -1,7 +1,7 @@
 <launch>
   <arg name="param_file" />
   <arg name="version" default="2" doc="1 or 2" />
-  <arg name="on_stand" value="false" /> <!-- this value should not matter -->
+  <arg name="on_stand" value="true" /> <!-- this value should not matter -->
 
   <rosparam
     file="$(arg param_file)"

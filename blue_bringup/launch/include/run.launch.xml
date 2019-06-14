@@ -3,7 +3,7 @@
   <!-- What kind of robot am I? -->
   <arg name="configuration" default="full" doc="left, right, or full" />
   <arg name="version" default="2" doc="1 or 2" />
-  <arg name="on_stand" default="false" doc="true or false" />
+  <arg name="on_stand" default="false" doc="Is the arm on two arm stand? This will set the base_link frame to the center of the stand" />
 
   <!-- Load URDF -->
   <param
