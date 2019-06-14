@@ -1,6 +1,8 @@
 <launch>
   <arg name="param_file" />
   <arg name="version" default="2" doc="1 or 2" />
+  <arg name="on_stand" default="false" doc="true or false" />
+
 
   <rosparam
     file="$(arg param_file)"
@@ -10,5 +12,6 @@
     file="$(find blue_bringup)/launch/include/run.launch.xml">
     <arg name="configuration" value="left" />
     <arg name="version" value="$(arg version)" />
+    <arg name="on_stand" value="$(arg on_stand)" />
   </include>
 </launch>
