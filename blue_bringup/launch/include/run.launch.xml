@@ -3,13 +3,19 @@
   <!-- What kind of robot am I? -->
   <arg name="configuration" default="full" doc="left, right, or full" />
   <arg name="version" default="2" doc="1 or 2" />
+  <arg name="on_stand" default="false" doc="Is the arm on two arm stand? This will set the base_link frame to the center of the stand" />
 
   <arg name="rosbridge_port" default="9090" doc="port for rosbridge_server" />
 
   <!-- Load URDF -->
   <param
     name="robot_description"
-    command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_$(arg configuration)_v$(arg version).urdf.xacro'" />
+    command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_full_v$(arg version).urdf.xacro'"
+    if="$(arg on_stand)" />
+  <param
+    name="robot_description"
+    command="$(find xacro)/xacro --inorder '$(find blue_descriptions)/robots/blue_$(arg configuration)_v$(arg version).urdf.xacro'"
+    unless="$(arg on_stand)" />
 
   <!-- Run core control stack -->
   <include
