@@ -1,7 +1,7 @@
 <launch>
-  <arg name="param_file" />
-  <arg name="version" default="2" doc="1 or 2" />
-  <arg name="on_stand" value="true" /> <!-- this value should not matter -->
+  <arg name="param_file" doc="Path to the arm-specific parameter file." />
+  <arg name="version" default="2" doc="What version of the Blue arm hardware are we using? (1 or 2)" />
+  <arg name="rosbridge_port" default="9090" doc="Port for rosbridge and the Python API" />
 
   <rosparam
     file="$(arg param_file)"
@@ -11,5 +11,6 @@
     file="$(find blue_bringup)/launch/include/run.launch.xml">
     <arg name="configuration" value="full" />
     <arg name="version" value="$(arg version)" />
+    <arg name="rosbridge_port" value="$(arg rosbridge_port)" />
   </include>
 </launch>

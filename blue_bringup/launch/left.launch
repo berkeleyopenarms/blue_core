@@ -1,8 +1,8 @@
 <launch>
-  <arg name="param_file" />
-  <arg name="version" default="2" doc="1 or 2" />
-  <arg name="on_stand" default="false" doc="Is the arm on two arm stand? This will set the base_link frame to the center of the stand" />
-
+  <arg name="param_file" doc="Path to the arm-specific parameter file." />
+  <arg name="version" default="2" doc="What version of the Blue arm hardware are we using? (1 or 2)" />
+  <arg name="on_stand" default="false" doc="Is the arm on a two arm stand? Setting this to 'true' will load the two arm URDF and set the base_link frame to the center of the stand." />
+  <arg name="rosbridge_port" default="9090" doc="port for rosbridge and the Python API." />
 
   <rosparam
     file="$(arg param_file)"
@@ -13,5 +13,6 @@
     <arg name="configuration" value="left" />
     <arg name="version" value="$(arg version)" />
     <arg name="on_stand" value="$(arg on_stand)" />
+    <arg name="rosbridge_port" value="$(arg rosbridge_port)" />
   </include>
 </launch>
