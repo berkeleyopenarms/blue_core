@@ -128,17 +128,17 @@ bool BLDCControllerClient::initMotor(comm_id_t board_id){
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Phases A Current: " << calibrations["ia_off"].asFloat() << std::endl;
 #endif
-  queueSetIAOffset(board_id, (uint8_t) calibrations["ia_off"].asFloat());
+  queueSetIAOffset(board_id, calibrations["ia_off"].asFloat());
   exchange();
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Phases B Current: " << calibrations["ib_off"].asFloat() << std::endl;
 #endif
-  queueSetIBOffset(board_id, (uint8_t) calibrations["ib_off"].asFloat());
+  queueSetIBOffset(board_id, calibrations["ib_off"].asFloat());
   exchange();
 #ifdef DEBUG_CALIBRATION_DATA
   std::cout << "Phases C Current: " << calibrations["ic_off"].asFloat() << std::endl;
 #endif
-  queueSetICOffset(board_id, (uint8_t) calibrations["ic_off"].asFloat());
+  queueSetICOffset(board_id, calibrations["ic_off"].asFloat());
   exchange();
 
   if (calibrations.isMember("eac_type")) {
@@ -205,13 +205,6 @@ bool BLDCControllerClient::initMotor(comm_id_t board_id){
     queueSetQuadratureCurrentControllerKi(board_id, 0.2f);
     exchange();
   }
-
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Setting control mode" << std::endl;
-#endif
-
-  queueSetControlMode(board_id, COMM_CTRL_MODE_CURRENT);
-  exchange();
 
   return true;
 }
