@@ -9,6 +9,7 @@
 #include <sys/ioctl.h>
 #include <linux/serial.h>
 #include <stdio.h>
+#include <chrono>
 
 #include "blue_hardware_drivers/comms_defs.h"
 #include "blue_hardware_drivers/Packets.h"
@@ -211,12 +212,21 @@ bool BLDCControllerClient::initMotor(comm_id_t board_id){
 
 // Sends packets to boards and collects data
 void BLDCControllerClient::exchange() {
+  std::string err = "";
   transmit();
   // Receive data from each board in order
   for (auto it = packet_queue_.begin(); it != packet_queue_.end(); it++) {
     comm_id_t board_id = it->first; // Get server id (key in [key, value] pair)
     if (board_id != 0) {
-      while (!receive(board_id));
+      bool success = false;
+      while (!success)
+      {
+        success = receive(board_id, err);
+        if (err != "")
+        {
+          throw comms_error("Board " + std::to_string((int)board_id) + ": " + err);
+        }
+      }
     }
   }
   // Empty the queue
@@ -324,25 +334,31 @@ void BLDCControllerClient::transmit() {
   }
 }
 
-void BLDCControllerClient::ser_read_check(uint8_t * data, size_t len) {
+void BLDCControllerClient::ser_read_check(uint8_t * data, size_t len, std::string & err) {
   int read_len = 0;
   size_t tries = 0;
+
+  typedef std::chrono::high_resolution_clock Time;
+  using fsec = std::chrono::duration<double>;
+
+  auto start = Time::now();
   do {
     read_len = ser_.read(data, len);
   } while (read_len == 0 && read_len != -1 && tries++ < COMM_MAX_RETRIES);
 
   if (read_len == -1) {
-    throw comms_error("Serial Port Closed");
-  }
-  if (read_len != len) {
-    std::string msg = "Not enough data received. Expected " + std::to_string(len) + " got " + std::to_string(read_len);
-    throw comms_error(msg);
+    err = "Serial Port Closed";
+  } 
+  else if (read_len != len) {
+    auto elapsed = Time::now() - start;
+    err = "Expected " + std::to_string(len) + " Byte(s) got " + std::to_string(read_len) + ". Waited for: " + std::to_string(fsec(elapsed).count()) + "s.";
   }
 }
 
-bool BLDCControllerClient::receive( comm_id_t board_id ) {
+bool BLDCControllerClient::receive( comm_id_t board_id, std::string & err ) {
+
   uint8_t sync = 0;
-  ser_read_check(&sync, sizeof(sync));
+  ser_read_check(&sync, sizeof(sync), err);
   if (sync != COMM_SYNC_FLAG) {
     return false;
   }
@@ -352,19 +368,19 @@ bool BLDCControllerClient::receive( comm_id_t board_id ) {
 #endif
 
   comm_protocol_t protocol_version = 0;
-  ser_read_check(reinterpret_cast<uint8_t*>(&protocol_version), sizeof(protocol_version));
+  ser_read_check(reinterpret_cast<uint8_t*>(&protocol_version), sizeof(protocol_version), err);
   if (protocol_version != COMM_VERSION) {
     return false;
   }
 
-  comm_fg_t flags = 0;
-  ser_read_check(reinterpret_cast<uint8_t*>(&flags), sizeof(flags));
+  comm_fg_t flags = 0xFF;
+  ser_read_check(reinterpret_cast<uint8_t*>(&flags), sizeof(flags), err);
   if ((flags & COMM_FG_BOARD) != COMM_FG_BOARD) {
     return false;
   }
 
   comm_msg_len_t packet_len = 0;
-  ser_read_check(reinterpret_cast<uint8_t*>(&packet_len), sizeof(packet_len));
+  ser_read_check(reinterpret_cast<uint8_t*>(&packet_len), sizeof(packet_len), err);
 
 #ifdef DEBUG_RECEIVE
   std::cout << "Packet length: " << (int) packet_len << std::endl;
@@ -372,9 +388,11 @@ bool BLDCControllerClient::receive( comm_id_t board_id ) {
 
   rx_bufs_[board_id].clear();
 
-  if (!rx_bufs_[board_id].addHead(packet_len))
-    throw comms_error("rx buffer too small for message");
-  ser_read_check(rx_bufs_[board_id].ptr(), packet_len);
+  if (!rx_bufs_[board_id].addHead(packet_len)) {
+    err = "rx buffer too small for message";
+    return false;
+  }
+  ser_read_check(rx_bufs_[board_id].ptr(), packet_len, err);
 
 #ifdef DEBUG_RECEIVE
   // print message
@@ -386,7 +404,7 @@ bool BLDCControllerClient::receive( comm_id_t board_id ) {
 #endif
 
   crc16_t crc = 0;
-  ser_read_check(reinterpret_cast<uint8_t*>(&crc), 2);
+  ser_read_check(reinterpret_cast<uint8_t*>(&crc), 2, err);
 
   crc16_t computed_crc = computeCRC(rx_bufs_[board_id].ptr(), rx_bufs_[board_id].size());
 
@@ -398,7 +416,8 @@ bool BLDCControllerClient::receive( comm_id_t board_id ) {
 #endif
 
   if (computed_crc != crc) {
-    throw comms_error("Incorrect crc!");
+    err = "Incorrect crc!";
+    return false;
   }
 
   // Parse message
@@ -408,7 +427,8 @@ bool BLDCControllerClient::receive( comm_id_t board_id ) {
   comm_id_t id = 0;
   rx_bufs_[board_id].read(reinterpret_cast<uint8_t*>(&id), sizeof(id));
   if (!(id == board_id || id == 0)) {
-    throw comms_error("Incorrect server id, expected: " + std::to_string((int)board_id) + ", got: " + std::to_string((int)id));
+    err = "Incorrect server id, got: " + std::to_string((int)id);
+    return false;
   }
 
 #ifdef DEBUG_RECEIVE
@@ -423,19 +443,24 @@ bool BLDCControllerClient::receive( comm_id_t board_id ) {
 
   if (errors) {
     if (errors & COMM_ERRORS_OP_FAILED) {
-      throw comms_error("operation failed");
+      err = "operation failed";
+      return false;
     }
     if (errors & COMM_ERRORS_MALFORMED) {
-      throw comms_error("malformed request");
+      err = "malformed request";
+      return false;
     }
     if (errors & COMM_ERRORS_INVALID_FC) {
-      throw comms_error("invalid function code");
+      err = "invalid function code";
+      return false;
     }
     if (errors & COMM_ERRORS_INVALID_ARGS) {
-      throw comms_error("invalid arguments");
+      err = "invalid arguments";
+      return false;
     }
     if (errors & COMM_ERRORS_BUF_LEN_MISMATCH) {
-      throw comms_error("buffer length mismatch");
+      err = "buffer length mismatch";
+      return false;
     }
   }
 

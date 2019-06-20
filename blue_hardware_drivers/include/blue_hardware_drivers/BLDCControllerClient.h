@@ -98,15 +98,15 @@ class BLDCControllerClient {
     int allocs_ = 0;
 
     // Checks to make sure serial read succeeded
-    void ser_read_check(uint8_t * data, size_t len);
+    void ser_read_check(uint8_t * data, size_t len, std::string & err);
 
     void transmit();
-    bool receive( comm_id_t board_id );
+    bool receive(comm_id_t board_id, std::string & err);
 
     // Flash Commands (Only affects one board at a time)
-    void readFlash( comm_id_t board_id, comm_full_addr_t addr, uint32_t count, std::string& buffer );
+    void readFlash(comm_id_t board_id, comm_full_addr_t addr, uint32_t count, std::string& buffer);
 
-    crc16_t computeCRC( const uint8_t* buf, size_t len );
+    crc16_t computeCRC(const uint8_t* buf, size_t len);
 };
 
 class comms_error : public std::exception {

@@ -29,8 +29,11 @@ int main(int argc, char** argv)
   //robot.setControl(false);
 
   ros::Time prev_time = ros::Time::now();
+  ros::Time last_update = ros::Time::now();
+  int consecutive_errors = 0;
   int num_errors = 0;
-  long count = 0;
+  long count = 0, last_count = 0;
+  double sum_freq = 0.0;
 
   while (ros::ok())
   {
@@ -38,11 +41,12 @@ int main(int argc, char** argv)
 
     try {
       robot.read();
-      num_errors = 0;
+      consecutive_errors = 0;
     } catch (blue_hardware_drivers::comms_error e) {
-      ROS_WARN_THROTTLE(1.0, "Manager - %s\n", e.what());
+      ROS_WARN("%s\n", e.what());
+      consecutive_errors++;
       num_errors++;
-      if (num_errors == 100) {
+      if (consecutive_errors == 100) {
         ROS_ERROR("100 consecutive communication errors, exiting...");
         break;
       }
@@ -51,12 +55,23 @@ int main(int argc, char** argv)
     ros::Time current_time = ros::Time::now();
     cm.update(current_time, current_time - prev_time);
     double frequency = 1.0 / (current_time - prev_time).toSec();
+    sum_freq += frequency;
     prev_time = current_time;
 
     robot.write();
 
     // Information for user!
-    ROS_INFO_THROTTLE(1.0, "Communication frequency is %.2fHz", frequency);
+    if ((current_time - last_update).toSec() > 1.0) {
+      long iters = count - last_count;
+      double error_perc = (double)(num_errors) / (double)(iters);
+      double avg_freq = sum_freq / (double)(iters);
+      ROS_INFO("Communication frequency is %.2fHz with %.2f%% error rate", avg_freq, error_perc);
+      last_update = current_time;
+      last_count = count;
+      num_errors = 0;
+      sum_freq = 0.0;
+    }
+
     count++;
 
     loop_rate.sleep();
