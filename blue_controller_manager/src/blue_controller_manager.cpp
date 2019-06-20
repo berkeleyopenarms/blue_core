@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     // Information for user!
     if ((current_time - last_update).toSec() > 1.0) {
       long iters = count - last_count;
-      double error_perc = (double)(num_errors) / (double)(iters);
+      double error_perc = (double)(num_errors) / (double)(iters) * 100.0;
       double avg_freq = sum_freq / (double)(iters);
       ROS_INFO("Communication frequency is %.2fHz with %.2f%% error rate", avg_freq, error_perc);
       last_update = current_time;
