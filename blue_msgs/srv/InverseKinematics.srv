@@ -1,0 +1,12 @@
+# Desired end effector pose with respect to the base_link
+PoseStamped end_effector_pose
+# Optional seed joint positions.
+# If no valid seed_joint_position is provided, the posture target will be used
+float64[] seed_joint_positions
+
+# Which IK solver should be use? (default is TRAC-IK)
+String solver
+---
+# Joint positions
+bool success
+float64[] ik_joint_positions

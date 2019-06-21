@@ -9,7 +9,7 @@ from blue_msgs.srv import GripperPositionCalibration
 from controller_manager_msgs.srv import SwitchController
 from controller_manager_msgs.srv import LoadController
 from controller_manager_msgs.srv import ListControllers
-from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+from std_srvs.srv import Trigger, TriggerResponse
 from blue_msgs.msg import MotorState
 from std_msgs.msg import Float64MultiArray
 from control_msgs.msg import GripperCommandAction
