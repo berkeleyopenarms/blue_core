@@ -54,20 +54,25 @@ class BlueIK:
         else:
             seed_joints = self.posture_target
 
-        # apply lookup transformation desired pose and apply the transformation
-        transform = tf_buffer.lookup_transform(target_frame,
-                                                                                      pose_stamped_to_transform.header.frame_id, #source frame
-                                                                                      rospy.Time(0), #get the tf at first available time
-                                                                                      rospy.Duration(1.0)) #wait for 1 second
+        try:
+            # apply lookup transformation desired pose and apply the transformation
+            transform = tf_buffer.lookup_transform(self.baselink,
+                                                   request.end_effector_pose.header.frame_id,
+                                                   rospy.Time(0), #get the tf at first available time
+                                                   rospy.Duration(0.1)) #wait for 0.1 second
+            pose_in_baselink_frame = tf2_geometry_msgs.do_transform_pose(request.end_effector_pose, transform)
 
-        pose_transformed = tf2_geometry_msgs.do_transform_pose(pose_stamped, transform)
+            if request.solver == "trac-ik":
+                ik_joints = self.ik_solution(pose_in_baselink_frame.pose, seed_joints)
+            else:
+                ik_joints = self.ik_solution(pose_in_baselink_frame.pose, seed_joints)
 
-            
-        ik_joints = self.ik_solution(request.end_effector_pose, seed_joints)
-        if ik_joints == False:
-            return joints
-        else:
-            return ik_joints
+            if ik_joints == False:
+                return InverseKinematicsResponse([], False)
+            else:
+                return InverseKinematicsResponse(ik_joints, False)
+        except:
+            return InverseKinematicsResponse([], False)
 
 
 if __name__ == "__main__":
