@@ -74,13 +74,16 @@ After running the above setup steps, the following will boot the arm and put it 
 
 ## How do I calibrate the gripper?
 
-The starup calibration assumes the gripper is open. If Blue was started with the gripper open then no additional steps are needed!
+At startup, the software stack assumes the gripper is open. If Blue was started with the gripper open, then no additional steps are needed!
 
-However, if Blue is started in any arbitray orentation, then an optional gripper calibration service can be called. From the command line
+However, if the gripper is started in any other position, then an optional gripper calibration service should be called before using the gripper. This service will automatically determine the gripper position by apply a closing torque and detecting when the gripper has fully closed.
+
+From the command line:
 - ```bash
-  rosservice call /<insert side>_arm/calibrate_gripper "{}"
+  rosservice call /<left or right>_arm/calibrate_gripper "{}"
   ```
-- Note that the gripper controllers cannot be running in order for this to work. Any gripper controllers should be switched off before calling this service.
+- Gripper controllers should not be started when this service is called.
+- This functionality is also supported by [blue_interface](https://github.com/berkeleyopenarms/blue_interface)
 
 -----
 ## Experimental two arm
