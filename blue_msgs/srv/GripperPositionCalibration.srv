@@ -1,0 +1,4 @@
+# Current position of the gripper
+float64 position
+---
+bool success

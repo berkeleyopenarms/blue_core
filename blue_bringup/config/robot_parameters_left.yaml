@@ -21,8 +21,8 @@ blue_hardware:
     gear_ratios: [-7.1875, 7.1875, 8.2444852941, 7.1875, 8.24448529412, 7.1875, 8.24448529412, 14.4]
     joint_torque_directions: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     id_torque_gains: [1.12, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    softstop_min_angles: [-2.2, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -1.45]
-    softstop_max_angles: [3.3, 0.5, 2.6, .5, 2.6, 0.5, 2.6, 1.45]
+    softstop_min_angles: [-2.2, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -2.65]
+    softstop_max_angles: [3.3, 0.5, 2.6, .5, 2.6, 0.5, 2.6, 2.65]
     softstop_tolerance: 0.19
     softstop_torque_limit: 95.0
 

@@ -11,11 +11,16 @@ gripper_controller:
   joints:
     - $(arg side)_gripper_joint
   joint: $(arg side)_gripper_joint
-  goal_tolerance: 0.01
+  goal_tolerance: 0.05
   stalled_velocity_threshold: 0.01
   stall_timeout: 0.2
   gains:
-    $(arg side)_gripper_joint: {p: 15, i: 5, d: 10.5, i_clamp_min: -1, i_clamp_max: 1}
+    $(arg side)_gripper_joint: {p: 5, i: 1, d: 1.5, i_clamp_min: -1, i_clamp_max: 1}
+
+gripper_torque_controller:
+  type: effort_controllers/JointGroupEffortController
+  joints:
+    - $(arg side)_gripper_joint
 
 ### Joint controllers
 

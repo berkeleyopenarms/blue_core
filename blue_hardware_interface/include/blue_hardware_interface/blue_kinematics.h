@@ -43,6 +43,7 @@ public:
   // Joint calibration
   void setJointOffsets(
       const std::vector<double> &offsets);
+  void setGripperPosition(double position);
 
   //  Update internal actuator states
   void setActuatorStates(

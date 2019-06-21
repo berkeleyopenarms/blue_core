@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 add_message_files(FILES MotorState.msg GravityVectorArray.msg)
-add_service_files(FILES JointStartupCalibration.srv)
+add_service_files(FILES JointStartupCalibration.srv GripperPositionCalibration.srv)
 
 generate_messages(
   DEPENDENCIES
