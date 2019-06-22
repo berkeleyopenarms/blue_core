@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""This node should run at startup, and allows users to request the IK solution."""
+"""This node provides a service that returns a set of joints that achieves the desired end effector pose."""
 
 import rospy
 import tf2_ros
@@ -18,10 +18,10 @@ class BlueIK:
         urdf = rospy.get_param("/robot_description")
 
         # set up tf2 for transformation lookups
-        self.tf_buffer = tf2_ros.Buffer(rospy.Duration(10.0)) #tf buffer length
+        self.tf_buffer = tf2_ros.Buffer(rospy.Duration(1.0)) # tf buffer length
         tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
-        # Build trac-ik solver
+        # build trac-ik solver
         self.ik = TRAC_IK(self.baselink,
                           self.endlink,
                           urdf,
@@ -33,45 +33,40 @@ class BlueIK:
 
         rospy.Service('inverse_kinematics', InverseKinematics, self.handle_ik_request)
 
-    def ik_solution(self, target, joints, solver="trac-ik"):
-        # target is a target pose object
-        # joints is the starting joint seed
-        seed_state = []
-        for j in joints:
-            seed_state.append(j)
-
+    def ik_solution(self, target_pose, seed_joint_positions, solver="trac-ik"):
         solver = solver.lower()
 
         # use the requested solver, default to trac-ik otherwise
+        # currently only trac-ik is supported
         if solver == "trac-ik":
-            result = self.ik.CartToJnt(seed_state,
-                                       target.position.x, target.position.y, target.position.z,
-                                       target.orientation.x, target.orientation.y, target.orientation.z, target.orientation.w)
+            ik_joints = self.ik.CartToJnt(seed_joint_positions,
+                                       target_pose.position.x, target_pose.position.y, target_pose.position.z,
+                                       target_pose.orientation.x, target_pose.orientation.y, target_pose.orientation.z, target_pose.orientation.w)
         else:
-            result = self.ik.CartToJnt(seed_state,
-                                       target.position.x, target.position.y, target.position.z,
-                                       target.orientation.x, target.orientation.y, target.orientation.z, target.orientation.w)
+            ik_joints = self.ik.CartToJnt(seed_joint_positions,
+                                       target_pose.position.x, target_pose.position.y, target_pose.position.z,
+                                       target_pose.orientation.x, target_pose.orientation.y, target_pose.orientation.z, target_pose.orientation.w)
 
-        if not len(self.posture_target) == len(result):
+        if not len(ik_joints) == len(seed_joint_positions):
             return False
-        return result
+        return ik_joints
 
     def handle_ik_request(self, request):
         if len(request.seed_joint_positions) == len(self.posture_target):
-            seed_joints = request.seed_joint_positions
+            seed_joint_positions = request.seed_joint_positions
         else:
-            seed_joints = self.posture_target
+            seed_joint_positions = self.posture_target
 
         try:
             # apply lookup transformation desired pose and apply the transformation
             transform = self.tf_buffer.lookup_transform(self.baselink,
                                                    request.end_effector_pose.header.frame_id,
-                                                   rospy.Time(0), #get the tf at first available time
-                                                   rospy.Duration(0.1)) #wait for 0.1 second
+                                                   rospy.Time(0), # get the tf at first available time
+                                                   rospy.Duration(0.1)) # wait for 0.1 second
             pose_in_baselink_frame = tf2_geometry_msgs.do_transform_pose(request.end_effector_pose, transform)
 
             # get the ik solution
-            ik_joints = self.ik_solution(pose_in_baselink_frame.pose, seed_joints)
+            ik_joints = self.ik_solution(pose_in_baselink_frame.pose, seed_joint_positions)
 
             if ik_joints == False:
                 return InverseKinematicsResponse(False, [])
