@@ -17,4 +17,5 @@
   <exec_depend>rosbridge_server</exec_depend>
   <exec_depend>tf2_web_republisher</exec_depend>
   <exec_depend>effort_controllers</exec_depend>
+  <exec_depend>trac_ik_python</exec_depend>
 </package>
