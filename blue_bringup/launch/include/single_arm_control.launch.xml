@@ -50,6 +50,12 @@
       pkg="blue_bringup"
       type="gripper_calibration_service.py"
       output="screen" />
+    <!-- Inverse kinematics service -->
+    <node
+      name="ik_service"
+      pkg="blue_bringup"
+      type="inverse_kinematics_service.py"
+      output="screen" />
 
   </group>
 </launch>
