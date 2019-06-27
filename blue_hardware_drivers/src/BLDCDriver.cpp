@@ -88,29 +88,6 @@ void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
 
   device_.resetBuffer();
 
-  for (auto id : board_ids_) {
-    success = false; // set to false to initialize board_ids_ (doing this because some test board_ids_ are not calibrated)
-    while (!success && ros::ok()) {
-      // Initialize the motor
-      try {
-        success = device_.initMotor(id);
-      }
-      catch (comms_error e) {
-        ROS_ERROR("%s\n", e.what());
-        ros::Duration(0.01).sleep();
-        device_.resetBuffer();
-      }
-
-      if (success) {
-        ROS_INFO("Initialized board: %d", id);
-      } else {
-        ROS_ERROR("Could not initialize board %d, retrying...", id);
-      }
-    }
-
-    ros::Duration(0.01).sleep();
-  }
-
   // Start the Motors
   engageControl();
 }
