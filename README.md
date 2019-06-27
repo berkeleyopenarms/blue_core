@@ -22,9 +22,8 @@ The stack is set up as a ROS metapackage, which organizes our codebase into the 
 
 ## How do I set up the computer to run my arm?
 
-- Install Ubuntu 16.0.4
-- [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
-  - Start from 1.2 to 1.7, just copy paste into terminal 
+- Install Ubuntu 16.0.4 or 18.0.4
+- Install ROS [Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) (16.0.4) or [Melodic](http://wiki.ros.org/melodic/Installation/Ubuntu) (18.0.4)
   - For step 1.4, use Desktop-Full if unsure
 - Create a workspace:
   ```bash
@@ -48,7 +47,7 @@ The stack is set up as a ROS metapackage, which organizes our codebase into the 
   echo "source ~/blue_ws/devel/setup.bash" >> ~/.bashrc
   source ~/blue_ws/devel/setup.bash
   ```
-- Setup user permissions (you'll need to log out and back in for this take effect):
+- Set up user permissions (for serial port access -- you'll need to log out and back in for this take effect):
   ```bash
   sudo addgroup $USER dialout
   ```
