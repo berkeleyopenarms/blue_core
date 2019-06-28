@@ -7,9 +7,14 @@ const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 const unsigned int CONTROL_LOOP_FREQ = 1000;
 const unsigned int BAUD_RATE = 1000000;
 
-void BLDCDriver::init(std::string port, std::vector<uint8_t> board_ids)
+void BLDCDriver::init(std::string port, std::vector<comm_id_t> board_ids)
 {
   board_ids_ = board_ids;
+
+  for (auto id : board_ids_) {
+    revolutions_[id] = 0;
+    angle_[id] = 0;
+  } 
 
   device_.init(port, board_ids);
 
@@ -96,9 +101,10 @@ BLDCDriver::BLDCDriver(){
   stop_motors_ = false;
   loop_count_ = 0;
   engaged_ = false;
+  first_read_ = true;
 }
 
-void BLDCDriver::update(std::unordered_map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states) {
+void BLDCDriver::update(std::unordered_map<comm_id_t, float>& commands, blue_msgs::MotorState& motor_states) {
 
   // Resize MotorState message to fit our read data
   int motor_count = commands.size();
@@ -149,6 +155,28 @@ void BLDCDriver::update(std::unordered_map<uint8_t, float>& commands, blue_msgs:
         , &motor_states.accel_z[i]
         );
 
+    float enc_position = std::fmod(motor_states.position[i], (2 * M_PI));
+
+    if (!first_read_) {
+      // To correct for potential resets, we record the number of full rotations off-board
+      //  and complete with on-board absolute encoder angle
+      float prev_enc_pos = angle_[id];
+ 
+      float enc_pos_diff = enc_position - prev_enc_pos;
+      if (enc_pos_diff < -M_PI) {
+        revolutions_[id] += 1;
+        enc_pos_diff += 2 * M_PI; // Normalize to (-pi, pi) range
+      } else if (enc_pos_diff > M_PI) {
+        revolutions_[id] -= 1;
+        enc_pos_diff -= 2 * M_PI; // Normalize to (-pi, pi) range
+      }
+ 
+      motor_states.position[i] = enc_position + revolutions_[id] * 2 * M_PI;
+    }
+
+    angle_[id] = enc_position;
+	
+
     if (motor_states.temperature[i] > MAX_TEMP_SHUTOFF) {
       stop_motors_ = true;
       ROS_ERROR_THROTTLE(1, "Motor %d is too hot! Shutting off system.", id);
@@ -157,6 +185,7 @@ void BLDCDriver::update(std::unordered_map<uint8_t, float>& commands, blue_msgs:
     }
   }
 
+  first_read_ = false;
   loop_count_++;
 }
 
