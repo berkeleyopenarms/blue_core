@@ -15,6 +15,7 @@ class Packet {
     comm_fc_t func_code_;
   public:
     Packet (comm_id_t id, comm_fc_t fc) : server_id_( id ), func_code_ (fc){}
+    virtual ~Packet() {}
 
     virtual void dump(Buffer& buf);
     inline comm_id_t getID() {return server_id_;}
