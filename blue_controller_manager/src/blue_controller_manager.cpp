@@ -43,7 +43,7 @@ int main(int argc, char** argv)
       robot.read();
       consecutive_errors = 0;
     } catch (blue_hardware_drivers::comms_error e) {
-      ROS_WARN("%s\n", e.what());
+      //ROS_WARN("%s\n", e.what());
       consecutive_errors++;
       num_errors++;
       if (consecutive_errors == 100) {
