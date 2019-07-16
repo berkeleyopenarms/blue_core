@@ -24,8 +24,7 @@ blue_hardware:
     softstop_min_angles: [-3.3, -2.25, -2.6, -2.25, -2.6, -2.25, -2.6, -1.45]
     softstop_max_angles: [2.2, 0.5, 2.6, 0.5, 2.6, 0.2, 2.6, 1.45]
     softstop_tolerance: 0.19
-    # softstop_torque_limit: 95.0
-    softstop_torque_limit: 0.0
+    softstop_torque_limit: 95.0
 
     ### Motor configuration
     motor_names:
@@ -38,9 +37,7 @@ blue_hardware:
         - right_motor3
         - gripper_motor
     motor_current_limits: [2.5, 2.5, 2.5, 2.0, 2.0, 1.0, 1.0, 1.0]
-    # current_to_torque_ratios: [0.626, 0.626, 0.626, 0.626, 0.626, 1.67, 1.67, 1.67]
     current_to_torque_ratios: [0.8522, 0.8522, 0.8522, 0.8522, 0.8522, 1.67, 1.67, 1.67]
-    # current_to_torque_ratios: [1., 1., 1., 1., 1., 1., 1., 1.]
 
     ### Posture control parameters for gradient descent ik pose controller
     posture_target: [-0.9, -1.57, 0.0, -1.57, -0.90, -1.0, 0.0]
