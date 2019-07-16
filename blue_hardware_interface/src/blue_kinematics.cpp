@@ -68,7 +68,7 @@ void BlueKinematics::init(
     } else {
       // Not differential pair (base or gripper, one joint each)
       transmissions_[transmission_idx] = new ti::SimpleTransmission(
-          -gear_ratios[joint_idx],
+          gear_ratios[joint_idx],
           0.0);
       joints_in_transmission = 1;
     }
@@ -219,8 +219,21 @@ void BlueKinematics::setJointOffsets(
   // Acquire the kinematics lock
   std::lock_guard<std::mutex> lock(kinematics_mutex_);
 
-  joint_offsets_ = offsets;
+  // What were the robot's joint positions when it started up?
+  for (int i = 0; i < offsets.size(); i++)
+    joint_offsets_[i] = offsets[i];
+
   is_calibrated_ = true;
+}
+
+void BlueKinematics::setGripperPosition(double position) {
+
+  // Acquire the kinematics lock
+  std::lock_guard<std::mutex> lock(kinematics_mutex_);
+
+  // At the next control cycle, the position of the gripper joint
+  // should be equal to <position>
+  joint_offsets_[num_joints_ - 1] = position - joint_pos_[num_joints_ - 1] + joint_offsets_[num_joints_ - 1];
 }
 
 const std::vector<double>& BlueKinematics::getJointPos() {

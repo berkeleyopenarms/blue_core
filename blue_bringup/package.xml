@@ -1,24 +1,21 @@
-<?xml version="1.0"?>
-<package>
+<package format="2">
   <name>blue_bringup</name>
   <version>0.0.0</version>
   <description>Bringup scripts and launch files for Blue</description>
 
   <maintainer email="phil80301@berkeley.edu">Philipp Wu</maintainer>
 
-  <license>BSD</license>
+  <license>MIT</license>
 
-  <author email="zhaoallan@berkeley.edu">Allan Zhao</author>
   <author email="brentyi@berkeley.edu">Brent Yi</author>
-  <author email="lxd20@berkeley.edu">Lear Du</author>
   <author email="phil80301@berkeley.edu">Philipp Wu</author>
-  <author email="zoemccarthy12@gmail.com">Zoe McCarthy</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>blue_controller_manager</run_depend>
-  <run_depend>blue_msgs</run_depend>
-  <run_depend>rosbridge_server</run_depend>
-  <run_depend>tf2_web_republisher</run_depend>
-  <run_depend>effort_controllers</run_depend>
+  <exec_depend>blue_controller_manager</exec_depend>
+  <exec_depend>blue_msgs</exec_depend>
+  <exec_depend>rosbridge_server</exec_depend>
+  <exec_depend>tf2_web_republisher</exec_depend>
+  <exec_depend>effort_controllers</exec_depend>
+  <exec_depend>trac_ik_python</exec_depend>
 </package>

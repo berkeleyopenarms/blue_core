@@ -1,35 +1,26 @@
-<?xml version="1.0"?>
-<package>
+<package format="2">
   <name>blue_hardware_drivers</name>
   <version>0.0.0</version>
   <description>The blue_hardware_drivers package</description>
 
-  <maintainer email="zhaoallan@berkeley.edu">Allan Zhao</maintainer>
   <maintainer email="brentyi@berkeley.edu">Brent Yi</maintainer>
 
-  <license>BSD</license>
+  <license>MIT</license>
 
   <author email="zhaoallan@berkeley.edu">Allan Zhao</author>
   <author email="brentyi@berkeley.edu">Brent Yi</author>
-  <author email="lxd20@berkeley.edu">Lear Du</author>
+  <author email="gbalke@berkeley.edu">Greg Balke</author>
   <author email="phil80301@berkeley.edu">Philipp Wu</author>
   <author email="zoemccarthy12@gmail.com">Zoe McCarthy</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>serial</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>blue_msgs</build_depend>
-  <build_depend>transmission_interface</build_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>serial</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>blue_msgs</run_depend>
-  <run_depend>transmission_interface</run_depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>serial</depend>
+  <depend>std_msgs</depend>
+  <depend>blue_msgs</depend>
+  <depend>transmission_interface</depend>
 
 </package>

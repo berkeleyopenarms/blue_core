@@ -22,9 +22,8 @@ The stack is set up as a ROS metapackage, which organizes our codebase into the 
 
 ## How do I set up the computer to run my arm?
 
-- Install Ubuntu 16.0.4
-- [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
-  - Start from 1.2 to 1.7, just copy paste into terminal 
+- Install Ubuntu 16.0.4 or 18.0.4
+- Install ROS [Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) (16.0.4) or [Melodic](http://wiki.ros.org/melodic/Installation/Ubuntu) (18.0.4)
   - For step 1.4, use Desktop-Full if unsure
 - Create a workspace:
   ```bash
@@ -48,7 +47,7 @@ The stack is set up as a ROS metapackage, which organizes our codebase into the 
   echo "source ~/blue_ws/devel/setup.bash" >> ~/.bashrc
   source ~/blue_ws/devel/setup.bash
   ```
-- Setup user permissions (you'll need to log out and back in for this take effect):
+- Set up user permissions (for serial port access -- you'll need to log out and back in for this take effect):
   ```bash
   sudo addgroup $USER dialout
   ```
@@ -70,6 +69,20 @@ After running the above setup steps, the following will boot the arm and put it 
   ```bash
   roslaunch blue_bringup left.launch param_file:=blue_params.yaml
   ```
+-----
+
+## How do I calibrate the gripper?
+
+At startup, the software stack assumes the gripper is open. If Blue was started with the gripper open, then no additional steps are needed!
+
+However, if the gripper is started in any other position, then an optional gripper calibration service should be called before using the gripper. This service will automatically determine the gripper position by apply a closing torque and detecting when the gripper has fully closed.
+
+From the command line:
+- ```bash
+  rosservice call /<left or right>_arm/calibrate_gripper "{}"
+  ```
+- Gripper controllers should not be started when this service is called.
+- This functionality is also supported by [blue_interface](https://github.com/berkeleyopenarms/blue_interface)
 
 -----
 ## Experimental two arm

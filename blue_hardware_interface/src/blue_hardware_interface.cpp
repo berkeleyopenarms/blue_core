@@ -51,6 +51,10 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
       "blue_hardware/joint_startup_calibration",
       &BlueHW::jointStartupCalibration,
       this);
+  gripper_position_calibration_service_ = nh.advertiseService(
+      "blue_hardware/gripper_position_calibration",
+      &BlueHW::gripperPositionCalibration,
+      this);
 }
 
 void BlueHW::read() {
@@ -142,6 +146,17 @@ bool BlueHW::jointStartupCalibration(
             params_.softstop_min_angles,
             params_.softstop_max_angles));
   }
+
+  response.success = true;
+  return true;
+}
+
+bool BlueHW::gripperPositionCalibration(
+    blue_msgs::GripperPositionCalibration::Request &request,
+    blue_msgs::GripperPositionCalibration::Response &response
+) {
+  // Set the current position of the gripper
+  kinematics_.setGripperPosition(request.position);
 
   response.success = true;
   return true;

@@ -18,9 +18,10 @@
 
     <!-- Start the control stack -->
     <!-- http://wiki.ros.org/ros_control -->
-    <include
-      file="$(find blue_bringup)/config/controllers.xml"
-      pass_all_args="true" />
+    <rosparam
+      param="blue_controllers"
+      file="$(find blue_controllers)/config/controllers.yaml"
+      subst_value="true" />
     <node
       name="blue_controller_manager"
       pkg="blue_controller_manager"
@@ -42,6 +43,18 @@
       name="simple_startup_calibration"
       pkg="blue_bringup"
       type="simple_startup_calibration.py"
+      output="screen" />
+    <!-- Gripper calibration service -->
+    <node
+      name="gripper_calibration"
+      pkg="blue_bringup"
+      type="gripper_calibration_service.py"
+      output="screen" />
+    <!-- Inverse kinematics service -->
+    <node
+      name="ik_service"
+      pkg="blue_bringup"
+      type="inverse_kinematics_service.py"
       output="screen" />
 
   </group>
