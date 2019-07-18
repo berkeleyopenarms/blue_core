@@ -39,9 +39,23 @@ void ReadFlashPacket::dump(Buffer& buf) {
   buf.write(reinterpret_cast<uint8_t*> (&read_count_), sizeof(read_count_));
 }
 
+void ResetPacket::dump(Buffer& buf) {
+  Packet::dump(buf);
+}
+
 void JumpToAddrPacket::dump(Buffer& buf) {
   Packet::dump(buf);
   buf.write(reinterpret_cast<uint8_t*> (&jump_addr_), sizeof(jump_addr_));
+}
+
+void ConfirmIDPacket::dump(Buffer& buf) {
+  Packet::dump(buf);
+}
+
+void EnumeratePacket::dump(Buffer& buf) {
+  // Special packet structure sends to global
+  Packet::dump(buf);
+  buf.write(reinterpret_cast<uint8_t*> (&target_id_), sizeof(target_id_));
 }
 
 } // namespace blue_hardware_drivers

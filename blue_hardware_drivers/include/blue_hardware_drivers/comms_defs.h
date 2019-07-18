@@ -3,7 +3,7 @@
 
 namespace blue_hardware_drivers {
 
-// Defined here: https://github.com/berkeley-open-robotics/bldc-controller/docs/
+// Defined here: https://github.com/berkeleyopenarms/bldc-controller/docs/
 // Current Protocol = Version 3
 
 //#define DEBUG_TRANSMIT
@@ -64,6 +64,8 @@ constexpr comm_fc_t COMM_FC_FLASH_PROGRAM = 0x86;
 constexpr comm_fc_t COMM_FC_FLASH_READ = 0x87;
 constexpr comm_fc_t COMM_FC_FLASH_VERIFY = 0x88;
 constexpr comm_fc_t COMM_FC_FLASH_VERIFY_ERASED = 0x89;
+constexpr comm_fc_t COMM_FC_CONFIRM_ID = 0xFE;
+constexpr comm_fc_t COMM_FC_ENUMERATE = 0xFF;
 
 using comm_addr_t = uint16_t;
 // Calibration Register (0x1***)
@@ -92,6 +94,9 @@ constexpr comm_addr_t COMM_REG_CAL_V_FILTER = 0x1040;
 constexpr comm_addr_t COMM_REG_CAL_EAC_SCALE = 0x1100;
 constexpr comm_addr_t COMM_REG_CAL_EAC_OFFSET = 0x1101;
 constexpr comm_addr_t COMM_REG_CAL_EAC_TABLE = 0x1200;
+constexpr comm_addr_t COMM_REG_CAL_IA_OFF = 0x1050;
+constexpr comm_addr_t COMM_REG_CAL_IB_OFF = 0x1051;
+constexpr comm_addr_t COMM_REG_CAL_IC_OFF = 0x1052;
 
 // Volatile Registers (0x2***)
 constexpr comm_addr_t COMM_REG_VOL_CTRL_MODE = 0x2000;
@@ -123,8 +128,8 @@ using comm_reg_count_t = uint8_t;
 
 using comm_full_addr_t = uint32_t;
 constexpr comm_full_addr_t COMM_BOOTLOADER_OFFSET = 0x08000000;
-constexpr comm_full_addr_t COMM_NVPARAMS_OFFSET = 0x08004000;
-constexpr comm_full_addr_t COMM_FIRMWARE_OFFSET = 0x08008000;
+constexpr comm_full_addr_t COMM_NVPARAMS_OFFSET = 0x08008000;
+constexpr comm_full_addr_t COMM_FIRMWARE_OFFSET = 0x08010000;
 constexpr comm_full_addr_t COMM_DEFAULT_BAUD_RATE = 1000000;
 
 constexpr size_t COMM_MAX_BUF = 256;

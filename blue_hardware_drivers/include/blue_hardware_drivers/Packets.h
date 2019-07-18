@@ -15,8 +15,10 @@ class Packet {
     comm_fc_t func_code_;
   public:
     Packet (comm_id_t id, comm_fc_t fc) : server_id_( id ), func_code_ (fc){}
+    virtual ~Packet() {}
 
     virtual void dump(Buffer& buf);
+    inline comm_id_t getID() {return server_id_;}
 };
 
 /* Virtual Register Mutator/Accessor Packets */
@@ -71,6 +73,28 @@ class ReadWriteRegPacket : public Packet {
 };
 /* End of Virtual Register Mutator/Accessor Packets */
 
+/* Reset System */
+class ResetPacket : public Packet {
+  private:
+    comm_id_t target_id_;
+  public:
+    ResetPacket (comm_id_t id) :
+      Packet( id, COMM_FC_SYSTEM_RESET ) {}
+
+    void dump(Buffer& buf);
+};
+
+/* Move Instruction Pointer (Use for switching out of bootloader) */
+class JumpToAddrPacket : public Packet {
+  private:
+    comm_full_addr_t jump_addr_;
+  public:
+    JumpToAddrPacket (comm_id_t id, comm_full_addr_t jump_addr) :
+      Packet( id, COMM_FC_JUMP_TO_ADDR ), jump_addr_(jump_addr) {}
+
+    void dump(Buffer& buf);
+};
+
 /* Flash Mutator/Accessor Packets */
 class ReadFlashPacket : public Packet {
   private:
@@ -83,13 +107,24 @@ class ReadFlashPacket : public Packet {
     void dump(Buffer& buf);
 };
 
-/* Move Instruction Pointer (Use for switching out of bootloader) */
-class JumpToAddrPacket : public Packet {
+/* Disco Bus Confirm ID */
+class ConfirmIDPacket : public Packet {
   private:
-    comm_full_addr_t jump_addr_;
+    comm_id_t target_id_;
   public:
-    JumpToAddrPacket (comm_id_t id, comm_full_addr_t jump_addr) :
-      Packet( id, COMM_FC_JUMP_TO_ADDR ), jump_addr_(jump_addr) {}
+    ConfirmIDPacket (comm_id_t id) :
+      Packet( id, COMM_FC_CONFIRM_ID ) {}
+
+    void dump(Buffer& buf);
+};
+
+/* Disco Bus ID Init */
+class EnumeratePacket : public Packet {
+  private:
+    comm_id_t target_id_;
+  public:
+    EnumeratePacket (comm_id_t id) :
+      Packet( 0, COMM_FC_ENUMERATE ), target_id_(id) {}
 
     void dump(Buffer& buf);
 };

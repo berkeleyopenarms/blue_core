@@ -23,14 +23,17 @@ constexpr int MAX_TEMP_SHUTOFF = 70;
 
 class BLDCDriver {
   public:
-    void init(std::string port, std::vector<uint8_t> board_ids);
-    void update(std::unordered_map<uint8_t, float>& commands, blue_msgs::MotorState& motor_states);
+    void init(std::string port, std::vector<comm_id_t> board_ids);
+    void update(std::unordered_map<comm_id_t, float>& commands, blue_msgs::MotorState& motor_states);
     void engageControl();
     void disengageControl();
+
     BLDCDriver();
 
   private:
     std::vector<comm_id_t> board_ids_;
+    std::unordered_map<comm_id_t, signed int> revolutions_;
+    std::unordered_map<comm_id_t, signed int> angle_;
 
     serial::Serial ser_;
     BLDCControllerClient device_;
@@ -38,6 +41,7 @@ class BLDCDriver {
     unsigned int loop_count_;
     bool stop_motors_;
     bool engaged_;
+    bool first_read_;
 };
 
 } // namespace blue_hardware_drivers
