@@ -33,7 +33,6 @@ float get_period() {
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "comms", ros::init_options::AnonymousName);
-  ROS_ERROR("h");
 
   ros::NodeHandle n;
   std::vector<comm_id_t> board_list;
@@ -123,7 +122,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  // Command the motor to 0 before initializing it.
   for (auto id : board_list) {
     success = false;
     while (!success) {
@@ -137,25 +135,6 @@ int main(int argc, char **argv) {
           ROS_ERROR("Could not set board %d to 0 torque, retrying...", id);
       }
     }
-  }
-
-
-  for (auto id : board_list) {
-    success = false; // set to false to initialize boards (doing this because some test boards are not calibrated)
-    while (!success) {
-      // Initialize the motor
-      try { device.initMotor(id); }
-      catch (comms_error e) {
-        ROS_ERROR("%s\n", e.what());
-        ROS_ERROR("Could not initialize motor %d, retrying...", id);
-      }
-      success = true;
-    }
-    // Set motor timeout to 1 second
-    device.queueSetTimeout(id, 1000);
-    device.exchange();
-    ROS_DEBUG("Initialized board: %d", id);
-
   }
 
   last_time = get_time();
