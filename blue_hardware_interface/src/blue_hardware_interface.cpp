@@ -46,6 +46,17 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   for (auto id : params_.motor_ids)
     motor_commands_[id] = 0.0;
 
+  bool success = false;
+  while (!success && ros::ok()) {
+    try {
+      read();
+      success = true;
+    } catch (blue_hardware_drivers::comms_error e) {
+      ROS_WARN("Failed to read motor states for initialization, retrying...");
+      ros::Duration(0.5).sleep();
+    }
+  }
+
   // Calibration service
   joint_startup_calibration_service_ = nh.advertiseService(
       "blue_hardware/joint_startup_calibration",
