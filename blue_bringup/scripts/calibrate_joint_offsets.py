@@ -57,10 +57,6 @@ if __name__ == '__main__':
         rospy.logerr("rosrun blue_bringup calibrate_joint_offsets.py <side (left or right)> <version (1 or 2)>")
         exit()
 
-    print(rot1)
-    print(rot2)
-    print(side)
-
     arm = Arm(side)
 
     raw_input("Press enter to save base state")
@@ -79,11 +75,12 @@ if __name__ == '__main__':
     a4 = ms[4] + -rot1 * gr1 - rot2 * gr2
 
     raw_input("Press enter to save third link state")
+    # TODO get more accurate joint angles from CAD
     ms = arm.get_motor_state()
     a5 = ms[5] +  rot1 * gr1
     a6 = ms[6] + -rot1 * gr1
 
     actuators = [a0, a1, a2, a3, a4, a5, a6]
-    np.set_printoptions(precision=5)
+    np.set_printoptions(precision=4)
     print("Save the following to the yaml configuration file")
-    print(np.array(actuators))
+    print(np.array2string(np.array(actuators), separator=', '))
