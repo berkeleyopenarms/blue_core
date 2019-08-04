@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
     raw_input("Press enter to save second link state")
     ms = arm.get_motor_state()
-    # Rotate wrist in the opposite direction
+    # Rotate elbow roll in the opposite direction as the shoulder roll
     a3 = ms[3] +  rot1 * gr1 - rot2 * gr2
     a4 = ms[4] + -rot1 * gr1 - rot2 * gr2
 
