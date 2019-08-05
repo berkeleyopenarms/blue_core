@@ -75,10 +75,10 @@ if __name__ == '__main__':
     a4 = ms[4] + -rot1 * gr1 - rot2 * gr2
 
     raw_input("Press enter to save third link state")
-    # TODO get more accurate joint angles from CAD
+    # The wrist uses the version 1 differential coupling
     ms = arm.get_motor_state()
-    a5 = ms[5] +  rot1 * gr1
-    a6 = ms[6] + -rot1 * gr1
+    a5 = ms[5] + -2.189 * gr1
+    a6 = ms[6] +  2.189 * gr1
 
     actuators = [a0, a1, a2, a3, a4, a5, a6]
     np.set_printoptions(precision=4)
