@@ -61,11 +61,13 @@ class BLDCControllerClient {
     void queueSetICOffset(comm_id_t board_id, float value);
     // Drive Commands
     void queueSetCommand(comm_id_t board_id, float value);
+    void queueSetPosCommand(comm_id_t board_id, float position, float feedforward);
     void queueGetRotorPosition(comm_id_t board_id);
     void queueSetCommandAndGetRotorPosition(comm_id_t board_id, float value);
     void queueSetPositionAndGetRotorPosition(comm_id_t board_id, float value);
     void queueGetState(comm_id_t board_id);
     void queueSetCommandAndGetState(comm_id_t board_id, float value);
+    void queueSetPosCommandAndGetState(comm_id_t board_id, float position, float feedforward);
 
     // Send queued packets and receive from boards
     void exchange();
