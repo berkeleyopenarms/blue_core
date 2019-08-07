@@ -110,7 +110,7 @@ constexpr comm_addr_t COMM_REG_VOL_SETPOINT_T = 0x2006;
 constexpr comm_addr_t COMM_REG_VOL_SETPOINT_V = 0x2007;
 constexpr comm_addr_t COMM_REG_VOL_SETPOINT_P = 0x2008;
 constexpr comm_addr_t COMM_REG_VOL_SETPOINT_FF = 0x2009;
-constexpr comm_addr_t COMM_REG_VOL_PWM_DRIVE = 0x2009;
+constexpr comm_addr_t COMM_REG_VOL_PWM_DRIVE = 0x200A;
 // Read Only Registers (0x3***)
 constexpr comm_addr_t COMM_REG_RO_ROTOR_P = 0x3000;
 constexpr comm_addr_t COMM_REG_RO_ROTOT_V = 0x3001;
