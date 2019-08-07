@@ -24,7 +24,8 @@ constexpr comm_ctrl_mode_t COMM_CTRL_MODE_TORQUE = 0x02;
 constexpr comm_ctrl_mode_t COMM_CTRL_MODE_VELOCITY = 0x03;
 constexpr comm_ctrl_mode_t COMM_CTRL_MODE_POSITION = 0x04;
 constexpr comm_ctrl_mode_t COMM_CTRL_MODE_POS_VEL = 0x05;
-constexpr comm_ctrl_mode_t COMM_CTRL_MODE_PWM_DRIVE = 0x06;
+constexpr comm_ctrl_mode_t COMM_CTRL_MODE_POS_FF = 0x06;
+constexpr comm_ctrl_mode_t COMM_CTRL_MODE_PWM_DRIVE = 0x07;
 
 // Message lengths are stored at 2 bytes
 using comm_msg_len_t = uint16_t;
@@ -108,6 +109,7 @@ constexpr comm_addr_t COMM_REG_VOL_PHASE_C_PWM = 0x2005;
 constexpr comm_addr_t COMM_REG_VOL_SETPOINT_T = 0x2006;
 constexpr comm_addr_t COMM_REG_VOL_SETPOINT_V = 0x2007;
 constexpr comm_addr_t COMM_REG_VOL_SETPOINT_P = 0x2008;
+constexpr comm_addr_t COMM_REG_VOL_SETPOINT_FF = 0x2009;
 constexpr comm_addr_t COMM_REG_VOL_PWM_DRIVE = 0x2009;
 // Read Only Registers (0x3***)
 constexpr comm_addr_t COMM_REG_RO_ROTOR_P = 0x3000;
