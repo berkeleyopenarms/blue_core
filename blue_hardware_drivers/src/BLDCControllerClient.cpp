@@ -615,11 +615,15 @@ void BLDCControllerClient::queueSetCommand(comm_id_t board_id, float value) {
   queuePacket(board_id, packet);
 }
 
-void BLDCControllerClient::queueSetPosCommand(comm_id_t board_id, float position, float feed_forward) {
-  float values[2];
-  values[0] = position;
-  values[1] = feed_forward;
-  Packet* packet = new WriteRegPacket(board_id, COMM_REG_VOL_SETPOINT_P, sizeof(feed_forward) + sizeof(position), reinterpret_cast<uint8_t*> (&values));
+void BLDCControllerClient::queueSetPosCommand(comm_id_t board_id, float position, float feedforward) {
+  const static size_t num_registers = 2; // Number of registers in this write 
+  float values[num_registers] = {position, feedforward};
+  Packet* packet = new WriteRegPacket(
+                        board_id, 
+                        COMM_REG_VOL_SETPOINT_P, 
+                        sizeof(position) + sizeof(feedforward), 
+                        reinterpret_cast<uint8_t*> (&values), 
+                        num_registers);
   queuePacket(board_id, packet);
 }
 
@@ -636,7 +640,7 @@ void BLDCControllerClient::resultGetRotorPosition(comm_id_t board_id, float* pos
 void BLDCControllerClient::queueSetCommandAndGetRotorPosition(comm_id_t board_id, float value) {
   // Generate Transmit Packet
   Packet* packet = new ReadWriteRegPacket (board_id,
-    COMM_REG_RO_ROTOR_P, 1,                                          // Read
+    COMM_REG_RO_ROTOR_P, 1,                                                    // Read
     COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*>(&value));  // Write
   queuePacket(board_id, packet);
 }
@@ -644,7 +648,7 @@ void BLDCControllerClient::queueSetCommandAndGetRotorPosition(comm_id_t board_id
 void BLDCControllerClient::queueSetPositionAndGetRotorPosition(comm_id_t board_id, float value) {
   // Generate Transmit Packet
   Packet* packet = new ReadWriteRegPacket (board_id,
-    COMM_REG_RO_ROTOR_P, 1,                                          // Read
+    COMM_REG_RO_ROTOR_P, 1,                                                       // Read
     COMM_REG_VOL_SETPOINT_P, sizeof(value), reinterpret_cast<uint8_t*>(&value));  // Write
   queuePacket(board_id, packet);
 }
@@ -670,19 +674,23 @@ void BLDCControllerClient::resultGetState(comm_id_t board_id, float* position, f
 void BLDCControllerClient::queueSetCommandAndGetState(comm_id_t board_id, float value) {
   // Generate Transmit Packet
   Packet* packet = new ReadWriteRegPacket (board_id,
-    COMM_REG_RO_ROTOR_P, 9,                                          // Read
-    COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*>(&value));  // Write
+    COMM_REG_RO_ROTOR_P, 9,                                                  // Read
+    COMM_REG_VOL_QI_COMM, sizeof(value), reinterpret_cast<uint8_t*>(&value)  // Write
+  );
+
   queuePacket(board_id, packet);
 }
 
-void BLDCControllerClient::queueSetPosCommandAndGetState(comm_id_t board_id, float position, float feed_forward) {
-  float values[2];
-  values[0] = position;
-  values[1] = feed_forward;
+void BLDCControllerClient::queueSetPosCommandAndGetState(comm_id_t board_id, float position, float feedforward) {
+  const static size_t num_registers = 2; // Number of registers in this write 
+  float values[num_registers] = {position, feedforward};
 
   Packet* packet = new ReadWriteRegPacket(board_id,
     COMM_REG_RO_ROTOR_P, 9,                                          // Read
-    COMM_REG_VOL_SETPOINT_P, sizeof(feed_forward) + sizeof(position), reinterpret_cast<uint8_t*> (&values)); // Write
+    COMM_REG_VOL_SETPOINT_P, sizeof(position) + sizeof(feedforward), // Write
+              reinterpret_cast<uint8_t*> (&values), num_registers  
+  );
+
   queuePacket(board_id, packet);
 }
 
