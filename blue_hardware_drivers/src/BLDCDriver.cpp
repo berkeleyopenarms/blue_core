@@ -14,7 +14,7 @@ void BLDCDriver::init(std::string port, std::vector<comm_id_t> board_ids)
   for (auto id : board_ids_) {
     revolutions_[id] = 0;
     angle_[id] = 0;
-  } 
+  }
 
   device_.init(port, board_ids);
 

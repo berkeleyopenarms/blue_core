@@ -32,6 +32,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   // Register joint interfaces with the controller manager
   registerInterface(&kinematics_.joint_state_interface);
   registerInterface(&kinematics_.joint_effort_interface);
+  registerInterface(&kinematics_.joint_position_interface);
 
   // ROS publishers
   motor_states_msg_.name = params_.motor_names;
@@ -104,6 +105,16 @@ void BlueHW::write() {
     feedforward_torques[i] *= params_.id_torque_gains[i];
 
   // Get actuator commands, using the gravity comp torques as a feedforward
+  // // pseudo code
+  // if (position control interface is active) {
+  //   // set commands to be torque commands 0
+  //   for (int i = 0; i < raw_joint_pos_cmd_.size(); i++)
+  //     raw_joint_pos_cmd_ = 0.0;
+  //   auto position_actuator_commands = kinematics_.getPositionActuatorCommands(
+  //       params_.softstop_min_angles,
+  //       params_.softstop_max_angles);
+  // }
+
   auto actuator_commands = kinematics_.getActuatorCommands(
       feedforward_torques,
       params_.softstop_torque_limit, // TODO: clean up softstop code

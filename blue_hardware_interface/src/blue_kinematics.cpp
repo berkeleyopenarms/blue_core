@@ -28,20 +28,25 @@ void BlueKinematics::init(
   transmissions_.resize(num_transmissions_);
   actuator_states_.resize(num_transmissions_);
   actuator_commands_.resize(num_transmissions_);
+  actuator_position_commands_.resize(num_transmissions_);
   joint_states_.resize(num_transmissions_);
   joint_commands_.resize(num_transmissions_);
+  joint_position_commands_.resize(num_transmissions_);
 
   actuator_pos_.resize(num_joints_);
   actuator_vel_.resize(num_joints_);
   actuator_eff_.resize(num_joints_);
   actuator_cmd_.resize(num_joints_);
+  actuator_pos_cmd_.resize(num_joints_);
   joint_pos_.resize(num_joints_);
   joint_vel_.resize(num_joints_);
   joint_eff_.resize(num_joints_);
   joint_cmd_.resize(num_joints_);
+  joint_pos_cmd_.resize(num_joints_);
 
   joint_offsets_.resize(num_joints_, 0.0);
   raw_joint_cmd_.resize(num_joints_, 0.0);
+  raw_joint_pos_cmd_.resize(num_joints_, 0.0);
 
   KDL::Vector zero_vector(0.0, 0.0, 0.0);
   accel_vectors_.resize(num_transmissions_, zero_vector);
@@ -86,6 +91,9 @@ void BlueKinematics::init(
       actuator_commands_[transmission_idx].effort.push_back(&actuator_cmd_[joint_idx]);
       joint_commands_[transmission_idx].effort.push_back(&joint_cmd_[joint_idx]);
 
+      actuator_position_commands_[transmission_idx].effort.push_back(&actuator_pos_cmd_[joint_idx]);
+      joint_position_commands_[transmission_idx].effort.push_back(&joint_pos_cmd_[joint_idx]);
+
       joint_idx++;
     }
 
@@ -105,6 +113,11 @@ void BlueKinematics::init(
         transmissions_[transmission_idx],
         actuator_commands_[transmission_idx],
         joint_commands_[transmission_idx]));
+    position_joint_to_actuator_interface_.registerHandle(
+        ti::JointToActuatorEffortHandle(transmission_name,
+        transmissions_[transmission_idx],
+        actuator_position_commands_[transmission_idx],
+        joint_position_commands_[transmission_idx]));
 
   }
 
@@ -112,6 +125,7 @@ void BlueKinematics::init(
   for (int i = 0; i < num_joints_; i++) {
     joint_cmd_[i] = 0.0;
     raw_joint_cmd_[i] = 0.0;
+    raw_joint_pos_cmd_[i] = 0.0;
     hardware_interface::JointStateHandle state_handle_a(
         joint_names[i],
         &joint_pos_[i],
@@ -124,6 +138,12 @@ void BlueKinematics::init(
         joint_state_interface.getHandle(joint_names[i]),
         &raw_joint_cmd_[i]);
     joint_effort_interface.registerHandle(effort_handle_a);
+  }
+  for (int i = 0; i < num_joints_; i++) {
+    hardware_interface::JointHandle position_handle_a(
+        joint_state_interface.getHandle(joint_names[i]),
+        &raw_joint_pos_cmd_[i]);
+    joint_position_interface.registerHandle(position_handle_a);
   }
 }
 
@@ -421,4 +441,35 @@ std::vector<double> BlueKinematics::getActuatorCommands(
   joint_to_actuator_interface_.propagate();
 
   return actuator_cmd_;
+}
+
+std::vector<double> BlueKinematics::getPositionActuatorCommands(
+    const std::vector<double> &softstop_min_angles,
+    const std::vector<double> &softstop_max_angles) {
+
+  // Acquire the kinematics lock
+  std::lock_guard<std::mutex> lock(kinematics_mutex_);
+
+  if (!is_calibrated_) {
+    // If not calibrated, zero out all actuator commands
+    std::fill(actuator_cmd_.begin(), actuator_cmd_.end(), 0);
+    return actuator_cmd_;
+  }
+
+  // Compute joint position commands
+  for (int i = 0; i < num_joints_; i++) {
+    joint_pos_cmd_[i] = raw_joint_pos_cmd_[i];
+    raw_joint_pos_cmd_[i] = 0.0;
+    // Soft stops
+    if(joint_pos_[i] > softstop_max_angles[i] - softstop_tolerance) {
+      joint_pos_cmd_[i] = softstop_max_angles[i] - softstop_tolerance;
+    } else if (joint_pos_[i] < softstop_min_angles[i] + softstop_tolerance) {
+      joint_pos_cmd_[i] = softstop_max_angles[i] + softstop_tolerance;
+    }
+  }
+
+  // Propagate through transmissions to compute actuator commands
+  position_joint_to_actuator_interface_.propagate();
+
+  return actuator_pos_cmd_;
 }

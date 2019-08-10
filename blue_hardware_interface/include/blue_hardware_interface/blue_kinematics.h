@@ -28,6 +28,7 @@ public:
   // ROS control hardware interfaces
   hardware_interface::JointStateInterface joint_state_interface;
   hardware_interface::EffortJointInterface joint_effort_interface;
+  hardware_interface::PositionJointInterface joint_position_interface;
 
   // Getter functions
   const std::vector<double>& getJointPos();
@@ -90,6 +91,7 @@ private:
   // Transmission interfaces
   ti::ActuatorToJointStateInterface actuator_to_joint_interface_;
   ti::JointToActuatorEffortInterface joint_to_actuator_interface_;
+  ti::JointToActuatorEffortInterface position_joint_to_actuator_interface_;
 
   // Joint offsets
   std::vector<double> actuator_offsets_;
@@ -99,8 +101,10 @@ private:
   std::vector<ti::Transmission *> transmissions_;
   std::vector<ti::ActuatorData> actuator_states_;
   std::vector<ti::ActuatorData> actuator_commands_;
+  std::vector<ti::ActuatorData> actuator_position_commands_;
   std::vector<ti::JointData> joint_states_;
   std::vector<ti::JointData> joint_commands_;
+  std::vector<ti::JointData> joint_position_commands_;
 
   // Gravity vector
   std::vector<KDL::Vector> accel_vectors_;
@@ -111,11 +115,15 @@ private:
   std::vector<double> actuator_vel_;
   std::vector<double> actuator_eff_;
   std::vector<double> actuator_cmd_;
+  std::vector<double> actuator_pos_cmd_;
   std::vector<double> joint_pos_;
   std::vector<double> joint_vel_;
   std::vector<double> joint_eff_;
   std::vector<double> joint_cmd_;
+  std::vector<double> joint_pos_cmd_;
+
   std::vector<double> raw_joint_cmd_;
+  std::vector<double> raw_joint_pos_cmd_;
 
 };
 
