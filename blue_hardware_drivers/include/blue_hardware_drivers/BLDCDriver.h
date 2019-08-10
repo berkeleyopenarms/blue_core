@@ -25,6 +25,10 @@ class BLDCDriver {
   public:
     void init(std::string port, std::vector<comm_id_t> board_ids);
     void update(std::unordered_map<comm_id_t, float>& commands, blue_msgs::MotorState& motor_states);
+    void update_pos_mode(
+        std::unordered_map<comm_id_t, float>& pos_commands,
+        std::unordered_map<comm_id_t, float>& feed_forward_commands,
+        blue_msgs::MotorState& motor_states)
     void engageControl();
     void disengageControl();
 

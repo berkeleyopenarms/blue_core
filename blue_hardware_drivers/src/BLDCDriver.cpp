@@ -104,6 +104,94 @@ BLDCDriver::BLDCDriver(){
   first_read_ = true;
 }
 
+void BLDCDriver::update_pos_mode(
+    std::unordered_map<comm_id_t, float>& pos_commands,
+    std::unordered_map<comm_id_t, float>& feed_forward_commands,
+    blue_msgs::MotorState& motor_states) {
+
+  // Resize MotorState message to fit our read data
+  int motor_count = pos_commands.size();
+  motor_states.command.resize(motor_count);
+  motor_states.position.resize(motor_count);
+  motor_states.velocity.resize(motor_count);
+  motor_states.direct_current.resize(motor_count);
+  motor_states.quadrature_current.resize(motor_count);
+  motor_states.temperature.resize(motor_count);
+  motor_states.supply_voltage.resize(motor_count);
+  motor_states.accel_x.resize(motor_count);
+  motor_states.accel_y.resize(motor_count);
+  motor_states.accel_z.resize(motor_count);
+
+  if (engaged_) {
+    if (!stop_motors_) {
+      // Send next motor current command
+      for (int i = 0; i < board_ids_.size(); i++) {
+        comm_id_t id = board_ids_[i];
+        device_.queueSetPosCommandAndGetState(id, pos_commands[id], feed_forward_commands[id]);
+        motor_states.command[i] = pos_commands[id];
+      }
+    } else {
+      // If one of the motors is too hot, we still want to grab the state and set effort to 0
+      for (int i = 0; i < board_ids_.size(); i++) {
+        comm_id_t id = board_ids_[i];
+        // TODO handle when motors get too hot
+        device_.queueSetCommandAndGetState(id, 0.0);
+        motor_states.command[i] = 0.0;
+      }
+    }
+
+    // Run the communication with each board
+    device_.exchange();
+  }
+
+  // Get the state of the each board
+  for (int i = 0; i < board_ids_.size(); i++) {
+    comm_id_t id = board_ids_[i];
+    device_.resultGetState(id
+        , &motor_states.position[i]
+        , &motor_states.velocity[i]
+        , &motor_states.direct_current[i]
+        , &motor_states.quadrature_current[i]
+        , &motor_states.supply_voltage[i]
+        , &motor_states.temperature[i]
+        , &motor_states.accel_x[i]
+        , &motor_states.accel_y[i]
+        , &motor_states.accel_z[i]
+        );
+
+    float enc_position = std::fmod(motor_states.position[i], (2 * M_PI));
+
+    if (!first_read_) {
+      // To correct for potential resets, we record the number of full rotations off-board
+      //  and complete with on-board absolute encoder angle
+      float prev_enc_pos = angle_[id];
+
+      float enc_pos_diff = enc_position - prev_enc_pos;
+      if (enc_pos_diff < -M_PI) {
+        revolutions_[id] += 1;
+        enc_pos_diff += 2 * M_PI; // Normalize to (-pi, pi) range
+      } else if (enc_pos_diff > M_PI) {
+        revolutions_[id] -= 1;
+        enc_pos_diff -= 2 * M_PI; // Normalize to (-pi, pi) range
+      }
+
+      motor_states.position[i] = enc_position + revolutions_[id] * 2 * M_PI;
+    }
+
+    angle_[id] = enc_position;
+
+    if (motor_states.temperature[i] > MAX_TEMP_SHUTOFF) {
+      stop_motors_ = true;
+      ROS_ERROR_THROTTLE(1, "Motor %d is too hot! Shutting off system.", id);
+    } else if (motor_states.temperature[i] > MAX_TEMP_WARNING) {
+      ROS_WARN_THROTTLE(1, "Motor %d is warm, currently at %fC", id, motor_states.temperature[i]);
+    }
+  }
+
+  first_read_ = false;
+  loop_count_++;
+}
+
 void BLDCDriver::update(std::unordered_map<comm_id_t, float>& commands, blue_msgs::MotorState& motor_states) {
 
   // Resize MotorState message to fit our read data
@@ -228,7 +316,7 @@ void BLDCDriver::engageControl() {
     bool success = false;
     while (!success && ros::ok()) {
       try {
-        device_.queueSetControlMode(id, COMM_CTRL_MODE_CURRENT);
+        device_.queueSetControlMode(id, COMM_CTRL_MODE_POS_FF);
         device_.exchange();
         success = true;
       } catch (comms_error e) {
