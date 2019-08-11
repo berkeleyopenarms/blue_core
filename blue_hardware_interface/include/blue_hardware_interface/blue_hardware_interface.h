@@ -63,6 +63,8 @@ public:
   BlueHW(ros::NodeHandle &nh);
   void read();
   void write();
+  void doSwitch(const std::list<ControllerInfo>& start_list,
+                const std::list<ControllerInfo>& stop_list);
 
 private:
   ros::NodeHandle nh_;

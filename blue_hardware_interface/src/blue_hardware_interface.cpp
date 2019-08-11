@@ -69,6 +69,18 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
       this);
 }
 
+void BlueHW::doSwitch(const std::list<ControllerInfo>& start_list,
+                      const std::list<ControllerInfo>& stop_list) {
+  for (int i = 0; i < start_list.size(); i++) {
+    ROS_ERROR("%s\n", start_list[i].name);
+    ROS_ERROR("%s\n", start_list[i].type);
+  }
+  for (int i = 0; i < stop_list.size(); i++) {
+    ROS_ERROR("%s\n", stop_list[i].name);
+    ROS_ERROR("%s\n", stop_list[i].type);
+  }
+}
+
 void BlueHW::read() {
   // Motor communication! Simultaneously write commands and read state
   motor_driver_.update(motor_commands_, motor_states_msg_);
