@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
   for (auto id : board_list) {
     success = false;
     while (!success) {
-      try { 
+      try {
         device.queueSetControlMode(id, COMM_CTRL_MODE_CURRENT);
         device.exchange();
         success = true;

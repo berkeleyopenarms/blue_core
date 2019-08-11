@@ -316,7 +316,8 @@ void BLDCDriver::engageControl() {
     bool success = false;
     while (!success && ros::ok()) {
       try {
-        device_.queueSetControlMode(id, COMM_CTRL_MODE_POS_FF);
+        // device_.queueSetControlMode(id, COMM_CTRL_MODE_POS_FF);
+        device_.queueSetControlMode(id, COMM_CTRL_MODE_CURRENT);
         device_.exchange();
         success = true;
       } catch (comms_error e) {
