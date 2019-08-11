@@ -7,6 +7,7 @@
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
+#include <hardware_interface/controller_info.h>
 
 #include <geometry_msgs/Vector3.h>
 
@@ -63,8 +64,8 @@ public:
   BlueHW(ros::NodeHandle &nh);
   void read();
   void write();
-  void doSwitch(const std::list<ControllerInfo>& start_list,
-                const std::list<ControllerInfo>& stop_list);
+  void doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
+                const std::list<hardware_interface::ControllerInfo>& stop_list);
 
 private:
   ros::NodeHandle nh_;
@@ -81,6 +82,8 @@ private:
 
   // Robot dynamics helper
   BlueDynamics dynamics_;
+
+  bool use_hardware_position_control;
 
   // Publishers
   blue_msgs::MotorState motor_states_msg_;

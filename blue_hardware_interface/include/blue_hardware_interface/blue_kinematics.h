@@ -62,6 +62,11 @@ public:
       const std::vector<double> &softstop_max_angles,
       double softstop_tolerance);
 
+  std::vector<double> getPositionActuatorCommands(
+      const std::vector<double> &softstop_min_angles,
+      const std::vector<double> &softstop_max_angles,
+      double softstop_tolerance);
+
 private:
 
   // Private helpers

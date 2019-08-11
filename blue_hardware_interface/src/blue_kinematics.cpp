@@ -445,26 +445,32 @@ std::vector<double> BlueKinematics::getActuatorCommands(
 
 std::vector<double> BlueKinematics::getPositionActuatorCommands(
     const std::vector<double> &softstop_min_angles,
-    const std::vector<double> &softstop_max_angles) {
+    const std::vector<double> &softstop_max_angles,
+    double softstop_tolerance) {
+  // setting the joint position command
 
   // Acquire the kinematics lock
   std::lock_guard<std::mutex> lock(kinematics_mutex_);
 
   if (!is_calibrated_) {
-    // If not calibrated, zero out all actuator commands
-    std::fill(actuator_cmd_.begin(), actuator_cmd_.end(), 0);
-    return actuator_cmd_;
+    // If not calibrated, set actuator commands to be the current assumed position
+    std::fill(actuator_pos_cmd_.begin(), actuator_pos_cmd_.end(), 0);
+    for (int i = 0; i < num_joints_; i++) {
+      // subtract out actuator_offsets so that the actuator_pos is the true motor actuator pos
+      actuator_pos_cmd_[i] = actuator_pos_[i] - actuator_offsets_[i];
+    }
+    return actuator_pos_cmd_;
   }
 
   // Compute joint position commands
   for (int i = 0; i < num_joints_; i++) {
     joint_pos_cmd_[i] = raw_joint_pos_cmd_[i];
-    raw_joint_pos_cmd_[i] = 0.0;
+    raw_joint_pos_cmd_[i] = joint_pos_[i];
     // Soft stops
-    if(joint_pos_[i] > softstop_max_angles[i] - softstop_tolerance) {
+    if(joint_pos_cmd_[i] > softstop_max_angles[i] - softstop_tolerance) {
       joint_pos_cmd_[i] = softstop_max_angles[i] - softstop_tolerance;
-    } else if (joint_pos_[i] < softstop_min_angles[i] + softstop_tolerance) {
-      joint_pos_cmd_[i] = softstop_max_angles[i] + softstop_tolerance;
+    } else if (joint_pos_cmd_[i] < softstop_min_angles[i] + softstop_tolerance) {
+      joint_pos_cmd_[i] = softstop_min_angles[i] + softstop_tolerance;
     }
   }
 

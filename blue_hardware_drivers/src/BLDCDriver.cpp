@@ -104,7 +104,7 @@ BLDCDriver::BLDCDriver(){
   first_read_ = true;
 }
 
-void BLDCDriver::update_pos_mode(
+void BLDCDriver::updatePosMode(
     std::unordered_map<comm_id_t, float>& pos_commands,
     std::unordered_map<comm_id_t, float>& feed_forward_commands,
     blue_msgs::MotorState& motor_states) {
@@ -344,6 +344,25 @@ void BLDCDriver::engageControl() {
   }
 
   engaged_ = true;
+}
+
+bool BLDCDriver::setControlMode(comm_ctrl_mode_t control_mode){
+  bool success = false;
+  for (auto id : board_ids_) {
+    while (!success && ros::ok()) {
+      try {
+        device_.queueSetControlMode(id, control_mode);
+        device_.exchange();
+        success = true;
+      } catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not engage board %d, retrying...", id);
+        ros::Duration(0.01).sleep();
+        device_.resetBuffer();
+      }
+    }
+  }
+  return success;
 }
 
 } // namespace blue_hardware_drivers

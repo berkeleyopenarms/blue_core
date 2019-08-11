@@ -16,6 +16,10 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
       params_.serial_port,
       params_.motor_ids);
 
+  use_hardware_position_control = false;
+  // motor_driver_.set_control_current_controller();
+  // blue_hardware_interface::comm_ctrl_mode_t control_mode
+
   // Build helper for robot dynamics
   // (Used to compute gravity compensation torques)
   dynamics_.init(
@@ -69,15 +73,15 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
       this);
 }
 
-void BlueHW::doSwitch(const std::list<ControllerInfo>& start_list,
-                      const std::list<ControllerInfo>& stop_list) {
-  for (int i = 0; i < start_list.size(); i++) {
-    ROS_ERROR("%s\n", start_list[i].name);
-    ROS_ERROR("%s\n", start_list[i].type);
+void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
+                      const std::list<hardware_interface::ControllerInfo>& stop_list) {
+  for (std::list<hardware_interface::ControllerInfo>::const_iterator it=start_list.begin(); it != start_list.end(); ++it) {
+    ROS_ERROR("%s\n", it->name.c_str());
+    ROS_ERROR("%s\n", it->type.c_str());
   }
-  for (int i = 0; i < stop_list.size(); i++) {
-    ROS_ERROR("%s\n", stop_list[i].name);
-    ROS_ERROR("%s\n", stop_list[i].type);
+  for (std::list<hardware_interface::ControllerInfo>::const_iterator it=stop_list.begin(); it != stop_list.end(); ++it) {
+    ROS_ERROR("%s\n", it->name.c_str());
+    ROS_ERROR("%s\n", it->type.c_str());
   }
 }
 
@@ -120,8 +124,8 @@ void BlueHW::write() {
   // // pseudo code
   // if (position control interface is active) {
   //   // set commands to be torque commands 0
-  //   for (int i = 0; i < raw_joint_pos_cmd_.size(); i++)
-  //     raw_joint_pos_cmd_ = 0.0;
+  //   for (int i = 0; i < raw_joint_cmd_.size(); i++)
+  //     raw_joint_cmd_ = 0.0
   //   auto position_actuator_commands = kinematics_.getPositionActuatorCommands(
   //       params_.softstop_min_angles,
   //       params_.softstop_max_angles);
