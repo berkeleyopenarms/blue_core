@@ -158,10 +158,10 @@ void BlueHW::write() {
     // Update our command map
     motor_commands_[params_.motor_ids[i]] = actuator_commands[i];
     motor_pos_commands_[params_.motor_ids[i]] = position_actuator_commands[i];
-    ROS_ERROR("idx: %d, Actuators Pos Command: %f, Current Comamnd: %f", i, position_actuator_commands[i], actuator_commands[i]);
-    if (i == 7){
-      ROS_ERROR(" ");
-    }
+    // ROS_ERROR("idx: %d, Actuators Pos Command: %f, Current Comamnd: %f", i, position_actuator_commands[i], actuator_commands[i]);
+    // if (i == 7){
+    //   ROS_ERROR(" ");
+    // }
   }
 }
 

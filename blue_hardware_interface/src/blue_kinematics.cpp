@@ -465,7 +465,7 @@ std::vector<double> BlueKinematics::getPositionActuatorCommands(
   // Compute joint position commands
   for (int i = 0; i < num_joints_; i++) {
     joint_pos_cmd_[i] = raw_joint_pos_cmd_[i];
-    ROS_ERROR("idx: %d, raw joint pos command: %f", i, joint_pos_[i]);
+    ROS_ERROR("idx: %d, raw joint pos command: %f", i, joint_pos_cmd_[i]);
     raw_joint_pos_cmd_[i] = joint_pos_[i];
     // Soft stops
     if(joint_pos_cmd_[i] > softstop_max_angles[i] - softstop_tolerance) {
