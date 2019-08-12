@@ -91,8 +91,8 @@ void BlueKinematics::init(
       actuator_commands_[transmission_idx].effort.push_back(&actuator_cmd_[joint_idx]);
       joint_commands_[transmission_idx].effort.push_back(&joint_cmd_[joint_idx]);
 
-      actuator_position_commands_[transmission_idx].effort.push_back(&actuator_pos_cmd_[joint_idx]);
-      joint_position_commands_[transmission_idx].effort.push_back(&joint_pos_cmd_[joint_idx]);
+      actuator_position_commands_[transmission_idx].position.push_back(&actuator_pos_cmd_[joint_idx]);
+      joint_position_commands_[transmission_idx].position.push_back(&joint_pos_cmd_[joint_idx]);
 
       joint_idx++;
     }
@@ -114,7 +114,7 @@ void BlueKinematics::init(
         actuator_commands_[transmission_idx],
         joint_commands_[transmission_idx]));
     position_joint_to_actuator_interface_.registerHandle(
-        ti::JointToActuatorEffortHandle(transmission_name,
+        ti::JointToActuatorPositionHandle(transmission_name,
         transmissions_[transmission_idx],
         actuator_position_commands_[transmission_idx],
         joint_position_commands_[transmission_idx]));
@@ -465,6 +465,7 @@ std::vector<double> BlueKinematics::getPositionActuatorCommands(
   // Compute joint position commands
   for (int i = 0; i < num_joints_; i++) {
     joint_pos_cmd_[i] = raw_joint_pos_cmd_[i];
+    ROS_ERROR("idx: %d, raw joint pos command: %f", i, joint_pos_[i]);
     raw_joint_pos_cmd_[i] = joint_pos_[i];
     // Soft stops
     if(joint_pos_cmd_[i] > softstop_max_angles[i] - softstop_tolerance) {
@@ -472,10 +473,17 @@ std::vector<double> BlueKinematics::getPositionActuatorCommands(
     } else if (joint_pos_cmd_[i] < softstop_min_angles[i] + softstop_tolerance) {
       joint_pos_cmd_[i] = softstop_min_angles[i] + softstop_tolerance;
     }
+
+    // Subtract out joint offsets
+    joint_pos_cmd_[i] -= joint_offsets_[i];
   }
 
   // Propagate through transmissions to compute actuator commands
   position_joint_to_actuator_interface_.propagate();
 
+  for (int i = 0; i < num_joints_; i++) {
+    // subtract out actuator_offsets so that the actuator_pos is the true motor actuator pos
+    actuator_pos_cmd_[i] = actuator_pos_cmd_[i] - actuator_offsets_[i];
+  }
   return actuator_pos_cmd_;
 }

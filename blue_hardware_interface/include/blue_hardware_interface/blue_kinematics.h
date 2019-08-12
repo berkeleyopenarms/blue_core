@@ -96,7 +96,7 @@ private:
   // Transmission interfaces
   ti::ActuatorToJointStateInterface actuator_to_joint_interface_;
   ti::JointToActuatorEffortInterface joint_to_actuator_interface_;
-  ti::JointToActuatorEffortInterface position_joint_to_actuator_interface_;
+  ti::JointToActuatorPositionInterface position_joint_to_actuator_interface_;
 
   // Joint offsets
   std::vector<double> actuator_offsets_;

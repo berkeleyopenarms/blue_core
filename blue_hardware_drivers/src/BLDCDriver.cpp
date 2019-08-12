@@ -106,35 +106,7 @@ BLDCDriver::BLDCDriver(){
   first_read_ = true;
 }
 
-void BLDCDriver::update(std::unordered_map<comm_id_t, float>& commands, blue_msgs::MotorState& motor_states) {
-  // Resize MotorState message to fit our read data
-  int motor_count = commands.size();
-  motor_states.command.resize(motor_count);
-
-  if (engaged_) {
-    if (!stop_motors_) {
-      // Send next motor current command
-      for (int i = 0; i < board_ids_.size(); i++) {
-        comm_id_t id = board_ids_[i];
-        device_.queueSetCommandAndGetState(id, commands[id]);
-        motor_states.command[i] = commands[id];
-      }
-    } else {
-      // If one of the motors is too hot, we still want to grab the state and set effort to 0
-      for (int i = 0; i < board_ids_.size(); i++) {
-        comm_id_t id = board_ids_[i];
-        device_.queueSetCommandAndGetState(id, 0.0);
-        motor_states.command[i] = 0.0;
-      }
-    }
-
-    // Run the communication with each board
-    device_.exchange();
-  }
-  _update_state(motor_count, motor_states);
-}
-
-void BLDCDriver::updatePosMode(
+void BLDCDriver::update(
     std::unordered_map<comm_id_t, float>& pos_commands,
     std::unordered_map<comm_id_t, float>& current_commads,
     blue_msgs::MotorState& motor_states) {
@@ -151,6 +123,7 @@ void BLDCDriver::updatePosMode(
         if (board_control_modes[id] == COMM_CTRL_MODE_CURRENT) {
           device_.queueSetCommandAndGetState(id, current_commads[id]);
         } else if (board_control_modes[id] == COMM_CTRL_MODE_POS_FF) {
+          ROS_ERROR("Using motor position control, cmd: %f", pos_commands[id]);
           // device_.queueSetPosCommandAndGetState(id, pos_commands[id], current_commads[id]);
         } else {
           throw "Control Mode Not Supported";

@@ -90,7 +90,7 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
 void BlueHW::read() {
   // Motor communication! Simultaneously write commands and read state
   // motor_driver_.update(motor_commands_, motor_states_msg_);
-  motor_driver_.updatePosMode(motor_pos_commands_, motor_commands_, motor_states_msg_);
+  motor_driver_.update(motor_pos_commands_, motor_commands_, motor_states_msg_);
 
   // Publish the motor states, in case anybody's listening
   motor_states_msg_.header.stamp = ros::Time::now();
@@ -158,6 +158,10 @@ void BlueHW::write() {
     // Update our command map
     motor_commands_[params_.motor_ids[i]] = actuator_commands[i];
     motor_pos_commands_[params_.motor_ids[i]] = position_actuator_commands[i];
+    ROS_ERROR("idx: %d, Actuators Pos Command: %f, Current Comamnd: %f", i, position_actuator_commands[i], actuator_commands[i]);
+    if (i == 7){
+      ROS_ERROR(" ");
+    }
   }
 }
 
