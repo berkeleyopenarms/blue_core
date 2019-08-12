@@ -68,8 +68,6 @@ public:
       const std::vector<double> &softstop_max_angles,
       double softstop_tolerance);
 
-  // Sorry brent
-
 private:
 
   // Private helpers

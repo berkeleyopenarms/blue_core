@@ -202,7 +202,7 @@ void BLDCDriver::updateState(blue_msgs::MotorState& motor_states) {
 
     angle_[id] = enc_position;
     if (motor_states.temperature[i] > MAX_TEMP_SHUTOFF) {
-      ROS_ERROR("Motor %d is too hot! Shutting off system: %f", id, motor_states.temperature[i]);
+      ROS_ERROR("Motor %d is too hot! Shutting off system: %fC", id, motor_states.temperature[i]);
       stop_motors_ = true;
     } else if (motor_states.temperature[i] > MAX_TEMP_WARNING) {
       ROS_WARN_THROTTLE(1, "Motor %d is warm, currently at %fC", id, motor_states.temperature[i]);
