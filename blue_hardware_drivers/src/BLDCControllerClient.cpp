@@ -289,6 +289,11 @@ void BLDCControllerClient::transmit() {
     sub_packet_buf_.clear();
     // Acquire packet byte format
     auto packet = it->second; // Get packet pointer (value in [key, value] pair)
+    if (packet == NULL) {
+      std::cout << "Generating packet for board: " << (int) it->first << std::endl;
+      throw comms_error("Packet in transmit is null");
+    }
+
     packet->dump(sub_packet_buf_);
 
 #ifdef DEBUG_TRANSMIT

@@ -81,6 +81,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
 void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
                       const std::list<hardware_interface::ControllerInfo>& stop_list) {
 
+  // TODO read these mappings in as a parameter
   std::vector<std::string> joint_hardware_effort_controllers{
     "effort_controllers/JointTrajectoryController",
     "effort_controllers/JointGroupEffortController",
@@ -98,7 +99,7 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
   std::vector<std::string> gripper_hardware_position_controllers{
   };
 
-  // Acquire the kinematics lock
+  // Acquire the motor_driver lock
   std::lock_guard<std::mutex> lock(motor_driver_mutex_);
 
 
@@ -123,20 +124,14 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
   }
 
   for (std::list<hardware_interface::ControllerInfo>::const_iterator it=start_list.begin(); it != start_list.end(); ++it) {
-    ROS_ERROR("%s\n", it->name.c_str());
-    ROS_ERROR("%s\n", it->type.c_str());
     if (std::find(
           std::begin(joint_hardware_position_controllers),
           std::end(joint_hardware_position_controllers),
           it->type) != std::end(joint_hardware_position_controllers)) {
 
-      ROS_ERROR("%s\n", it->name.c_str());
-      ROS_ERROR("%s\n", it->type.c_str());
       // do this for all except the last
       for (int i = 0; i < kinematics_.num_joints_ - 1; i++) {
-        ROS_ERROR("Hi");
         motor_driver_.setControlMode(i, blue_hardware_drivers::COMM_CTRL_MODE_POS_FF);
-        ROS_ERROR("Bye");
       }
     }
 
@@ -156,7 +151,6 @@ void BlueHW::read() {
 
   // Acquire the motor_driver_ lock
   std::lock_guard<std::mutex> lock(motor_driver_mutex_);
-  ROS_ERROR("Starting Upate");
 
 
   motor_driver_.update(motor_pos_commands_, motor_commands_, motor_states_msg_);
@@ -227,10 +221,6 @@ void BlueHW::write() {
     // Update our command map
     motor_commands_[params_.motor_ids[i]] = actuator_commands[i];
     motor_pos_commands_[params_.motor_ids[i]] = position_actuator_commands[i];
-    // ROS_ERROR("idx: %d, Actuators Pos Command: %f, Current Comamnd: %f", i, position_actuator_commands[i], actuator_commands[i]);
-    // if (i == 7){
-    //   ROS_ERROR(" ");
-    // }
   }
 }
 
