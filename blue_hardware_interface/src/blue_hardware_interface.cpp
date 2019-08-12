@@ -11,17 +11,10 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   // Read robot parameters
   loadParams();
 
-  // Acquire the motor_driver_ lock
-  // std::lock_guard<std::mutex> lock(motor_driver_mutex_);
-
   // Motor driver bringup
   motor_driver_.init(
       params_.serial_port,
       params_.motor_ids);
-
-  use_hardware_position_control = false;
-  // motor_driver_.set_control_current_controller();
-  // blue_hardware_interface::comm_ctrl_mode_t control_mode
 
   // Build helper for robot dynamics
   // (Used to compute gravity compensation torques)
@@ -52,8 +45,8 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
 
   // Initialize motor commands
   for (auto id : params_.motor_ids) {
-    motor_commands_[id] = 0.0;
-    motor_pos_commands_[id] = 0.0;
+    motor_effort_commands_[id] = 0.0;
+    motor_position_commands_[id] = 0.0;
   }
 
   bool success = false;
@@ -104,14 +97,14 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
 
 
   for (std::list<hardware_interface::ControllerInfo>::const_iterator it=stop_list.begin(); it != stop_list.end(); ++it) {
-    // if stopping a joint position hardware control mode, then switch back to current control mode for gravity comp
+    // If stopping a joint position hardware control mode, then switch back to current control mode for gravity comp
     if (std::find(
           std::begin(joint_hardware_position_controllers),
           std::end(joint_hardware_position_controllers),
           it->type) != std::end(joint_hardware_position_controllers)) {
 
-      // do this for all except the last
-      for (int i = 0; i < kinematics_.num_joints_ - 1; i++)
+      // Change the control mode for all non gripper motors
+      for (int i = 0; i < kinematics_.getJointCount() - 1; i++)
         motor_driver_.setControlMode(i, blue_hardware_drivers::COMM_CTRL_MODE_CURRENT);
     }
 
@@ -119,7 +112,7 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
           std::begin(gripper_hardware_position_controllers),
           std::end(gripper_hardware_position_controllers),
           it->type) != std::end(gripper_hardware_position_controllers)) {
-      motor_driver_.setControlMode(kinematics_.num_joints_ - 1, blue_hardware_drivers::COMM_CTRL_MODE_CURRENT);
+      motor_driver_.setControlMode(kinematics_.getJointCount() - 1, blue_hardware_drivers::COMM_CTRL_MODE_CURRENT);
     }
   }
 
@@ -130,7 +123,7 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
           it->type) != std::end(joint_hardware_position_controllers)) {
 
       // do this for all except the last
-      for (int i = 0; i < kinematics_.num_joints_ - 1; i++) {
+      for (int i = 0; i < kinematics_.getJointCount() - 1; i++) {
         motor_driver_.setControlMode(i, blue_hardware_drivers::COMM_CTRL_MODE_POS_FF);
       }
     }
@@ -139,7 +132,7 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
           std::begin(gripper_hardware_position_controllers),
           std::end(gripper_hardware_position_controllers),
           it->type) != std::end(gripper_hardware_position_controllers)) {
-      motor_driver_.setControlMode(kinematics_.num_joints_ - 1, blue_hardware_drivers::COMM_CTRL_MODE_POS_FF);
+      motor_driver_.setControlMode(kinematics_.getJointCount() - 1, blue_hardware_drivers::COMM_CTRL_MODE_POS_FF);
     }
   }
 
@@ -147,13 +140,12 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
 
 void BlueHW::read() {
   // Motor communication! Simultaneously write commands and read state
-  // motor_driver_.update(motor_commands_, motor_states_msg_);
 
   // Acquire the motor_driver_ lock
   std::lock_guard<std::mutex> lock(motor_driver_mutex_);
 
 
-  motor_driver_.update(motor_pos_commands_, motor_commands_, motor_states_msg_);
+  motor_driver_.update(motor_position_commands_, motor_effort_commands_, motor_states_msg_);
 
   // Publish the motor states, in case anybody's listening
   motor_states_msg_.header.stamp = ros::Time::now();
@@ -186,20 +178,14 @@ void BlueHW::write() {
   for (int i = 0; i < feedforward_torques.size(); i++)
     feedforward_torques[i] *= params_.id_torque_gains[i];
 
-  // Get actuator commands, using the gravity comp torques as a feedforward
-  // // pseudo code
-  // if (position control interface is active) {
-  //   // set commands to be torque commands 0
-  //   for (int i = 0; i < raw_joint_cmd_.size(); i++)
-  //     raw_joint_cmd_ = 0.0
-  // }
-
+  // Get actuator position commands
   auto position_actuator_commands = kinematics_.getPositionActuatorCommands(
       params_.softstop_min_angles,
       params_.softstop_max_angles,
       params_.softstop_tolerance);
 
-  auto actuator_commands = kinematics_.getActuatorCommands(
+  // Get actuator effort commands, using the gravity comp torques as a feedforward
+  auto effort_actuator_commands = kinematics_.getActuatorCommands(
       feedforward_torques,
       params_.softstop_torque_limit, // TODO: clean up softstop code
       params_.softstop_min_angles,
@@ -207,20 +193,20 @@ void BlueHW::write() {
       params_.softstop_tolerance);
 
   // Post-process motor commands
-  for (int i = 0; i < actuator_commands.size(); i++) {
+  for (int i = 0; i < effort_actuator_commands.size(); i++) {
     // Convert torque to current
     // TODO: use driver internal torque control mode
-    actuator_commands[i] = actuator_commands[i] * params_.current_to_torque_ratios[i];
+    effort_actuator_commands[i] = effort_actuator_commands[i] * params_.current_to_torque_ratios[i];
 
     // Apply current limit
     // TODO: limit currents more if in position control mode
-    actuator_commands[i] = std::max(
-        std::min(actuator_commands[i], params_.motor_current_limits[i]),
+    effort_actuator_commands[i] = std::max(
+        std::min(effort_actuator_commands[i], params_.motor_current_limits[i]),
         -params_.motor_current_limits[i]);
 
     // Update our command map
-    motor_commands_[params_.motor_ids[i]] = actuator_commands[i];
-    motor_pos_commands_[params_.motor_ids[i]] = position_actuator_commands[i];
+    motor_effort_commands_[params_.motor_ids[i]] = effort_actuator_commands[i];
+    motor_position_commands_[params_.motor_ids[i]] = position_actuator_commands[i];
   }
 }
 

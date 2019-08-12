@@ -12,8 +12,8 @@ void BLDCDriver::init(std::string port, std::vector<comm_id_t> board_ids)
   board_ids_ = board_ids;
 
   for (auto id : board_ids_) {
-    // boards should start in current control mode by default
-    board_control_modes[id] = COMM_CTRL_MODE_CURRENT;
+    // Boards should start in current control mode by default
+    board_control_modes_[id] = COMM_CTRL_MODE_CURRENT;
     revolutions_[id] = 0;
     angle_[id] = 0;
   }
@@ -108,10 +108,12 @@ BLDCDriver::BLDCDriver(){
 
 void BLDCDriver::update(
     std::unordered_map<comm_id_t, float>& pos_commands,
-    std::unordered_map<comm_id_t, float>& current_commads,
+    std::unordered_map<comm_id_t, float>& current_commands,
     blue_msgs::MotorState& motor_states) {
   // Resize MotorState message to fit our read data
-  int motor_count = current_commads.size();
+  const size_t motor_count = current_commands.size();
+  ROS_ASSERT(current_commands.size() == motor_count);
+  ROS_ASSERT(pos_commands.size() == motor_count);
   // TODO add extra motor command to the motor state information
   motor_states.command.resize(motor_count);
 
@@ -120,15 +122,21 @@ void BLDCDriver::update(
       // Send next motor current command
       for (int i = 0; i < board_ids_.size(); i++) {
         comm_id_t id = board_ids_[i];
-        if (board_control_modes[id] == COMM_CTRL_MODE_CURRENT) {
-          device_.queueSetCommandAndGetState(id, current_commads[id]);
-        } else if (board_control_modes[id] == COMM_CTRL_MODE_POS_FF) {
-          device_.queueSetPosCommandAndGetState(id, pos_commands[id], current_commads[id]);
-        } else {
-          throw "Control Mode Not Supported";
+        switch(board_control_modes_[id]){
+          case COMM_CTRL_MODE_CURRENT:
+            device_.queueSetCommandAndGetState(id, current_commands[id]);
+            break;
+          case COMM_CTRL_MODE_POS_FF:
+            device_.queueSetPosCommandAndGetState(id, pos_commands[id], current_commands[id]);
+            break;
+          default:
+            ROS_FATAL("Control mode not supported");
+            ROS_BREAK();
+
         }
+
         // TODO add extra motor command to the motor state information
-        motor_states.command[i] = current_commads[id];
+        motor_states.command[i] = current_commands[id];
       }
     } else {
       // If one of the motors is too hot, we still want to grab the state and set effort to 0
@@ -142,13 +150,14 @@ void BLDCDriver::update(
     // Run the communication with each board
     device_.exchange();
   }
-  _update_state(motor_count, motor_states);
+  updateState(motor_states);
 }
 
-void BLDCDriver::_update_state(int motor_count, blue_msgs::MotorState& motor_states) {
+void BLDCDriver::updateState(blue_msgs::MotorState& motor_states) {
   // Should only be called after the new board states are updated
 
   // Resize MotorState message to fit our read data
+  size_t motor_count = board_ids_.size();
   motor_states.position.resize(motor_count);
   motor_states.velocity.resize(motor_count);
   motor_states.direct_current.resize(motor_count);
@@ -180,7 +189,6 @@ void BLDCDriver::_update_state(int motor_count, blue_msgs::MotorState& motor_sta
       // To correct for potential resets, we record the number of full rotations off-board
       //  and complete with on-board absolute encoder angle
       float prev_enc_pos = angle_[id];
-
       float enc_pos_diff = enc_position - prev_enc_pos;
       if (enc_pos_diff < -M_PI) {
         revolutions_[id] += 1;
@@ -189,16 +197,13 @@ void BLDCDriver::_update_state(int motor_count, blue_msgs::MotorState& motor_sta
         revolutions_[id] -= 1;
         enc_pos_diff -= 2 * M_PI; // Normalize to (-pi, pi) range
       }
-
       motor_states.position[i] = enc_position + revolutions_[id] * 2 * M_PI;
     }
 
     angle_[id] = enc_position;
-
     if (motor_states.temperature[i] > MAX_TEMP_SHUTOFF) {
       ROS_ERROR("Motor %d is too hot! Shutting off system: %f", id, motor_states.temperature[i]);
       stop_motors_ = true;
-      // ROS_ERROR_THROTTLE(1, "Motor %d is too hot! Shutting off system.", id);
     } else if (motor_states.temperature[i] > MAX_TEMP_WARNING) {
       ROS_WARN_THROTTLE(1, "Motor %d is warm, currently at %fC", id, motor_states.temperature[i]);
     }
@@ -247,7 +252,6 @@ void BLDCDriver::engageControl() {
     bool success = false;
     while (!success && ros::ok()) {
       try {
-        // device_.queueSetControlMode(id, COMM_CTRL_MODE_POS_FF);
         device_.queueSetControlMode(id, COMM_CTRL_MODE_CURRENT);
         device_.exchange();
         success = true;
@@ -278,25 +282,20 @@ void BLDCDriver::engageControl() {
   engaged_ = true;
 }
 
-bool BLDCDriver::setControlMode(int id, comm_ctrl_mode_t control_mode){
-  bool success = false;
+void BLDCDriver::setControlMode(size_t id, comm_ctrl_mode_t control_mode){
   device_.clearQueue();
-  if (board_control_modes[id] != control_mode) {
-    while (!success && ros::ok()) {
-      try {
-        device_.queueSetControlMode(id, control_mode);
-        device_.exchange();
-        success = true;
-        board_control_modes[id] = control_mode;
-      } catch (comms_error e) {
-        ROS_ERROR("%s\n", e.what());
-        ROS_ERROR("Could not engage board %d, retrying...", id);
-        ros::Duration(0.01).sleep();
-        device_.resetBuffer();
-      }
+  while (board_control_modes_[id] != control_mode && ros::ok()) {
+    try {
+      device_.queueSetControlMode(id, control_mode);
+      device_.exchange();
+      board_control_modes_[id] = control_mode;
+    } catch (comms_error e) {
+      ROS_ERROR("%s\n", e.what());
+      ROS_ERROR("Could not engage board %ld, retrying...", id);
+      ros::Duration(0.01).sleep();
+      device_.resetBuffer();
     }
   }
-  return success;
 }
 
 } // namespace blue_hardware_drivers

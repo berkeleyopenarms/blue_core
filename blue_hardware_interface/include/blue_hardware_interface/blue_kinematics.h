@@ -33,6 +33,7 @@ public:
   // Getter functions
   const std::vector<double>& getJointPos();
   const std::vector<double>& getJointVel();
+  size_t getJointCount();
 
   // Joint calibration - snap estimated offsets to closest feasible values
   std::vector<double> snapJointOffsets(
@@ -68,7 +69,6 @@ public:
       double softstop_tolerance);
 
   // Sorry brent
-  int num_joints_;
 
 private:
 
@@ -86,10 +86,11 @@ private:
   bool is_calibrated_;
 
   // Counters
-  int num_diff_actuators_;
-  int num_simple_transmissions_;
-  int num_diff_transmissions_;
-  int num_transmissions_;
+  size_t num_joints_;
+  size_t num_diff_actuators_;
+  size_t num_simple_transmissions_;
+  size_t num_diff_transmissions_;
+  size_t num_transmissions_;
 
   // Only one thread should be accessing the robot kinematics at a time
   // TODO: optimize or rethink this?
@@ -121,15 +122,15 @@ private:
   std::vector<double> actuator_pos_;
   std::vector<double> actuator_vel_;
   std::vector<double> actuator_eff_;
-  std::vector<double> actuator_cmd_;
+  std::vector<double> actuator_eff_cmd_;
   std::vector<double> actuator_pos_cmd_;
   std::vector<double> joint_pos_;
   std::vector<double> joint_vel_;
   std::vector<double> joint_eff_;
-  std::vector<double> joint_cmd_;
+  std::vector<double> joint_eff_cmd_;
   std::vector<double> joint_pos_cmd_;
 
-  std::vector<double> raw_joint_cmd_;
+  std::vector<double> raw_joint_eff_cmd_;
   std::vector<double> raw_joint_pos_cmd_;
 
 };

@@ -80,16 +80,14 @@ private:
 
   // Motor driver interface
   blue_hardware_drivers::BLDCDriver motor_driver_;
-  std::unordered_map<uint8_t, float> motor_commands_;
-  std::unordered_map<uint8_t, float> motor_pos_commands_;
+  std::unordered_map<uint8_t, float> motor_effort_commands_;
+  std::unordered_map<uint8_t, float> motor_position_commands_;
 
   // Kinematics abstraction layer (actuator <-> joint)
   BlueKinematics kinematics_;
 
   // Robot dynamics helper
   BlueDynamics dynamics_;
-
-  bool use_hardware_position_control;
 
   // Publishers
   blue_msgs::MotorState motor_states_msg_;
