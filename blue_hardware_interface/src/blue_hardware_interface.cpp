@@ -48,8 +48,10 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
       "blue_hardware/gravity_vectors", 1);
 
   // Initialize motor commands
-  for (auto id : params_.motor_ids)
+  for (auto id : params_.motor_ids) {
     motor_commands_[id] = 0.0;
+    motor_pos_commands_[id] = 0.0;
+  }
 
   bool success = false;
   while (!success && ros::ok()) {
@@ -87,7 +89,8 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
 
 void BlueHW::read() {
   // Motor communication! Simultaneously write commands and read state
-  motor_driver_.update(motor_commands_, motor_states_msg_);
+  // motor_driver_.update(motor_commands_, motor_states_msg_);
+  motor_driver_.updatePosMode(motor_pos_commands_, motor_commands_, motor_states_msg_);
 
   // Publish the motor states, in case anybody's listening
   motor_states_msg_.header.stamp = ros::Time::now();
@@ -126,10 +129,12 @@ void BlueHW::write() {
   //   // set commands to be torque commands 0
   //   for (int i = 0; i < raw_joint_cmd_.size(); i++)
   //     raw_joint_cmd_ = 0.0
-  //   auto position_actuator_commands = kinematics_.getPositionActuatorCommands(
-  //       params_.softstop_min_angles,
-  //       params_.softstop_max_angles);
   // }
+
+  auto position_actuator_commands = kinematics_.getPositionActuatorCommands(
+      params_.softstop_min_angles,
+      params_.softstop_max_angles,
+      params_.softstop_tolerance);
 
   auto actuator_commands = kinematics_.getActuatorCommands(
       feedforward_torques,
@@ -145,12 +150,14 @@ void BlueHW::write() {
     actuator_commands[i] = actuator_commands[i] * params_.current_to_torque_ratios[i];
 
     // Apply current limit
+    // TODO: limit currents more if in position control mode
     actuator_commands[i] = std::max(
         std::min(actuator_commands[i], params_.motor_current_limits[i]),
         -params_.motor_current_limits[i]);
 
     // Update our command map
     motor_commands_[params_.motor_ids[i]] = actuator_commands[i];
+    motor_pos_commands_[params_.motor_ids[i]] = position_actuator_commands[i];
   }
 }
 

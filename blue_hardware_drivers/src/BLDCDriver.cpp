@@ -151,7 +151,9 @@ void BLDCDriver::updatePosMode(
         if (board_control_modes[id] == COMM_CTRL_MODE_CURRENT) {
           device_.queueSetCommandAndGetState(id, current_commads[id]);
         } else if (board_control_modes[id] == COMM_CTRL_MODE_POS_FF) {
-          device_.queueSetPosCommandAndGetState(id, pos_commands[id], current_commads[id]);
+          // device_.queueSetPosCommandAndGetState(id, pos_commands[id], current_commads[id]);
+        } else {
+          throw "Control Mode Not Supported";
         }
         // TODO add extra motor command to the motor state information
         motor_states.command[i] = current_commads[id];
