@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <vector>
 #include <string>
+#include <mutex>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
@@ -69,6 +70,10 @@ public:
 
 private:
   ros::NodeHandle nh_;
+
+  // Only one thread should be accessing the motor_driver at a time
+  // TODO: optimize or rethink this?
+  std::mutex motor_driver_mutex_;
 
   // Configuration from parameter server
   Params params_;

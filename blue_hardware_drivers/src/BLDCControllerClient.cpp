@@ -682,13 +682,13 @@ void BLDCControllerClient::queueSetCommandAndGetState(comm_id_t board_id, float 
 }
 
 void BLDCControllerClient::queueSetPosCommandAndGetState(comm_id_t board_id, float position, float feedforward) {
-  const static size_t num_registers = 2; // Number of registers in this write 
+  const static size_t num_registers = 2; // Number of registers in this write
   float values[num_registers] = {position, feedforward};
 
   Packet* packet = new ReadWriteRegPacket(board_id,
     COMM_REG_RO_ROTOR_P, 9,                                          // Read
     COMM_REG_VOL_SETPOINT_P, sizeof(position) + sizeof(feedforward), // Write
-              reinterpret_cast<uint8_t*> (&values), num_registers  
+              reinterpret_cast<uint8_t*> (&values), num_registers
   );
 
   queuePacket(board_id, packet);

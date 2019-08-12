@@ -11,6 +11,9 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   // Read robot parameters
   loadParams();
 
+  // Acquire the motor_driver_ lock
+  std::lock_guard<std::mutex> lock(motor_driver_mutex_);
+
   // Motor driver bringup
   motor_driver_.init(
       params_.serial_port,
@@ -77,19 +80,83 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
 
 void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
                       const std::list<hardware_interface::ControllerInfo>& stop_list) {
+
+  std::vector<std::string> joint_hardware_effort_controllers{
+    "effort_controllers/JointTrajectoryController",
+    "effort_controllers/JointGroupEffortController",
+    "blue_controllers/BlueJointGroupPositionController",
+    "blue_controllers/BlueJointGroupCTC",
+  };
+  std::vector<std::string> joint_hardware_position_controllers{
+    "position_controllers/JointGroupPositionController",
+  };
+
+  std::vector<std::string> gripper_hardware_effort_controllers{
+    "effort_controllers/GripperActionController",
+    "effort_controllers/JointGroupEffortController",
+  };
+  std::vector<std::string> gripper_hardware_position_controllers{
+  };
+
+  // Acquire the kinematics lock
+  std::lock_guard<std::mutex> lock(motor_driver_mutex_);
+
+
+  for (std::list<hardware_interface::ControllerInfo>::const_iterator it=stop_list.begin(); it != stop_list.end(); ++it) {
+    // if stopping a joint position hardware control mode, then switch back to current control mode for gravity comp
+    if (std::find(
+          std::begin(joint_hardware_position_controllers),
+          std::end(joint_hardware_position_controllers),
+          it->type) != std::end(joint_hardware_position_controllers)) {
+
+      // do this for all except the last
+      for (int i = 0; i < kinematics_.num_joints_ - 1; i++)
+        motor_driver_.setControlMode(i, blue_hardware_drivers::COMM_CTRL_MODE_CURRENT);
+    }
+
+    if (std::find(
+          std::begin(gripper_hardware_position_controllers),
+          std::end(gripper_hardware_position_controllers),
+          it->type) != std::end(gripper_hardware_position_controllers)) {
+      motor_driver_.setControlMode(kinematics_.num_joints_ - 1, blue_hardware_drivers::COMM_CTRL_MODE_CURRENT);
+    }
+  }
+
   for (std::list<hardware_interface::ControllerInfo>::const_iterator it=start_list.begin(); it != start_list.end(); ++it) {
     ROS_ERROR("%s\n", it->name.c_str());
     ROS_ERROR("%s\n", it->type.c_str());
+    if (std::find(
+          std::begin(joint_hardware_position_controllers),
+          std::end(joint_hardware_position_controllers),
+          it->type) != std::end(joint_hardware_position_controllers)) {
+
+      ROS_ERROR("%s\n", it->name.c_str());
+      ROS_ERROR("%s\n", it->type.c_str());
+      // do this for all except the last
+      for (int i = 0; i < kinematics_.num_joints_ - 1; i++) {
+        ROS_ERROR("Hi");
+        motor_driver_.setControlMode(i, blue_hardware_drivers::COMM_CTRL_MODE_POS_FF);
+        ROS_ERROR("Bye");
+      }
+    }
+
+    if (std::find(
+          std::begin(gripper_hardware_position_controllers),
+          std::end(gripper_hardware_position_controllers),
+          it->type) != std::end(gripper_hardware_position_controllers)) {
+      motor_driver_.setControlMode(kinematics_.num_joints_ - 1, blue_hardware_drivers::COMM_CTRL_MODE_POS_FF);
+    }
   }
-  for (std::list<hardware_interface::ControllerInfo>::const_iterator it=stop_list.begin(); it != stop_list.end(); ++it) {
-    ROS_ERROR("%s\n", it->name.c_str());
-    ROS_ERROR("%s\n", it->type.c_str());
-  }
+
 }
 
 void BlueHW::read() {
   // Motor communication! Simultaneously write commands and read state
   // motor_driver_.update(motor_commands_, motor_states_msg_);
+
+  // Acquire the motor_driver_ lock
+  std::lock_guard<std::mutex> lock(motor_driver_mutex_);
+
   motor_driver_.update(motor_pos_commands_, motor_commands_, motor_states_msg_);
 
   // Publish the motor states, in case anybody's listening

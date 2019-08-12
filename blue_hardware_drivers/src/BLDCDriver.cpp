@@ -197,8 +197,9 @@ void BLDCDriver::_update_state(int motor_count, blue_msgs::MotorState& motor_sta
     angle_[id] = enc_position;
 
     if (motor_states.temperature[i] > MAX_TEMP_SHUTOFF) {
+      ROS_ERROR("Motor %d is too hot! Shutting off system: %f", id, motor_states.temperature[i]);
       stop_motors_ = true;
-      ROS_ERROR_THROTTLE(1, "Motor %d is too hot! Shutting off system.", id);
+      // ROS_ERROR_THROTTLE(1, "Motor %d is too hot! Shutting off system.", id);
     } else if (motor_states.temperature[i] > MAX_TEMP_WARNING) {
       ROS_WARN_THROTTLE(1, "Motor %d is warm, currently at %fC", id, motor_states.temperature[i]);
     }
@@ -278,26 +279,22 @@ void BLDCDriver::engageControl() {
   engaged_ = true;
 }
 
-bool BLDCDriver::setControlMode(std::vector<comm_ctrl_mode_t> control_modes){
+bool BLDCDriver::setControlMode(int id, comm_ctrl_mode_t control_mode){
   bool success = false;
-  int idx = 0;
-  for (auto id : board_ids_) {
-    if (board_control_modes[id] != control_modes[idx]) {
-      while (!success && ros::ok()) {
-        try {
-          device_.queueSetControlMode(id, control_modes[idx]);
-          device_.exchange();
-          success = true;
-          board_control_modes[id] = control_modes[idx];
-        } catch (comms_error e) {
-          ROS_ERROR("%s\n", e.what());
-          ROS_ERROR("Could not engage board %d, retrying...", id);
-          ros::Duration(0.01).sleep();
-          device_.resetBuffer();
-        }
+  if (board_control_modes[id] != control_mode) {
+    while (!success && ros::ok()) {
+      try {
+        device_.queueSetControlMode(id, control_mode);
+        device_.exchange();
+        success = true;
+        board_control_modes[id] = control_mode;
+      } catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not engage board %d, retrying...", id);
+        ros::Duration(0.01).sleep();
+        device_.resetBuffer();
       }
     }
-    idx += 1;
   }
   return success;
 }

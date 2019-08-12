@@ -67,6 +67,9 @@ public:
       const std::vector<double> &softstop_max_angles,
       double softstop_tolerance);
 
+  // Sorry brent
+  int num_joints_;
+
 private:
 
   // Private helpers
@@ -83,7 +86,6 @@ private:
   bool is_calibrated_;
 
   // Counters
-  int num_joints_;
   int num_diff_actuators_;
   int num_simple_transmissions_;
   int num_diff_transmissions_;
