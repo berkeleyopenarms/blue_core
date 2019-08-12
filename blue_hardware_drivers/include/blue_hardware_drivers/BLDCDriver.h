@@ -31,12 +31,13 @@ class BLDCDriver {
         blue_msgs::MotorState& motor_states);
     void engageControl();
     void disengageControl();
-    bool setControlMode(comm_ctrl_mode_t control_mode);
+    bool setControlMode(std::vector<comm_ctrl_mode_t> control_mode);
 
     BLDCDriver();
 
   private:
     std::vector<comm_id_t> board_ids_;
+    std::unordered_map<comm_id_t, comm_ctrl_mode_t> board_control_modes;
     std::unordered_map<comm_id_t, signed int> revolutions_;
     std::unordered_map<comm_id_t, signed int> angle_;
 
@@ -47,6 +48,7 @@ class BLDCDriver {
     bool stop_motors_;
     bool engaged_;
     bool first_read_;
+    void _update_state(int motor_count, blue_msgs::MotorState& motor_states);
 };
 
 } // namespace blue_hardware_drivers

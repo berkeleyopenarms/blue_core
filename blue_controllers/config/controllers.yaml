@@ -24,7 +24,7 @@ gripper_torque_controller:
 
 ### Joint position interface controllers
 joint_hardware_position_controller:
-  type:position_controllers/BlueJointGroupPositionController
+  type: position_controllers/JointGroupPositionController
   joints:
     - $(arg side)_base_roll_joint
     - $(arg side)_shoulder_lift_joint
