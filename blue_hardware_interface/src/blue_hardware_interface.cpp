@@ -12,7 +12,7 @@ BlueHW::BlueHW(ros::NodeHandle &nh) : nh_(nh) {
   loadParams();
 
   // Acquire the motor_driver_ lock
-  std::lock_guard<std::mutex> lock(motor_driver_mutex_);
+  // std::lock_guard<std::mutex> lock(motor_driver_mutex_);
 
   // Motor driver bringup
   motor_driver_.init(
@@ -156,6 +156,8 @@ void BlueHW::read() {
 
   // Acquire the motor_driver_ lock
   std::lock_guard<std::mutex> lock(motor_driver_mutex_);
+  ROS_ERROR("Starting Upate");
+
 
   motor_driver_.update(motor_pos_commands_, motor_commands_, motor_states_msg_);
 

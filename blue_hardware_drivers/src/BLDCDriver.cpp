@@ -124,7 +124,7 @@ void BLDCDriver::update(
           device_.queueSetCommandAndGetState(id, current_commads[id]);
         } else if (board_control_modes[id] == COMM_CTRL_MODE_POS_FF) {
           ROS_ERROR("Using motor position control, cmd: %f", pos_commands[id]);
-          // device_.queueSetPosCommandAndGetState(id, pos_commands[id], current_commads[id]);
+          device_.queueSetPosCommandAndGetState(id, pos_commands[id], current_commads[id]);
         } else {
           throw "Control Mode Not Supported";
         }
@@ -161,6 +161,7 @@ void BLDCDriver::_update_state(int motor_count, blue_msgs::MotorState& motor_sta
   motor_states.accel_z.resize(motor_count);
 
   // Get the state of the each board
+  ROS_ERROR("Starting to read from buffer");
   for (int i = 0; i < board_ids_.size(); i++) {
     comm_id_t id = board_ids_[i];
     device_.resultGetState(id
@@ -204,6 +205,7 @@ void BLDCDriver::_update_state(int motor_count, blue_msgs::MotorState& motor_sta
       ROS_WARN_THROTTLE(1, "Motor %d is warm, currently at %fC", id, motor_states.temperature[i]);
     }
   }
+  ROS_ERROR("Finished to read from buffer");
 
   first_read_ = false;
   loop_count_++;
