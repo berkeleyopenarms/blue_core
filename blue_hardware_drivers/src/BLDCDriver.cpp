@@ -132,7 +132,6 @@ void BLDCDriver::update(
           default:
             ROS_FATAL("Control mode not supported");
             ROS_BREAK();
-
         }
 
         // TODO add extra motor command to the motor state information
@@ -282,7 +281,7 @@ void BLDCDriver::engageControl() {
   engaged_ = true;
 }
 
-void BLDCDriver::setControlMode(size_t id, comm_ctrl_mode_t control_mode){
+void BLDCDriver::setControlMode(comm_id_t id, comm_ctrl_mode_t control_mode){
   device_.clearQueue();
   while (board_control_modes_[id] != control_mode && ros::ok()) {
     try {
@@ -291,7 +290,7 @@ void BLDCDriver::setControlMode(size_t id, comm_ctrl_mode_t control_mode){
       board_control_modes_[id] = control_mode;
     } catch (comms_error e) {
       ROS_ERROR("%s\n", e.what());
-      ROS_ERROR("Could not engage board %ld, retrying...", id);
+      ROS_ERROR("Could not engage board %d, retrying...", id);
       ros::Duration(0.01).sleep();
       device_.resetBuffer();
     }

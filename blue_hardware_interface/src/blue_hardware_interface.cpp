@@ -185,7 +185,7 @@ void BlueHW::write() {
       params_.softstop_tolerance);
 
   // Get actuator effort commands, using the gravity comp torques as a feedforward
-  auto effort_actuator_commands = kinematics_.getActuatorCommands(
+  auto effort_actuator_commands = kinematics_.getEffortActuatorCommands(
       feedforward_torques,
       params_.softstop_torque_limit, // TODO: clean up softstop code
       params_.softstop_min_angles,

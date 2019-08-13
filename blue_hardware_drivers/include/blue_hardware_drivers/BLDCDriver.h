@@ -30,7 +30,7 @@ class BLDCDriver {
         blue_msgs::MotorState& motor_states);
     void engageControl();
     void disengageControl();
-    void setControlMode(size_t id, comm_ctrl_mode_t control_mode);
+    void setControlMode(comm_id_t id, comm_ctrl_mode_t control_mode);
 
     BLDCDriver();
 

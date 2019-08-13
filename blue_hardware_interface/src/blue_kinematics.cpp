@@ -36,16 +36,16 @@ void BlueKinematics::init(
   actuator_pos_.resize(num_joints_);
   actuator_vel_.resize(num_joints_);
   actuator_eff_.resize(num_joints_);
-  actuator_eff_cmd_.resize(num_joints_);
+  actuator_cmd_.resize(num_joints_);
   actuator_pos_cmd_.resize(num_joints_);
   joint_pos_.resize(num_joints_);
   joint_vel_.resize(num_joints_);
   joint_eff_.resize(num_joints_);
-  joint_eff_cmd_.resize(num_joints_);
+  joint_cmd_.resize(num_joints_);
   joint_pos_cmd_.resize(num_joints_);
 
   joint_offsets_.resize(num_joints_, 0.0);
-  raw_joint_eff_cmd_.resize(num_joints_, 0.0);
+  raw_joint_cmd_.resize(num_joints_, 0.0);
   raw_joint_pos_cmd_.resize(num_joints_, 0.0);
 
   KDL::Vector zero_vector(0.0, 0.0, 0.0);
@@ -88,8 +88,8 @@ void BlueKinematics::init(
       joint_states_[transmission_idx].velocity.push_back(&joint_vel_[joint_idx]);
       joint_states_[transmission_idx].effort.push_back(&joint_eff_[joint_idx]);
 
-      actuator_commands_[transmission_idx].effort.push_back(&actuator_eff_cmd_[joint_idx]);
-      joint_commands_[transmission_idx].effort.push_back(&joint_eff_cmd_[joint_idx]);
+      actuator_commands_[transmission_idx].effort.push_back(&actuator_cmd_[joint_idx]);
+      joint_commands_[transmission_idx].effort.push_back(&joint_cmd_[joint_idx]);
 
       actuator_position_commands_[transmission_idx].position.push_back(&actuator_pos_cmd_[joint_idx]);
       joint_position_commands_[transmission_idx].position.push_back(&joint_pos_cmd_[joint_idx]);
@@ -123,8 +123,8 @@ void BlueKinematics::init(
 
   // Build interfaces for ros_control
   for (int i = 0; i < num_joints_; i++) {
-    joint_eff_cmd_[i] = 0.0;
-    raw_joint_eff_cmd_[i] = 0.0;
+    joint_cmd_[i] = 0.0;
+    raw_joint_cmd_[i] = 0.0;
     raw_joint_pos_cmd_[i] = 0.0;
     hardware_interface::JointStateHandle state_handle_a(
         joint_names[i],
@@ -136,7 +136,7 @@ void BlueKinematics::init(
   for (int i = 0; i < num_joints_; i++) {
     hardware_interface::JointHandle effort_handle_a(
         joint_state_interface.getHandle(joint_names[i]),
-        &raw_joint_eff_cmd_[i]);
+        &raw_joint_cmd_[i]);
     joint_effort_interface.registerHandle(effort_handle_a);
   }
   for (int i = 0; i < num_joints_; i++) {
@@ -404,7 +404,7 @@ void BlueKinematics::getGravityVectors(
   }
 }
 
-std::vector<double> BlueKinematics::getActuatorCommands(
+std::vector<double> BlueKinematics::getEffortActuatorCommands(
     const std::vector<double> &feedforward_torques,
     double softstop_torque_limit, // TODO: clean up softstop code
     const std::vector<double> &softstop_min_angles,
@@ -416,35 +416,35 @@ std::vector<double> BlueKinematics::getActuatorCommands(
 
   if (!is_calibrated_) {
     // If not calibrated, zero out all actuator commands
-    std::fill(actuator_eff_cmd_.begin(), actuator_eff_cmd_.end(), 0);
-    return actuator_eff_cmd_;
+    std::fill(actuator_cmd_.begin(), actuator_cmd_.end(), 0);
+    return actuator_cmd_;
   }
 
   // Compute joint commands
   for (int i = 0; i < num_joints_; i++) {
     // Add feedforward if it exists
     if (i < feedforward_torques.size())
-      joint_eff_cmd_[i] = raw_joint_eff_cmd_[i] + feedforward_torques[i];
+      joint_cmd_[i] = raw_joint_cmd_[i] + feedforward_torques[i];
     else
-      joint_eff_cmd_[i] = raw_joint_eff_cmd_[i];
+      joint_cmd_[i] = raw_joint_cmd_[i];
 
-    raw_joint_eff_cmd_[i] = 0.0;
+    raw_joint_cmd_[i] = 0.0;
 
     // Soft stops
     // TODO: hacky and temporary
     if(joint_pos_[i] > softstop_max_angles[i] - softstop_tolerance) {
       double offset = joint_pos_[i] - softstop_max_angles[i] + softstop_tolerance;
-      joint_eff_cmd_[i] += -1.0 * softstop_torque_limit * pow(offset, 2);
+      joint_cmd_[i] += -1.0 * softstop_torque_limit * pow(offset, 2);
     } else if (joint_pos_[i] < softstop_min_angles[i] + softstop_tolerance) {
       double offset = softstop_min_angles[i] + softstop_tolerance - joint_pos_[i];
-      joint_eff_cmd_[i] += softstop_torque_limit * pow(offset, 2);
+      joint_cmd_[i] += softstop_torque_limit * pow(offset, 2);
     }
   }
 
   // Propagate through transmissions to compute actuator commands
   joint_to_actuator_interface_.propagate();
 
-  return actuator_eff_cmd_;
+  return actuator_cmd_;
 }
 
 std::vector<double> BlueKinematics::getPositionActuatorCommands(

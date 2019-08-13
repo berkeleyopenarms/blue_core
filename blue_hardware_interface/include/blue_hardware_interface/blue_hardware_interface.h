@@ -66,7 +66,7 @@ public:
   void read();
   void write();
   void doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
-                const std::list<hardware_interface::ControllerInfo>& stop_list);
+                const std::list<hardware_interface::ControllerInfo>& stop_list) override;
 
 private:
   ros::NodeHandle nh_;

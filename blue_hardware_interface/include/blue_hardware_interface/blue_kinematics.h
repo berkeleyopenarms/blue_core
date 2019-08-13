@@ -56,7 +56,7 @@ public:
       blue_msgs::GravityVectorArray &grav_msg);
 
   // Get desired actuator commands
-  std::vector<double> getActuatorCommands(
+  std::vector<double> getEffortActuatorCommands(
       const std::vector<double> &feedforward_torques,
       double softstop_torque_limit, // TODO: clean up softstop code
       const std::vector<double> &softstop_min_angles,
@@ -120,15 +120,15 @@ private:
   std::vector<double> actuator_pos_;
   std::vector<double> actuator_vel_;
   std::vector<double> actuator_eff_;
-  std::vector<double> actuator_eff_cmd_;
+  std::vector<double> actuator_cmd_;
   std::vector<double> actuator_pos_cmd_;
   std::vector<double> joint_pos_;
   std::vector<double> joint_vel_;
   std::vector<double> joint_eff_;
-  std::vector<double> joint_eff_cmd_;
+  std::vector<double> joint_cmd_;
   std::vector<double> joint_pos_cmd_;
 
-  std::vector<double> raw_joint_eff_cmd_;
+  std::vector<double> raw_joint_cmd_;
   std::vector<double> raw_joint_pos_cmd_;
 
 };
