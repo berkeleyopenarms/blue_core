@@ -179,13 +179,13 @@ void BlueHW::write() {
     feedforward_torques[i] *= params_.id_torque_gains[i];
 
   // Get actuator position commands
-  auto position_actuator_commands = kinematics_.getPositionActuatorCommands(
+  auto actuator_position_commands = kinematics_.getPositionActuatorCommands(
       params_.softstop_min_angles,
       params_.softstop_max_angles,
       params_.softstop_tolerance);
 
   // Get actuator effort commands, using the gravity comp torques as a feedforward
-  auto effort_actuator_commands = kinematics_.getEffortActuatorCommands(
+  auto actuator_effort_commands = kinematics_.getEffortActuatorCommands(
       feedforward_torques,
       params_.softstop_torque_limit, // TODO: clean up softstop code
       params_.softstop_min_angles,
@@ -193,20 +193,20 @@ void BlueHW::write() {
       params_.softstop_tolerance);
 
   // Post-process motor commands
-  for (int i = 0; i < effort_actuator_commands.size(); i++) {
+  for (int i = 0; i < actuator_effort_commands.size(); i++) {
     // Convert torque to current
     // TODO: use driver internal torque control mode
-    effort_actuator_commands[i] = effort_actuator_commands[i] * params_.current_to_torque_ratios[i];
+    actuator_effort_commands[i] = actuator_effort_commands[i] * params_.current_to_torque_ratios[i];
 
     // Apply current limit
     // TODO: limit currents more if in position control mode
-    effort_actuator_commands[i] = std::max(
-        std::min(effort_actuator_commands[i], params_.motor_current_limits[i]),
+    actuator_effort_commands[i] = std::max(
+        std::min(actuator_effort_commands[i], params_.motor_current_limits[i]),
         -params_.motor_current_limits[i]);
 
     // Update our command map
-    motor_effort_commands_[params_.motor_ids[i]] = effort_actuator_commands[i];
-    motor_position_commands_[params_.motor_ids[i]] = position_actuator_commands[i];
+    motor_effort_commands_[params_.motor_ids[i]] = actuator_effort_commands[i];
+    motor_position_commands_[params_.motor_ids[i]] = actuator_position_commands[i];
   }
 }
 
