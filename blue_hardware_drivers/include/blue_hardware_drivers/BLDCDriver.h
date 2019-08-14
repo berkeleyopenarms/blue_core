@@ -28,6 +28,7 @@ class BLDCDriver {
         std::unordered_map<comm_id_t, float>& pos_commands,
         std::unordered_map<comm_id_t, float>& current_commads,
         blue_msgs::MotorState& motor_states);
+    void reloadMotor(comm_id_t id);
     void engageControl();
     void disengageControl();
     void setControlMode(comm_id_t id, comm_ctrl_mode_t control_mode);

@@ -149,7 +149,24 @@ void BLDCDriver::update(
     // Run the communication with each board
     device_.exchange();
   }
-  updateState(motor_states);
+
+  // First check if any motors have had a watchdog reset (should happen very infrequently)
+  // TODO: This will not work if a motor is on the border between a full revolution when 
+  //       a reset occurs and the motor rolls back. The time window for a reset/reload 
+  //       should be around 15ms so not very likely but still possible.
+  bool reset = false;
+  for (auto id : board_ids_) {
+    if (device_.checkWDGRST(id)) {
+      ROS_WARN("Watchdog reset detected on board %d, reloading state.", id);
+      reloadMotor(id);
+      reset = true;
+    }
+  }
+
+  // Only use the last readings for an update if none of the watchdog timers were tripped.
+  if (not reset) {
+    updateState(motor_states);
+  }
 }
 
 void BLDCDriver::updateState(blue_msgs::MotorState& motor_states) {
@@ -212,23 +229,47 @@ void BLDCDriver::updateState(blue_msgs::MotorState& motor_states) {
   loop_count_++;
 }
 
+void BLDCDriver::reloadMotor(comm_id_t id) {
+  setControlMode(id, board_control_modes_[id]);
+
+  bool success = false;
+  // Update the number of revs!
+  while (!success && ros::ok()) {
+    try {
+      device_.queueSetRevolutions(id, revolutions_[id]);
+      device_.exchange();
+      success = true;
+    }
+    catch (comms_error e) {
+      ROS_ERROR("%s\n", e.what());
+      ROS_ERROR("Could not set rotations on board %d, retrying...", id);
+      ros::Duration(0.01).sleep();
+      device_.resetBuffer();
+    }
+  }
+
+  success = false;
+  // Clear the watchdog flag on the board
+  while (device_.checkWDGRST(id) && ros::ok()) {
+    try {
+      device_.queueClearWDGRST(id);
+      device_.exchange();
+    }
+    catch (comms_error e) {
+      ROS_ERROR("%s\n", e.what());
+      ROS_ERROR("Could not clear WDGRST flag on board %d, retrying...", id);
+      ros::Duration(0.01).sleep();
+      device_.resetBuffer();
+    }
+  }
+}
+
 void BLDCDriver::disengageControl() {
   engaged_ = false;
   for (auto id : board_ids_) {
+    setControlMode(id, COMM_CTRL_MODE_RAW_PWM);
+
     bool success = false;
-    while (!success && ros::ok()) {
-      try {
-        device_.queueSetControlMode(id, COMM_CTRL_MODE_RAW_PWM);
-        device_.exchange();
-        success = true;
-      } catch (comms_error e) {
-        ROS_ERROR("%s\n", e.what());
-        ROS_ERROR("Could not disengage board %d, retrying...", id);
-        ros::Duration(0.01).sleep();
-        device_.resetBuffer();
-      }
-    }
-    success = false;
     while (!success && ros::ok()) {
       // Initialize the motor
       try {
@@ -248,20 +289,9 @@ void BLDCDriver::disengageControl() {
 
 void BLDCDriver::engageControl() {
   for (auto id : board_ids_) {
+    setControlMode(id, board_control_modes_[id]);
+
     bool success = false;
-    while (!success && ros::ok()) {
-      try {
-        device_.queueSetControlMode(id, COMM_CTRL_MODE_CURRENT);
-        device_.exchange();
-        success = true;
-      } catch (comms_error e) {
-        ROS_ERROR("%s\n", e.what());
-        ROS_ERROR("Could not engage board %d, retrying...", id);
-        ros::Duration(0.01).sleep();
-        device_.resetBuffer();
-      }
-    }
-    success = false;
     while (!success && ros::ok()) {
       // Initialize the motor
       try {
@@ -283,11 +313,13 @@ void BLDCDriver::engageControl() {
 
 void BLDCDriver::setControlMode(comm_id_t id, comm_ctrl_mode_t control_mode){
   device_.clearQueue();
-  while (board_control_modes_[id] != control_mode && ros::ok()) {
+  bool success = false;
+  while (!success && ros::ok()) {
     try {
       device_.queueSetControlMode(id, control_mode);
       device_.exchange();
       board_control_modes_[id] = control_mode;
+      success = true;
     } catch (comms_error e) {
       ROS_ERROR("%s\n", e.what());
       ROS_ERROR("Could not engage board %d, retrying...", id);
