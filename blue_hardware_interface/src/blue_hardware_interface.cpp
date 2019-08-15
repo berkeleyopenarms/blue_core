@@ -117,6 +117,7 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
   }
 
   for (std::list<hardware_interface::ControllerInfo>::const_iterator it=start_list.begin(); it != start_list.end(); ++it) {
+    // set proper control mode for joints
     if (std::find(
           std::begin(joint_hardware_position_controllers),
           std::end(joint_hardware_position_controllers),
@@ -126,13 +127,21 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
       for (int i = 0; i < kinematics_.getJointCount() - 1; i++) {
         motor_driver_.setControlMode(i, blue_hardware_drivers::COMM_CTRL_MODE_POS_FF);
       }
+    } else if (std::find(
+          std::begin(joint_hardware_effort_controllers),
+          std::end(joint_hardware_effort_controllers),
+          it->type) != std::end(joint_hardware_effort_controllers)) {
+      for (int i = 0; i < kinematics_.getJointCount() - 1; i++) {
+        motor_driver_.setControlMode(i, blue_hardware_drivers::COMM_CTRL_MODE_CURRENT);
+      }
     }
 
+    // set proper control mode for gripper
     if (std::find(
-          std::begin(gripper_hardware_position_controllers),
-          std::end(gripper_hardware_position_controllers),
-          it->type) != std::end(gripper_hardware_position_controllers)) {
-      motor_driver_.setControlMode(kinematics_.getJointCount() - 1, blue_hardware_drivers::COMM_CTRL_MODE_POS_FF);
+          std::begin(gripper_hardware_effort_controllers),
+          std::end(gripper_hardware_effort_controllers),
+          it->type) != std::end(gripper_hardware_effort_controllers)) {
+      motor_driver_.setControlMode(kinematics_.getJointCount() - 1, blue_hardware_drivers::COMM_CTRL_MODE_CURRENT);
     }
   }
 
