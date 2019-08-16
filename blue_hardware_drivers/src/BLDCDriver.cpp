@@ -15,7 +15,6 @@ void BLDCDriver::init(std::string port, std::vector<comm_id_t> board_ids)
     // Boards should start in current control mode by default
     board_control_modes_[id] = COMM_CTRL_MODE_CURRENT;
     revolutions_[id] = 0;
-    angle_[id] = 0;
   }
 
   device_.init(port, board_ids);
@@ -199,24 +198,8 @@ void BLDCDriver::updateState(blue_msgs::MotorState& motor_states) {
         , &motor_states.accel_z[i]
         );
 
-    float enc_position = std::fmod(motor_states.position[i], (2 * M_PI));
+    revolutions_[id] = std::round(motor_states.position[i] / (2 * M_PI));
 
-    if (!first_read_) {
-      // To correct for potential resets, we record the number of full rotations off-board
-      //  and complete with on-board absolute encoder angle
-      float prev_enc_pos = angle_[id];
-      float enc_pos_diff = enc_position - prev_enc_pos;
-      if (enc_pos_diff < -M_PI) {
-        revolutions_[id] += 1;
-        enc_pos_diff += 2 * M_PI; // Normalize to (-pi, pi) range
-      } else if (enc_pos_diff > M_PI) {
-        revolutions_[id] -= 1;
-        enc_pos_diff -= 2 * M_PI; // Normalize to (-pi, pi) range
-      }
-      motor_states.position[i] = enc_position + revolutions_[id] * 2 * M_PI;
-    }
-
-    angle_[id] = enc_position;
     if (motor_states.temperature[i] > MAX_TEMP_SHUTOFF) {
       ROS_ERROR("Motor %d is too hot! Shutting off system: %fC", id, motor_states.temperature[i]);
       stop_motors_ = true;

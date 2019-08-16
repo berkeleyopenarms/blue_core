@@ -39,7 +39,6 @@ class BLDCDriver {
     std::vector<comm_id_t> board_ids_;
     std::unordered_map<comm_id_t, comm_ctrl_mode_t> board_control_modes_;
     std::unordered_map<comm_id_t, signed int> revolutions_;
-    std::unordered_map<comm_id_t, signed int> angle_;
 
     serial::Serial ser_;
     BLDCControllerClient device_;
