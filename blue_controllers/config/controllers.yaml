@@ -4,7 +4,7 @@ joint_state_controller:
   type: joint_state_controller/JointStateController
   publish_rate: 125
 
-### Gripper controller
+### Gripper controllers
 
 gripper_controller:
   type: effort_controllers/GripperActionController
