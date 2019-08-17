@@ -4,9 +4,11 @@
 #include <ros/ros.h>
 #include <vector>
 #include <string>
+#include <mutex>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
+#include <hardware_interface/controller_info.h>
 
 #include <geometry_msgs/Vector3.h>
 
@@ -63,16 +65,23 @@ public:
   BlueHW(ros::NodeHandle &nh);
   void read();
   void write();
+  void doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
+                const std::list<hardware_interface::ControllerInfo>& stop_list) override;
 
 private:
   ros::NodeHandle nh_;
+
+  // Only one thread should be accessing the motor_driver at a time
+  // TODO: optimize or rethink this?
+  std::mutex motor_driver_mutex_;
 
   // Configuration from parameter server
   Params params_;
 
   // Motor driver interface
   blue_hardware_drivers::BLDCDriver motor_driver_;
-  std::unordered_map<uint8_t, float> motor_commands_;
+  std::unordered_map<uint8_t, float> motor_effort_commands_;
+  std::unordered_map<uint8_t, float> motor_position_commands_;
 
   // Kinematics abstraction layer (actuator <-> joint)
   BlueKinematics kinematics_;

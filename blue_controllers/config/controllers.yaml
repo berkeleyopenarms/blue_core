@@ -4,7 +4,7 @@ joint_state_controller:
   type: joint_state_controller/JointStateController
   publish_rate: 125
 
-### Gripper controller
+### Gripper controllers
 
 gripper_controller:
   type: effort_controllers/GripperActionController
@@ -22,8 +22,19 @@ gripper_torque_controller:
   joints:
     - $(arg side)_gripper_joint
 
-### Joint controllers
+### Joint position interface controllers
+joint_position_controller:
+  type: position_controllers/JointGroupPositionController
+  joints:
+    - $(arg side)_base_roll_joint
+    - $(arg side)_shoulder_lift_joint
+    - $(arg side)_shoulder_roll_joint
+    - $(arg side)_elbow_lift_joint
+    - $(arg side)_elbow_roll_joint
+    - $(arg side)_wrist_lift_joint
+    - $(arg side)_wrist_roll_joint
 
+### Joint effort interface controllers
 joint_trajectory_controller:
   type: effort_controllers/JointTrajectoryController
   joints:
@@ -77,7 +88,7 @@ joint_torque_controller:
     - $(arg side)_wrist_lift_joint
     - $(arg side)_wrist_roll_joint
 
-joint_position_controller:
+joint_soft_position_controller:
   type: blue_controllers/BlueJointGroupPositionController
   joints:
     - $(arg side)_base_roll_joint

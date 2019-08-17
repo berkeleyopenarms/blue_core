@@ -28,10 +28,12 @@ public:
   // ROS control hardware interfaces
   hardware_interface::JointStateInterface joint_state_interface;
   hardware_interface::EffortJointInterface joint_effort_interface;
+  hardware_interface::PositionJointInterface joint_position_interface;
 
   // Getter functions
   const std::vector<double>& getJointPos();
   const std::vector<double>& getJointVel();
+  size_t getJointCount();
 
   // Joint calibration - snap estimated offsets to closest feasible values
   std::vector<double> snapJointOffsets(
@@ -54,9 +56,14 @@ public:
       blue_msgs::GravityVectorArray &grav_msg);
 
   // Get desired actuator commands
-  std::vector<double> getActuatorCommands(
+  std::vector<double> getEffortActuatorCommands(
       const std::vector<double> &feedforward_torques,
       double softstop_torque_limit, // TODO: clean up softstop code
+      const std::vector<double> &softstop_min_angles,
+      const std::vector<double> &softstop_max_angles,
+      double softstop_tolerance);
+
+  std::vector<double> getPositionActuatorCommands(
       const std::vector<double> &softstop_min_angles,
       const std::vector<double> &softstop_max_angles,
       double softstop_tolerance);
@@ -77,11 +84,11 @@ private:
   bool is_calibrated_;
 
   // Counters
-  int num_joints_;
-  int num_diff_actuators_;
-  int num_simple_transmissions_;
-  int num_diff_transmissions_;
-  int num_transmissions_;
+  size_t num_joints_;
+  size_t num_diff_actuators_;
+  size_t num_simple_transmissions_;
+  size_t num_diff_transmissions_;
+  size_t num_transmissions_;
 
   // Only one thread should be accessing the robot kinematics at a time
   // TODO: optimize or rethink this?
@@ -90,6 +97,7 @@ private:
   // Transmission interfaces
   ti::ActuatorToJointStateInterface actuator_to_joint_interface_;
   ti::JointToActuatorEffortInterface joint_to_actuator_interface_;
+  ti::JointToActuatorPositionInterface position_joint_to_actuator_interface_;
 
   // Joint offsets
   std::vector<double> actuator_offsets_;
@@ -99,8 +107,10 @@ private:
   std::vector<ti::Transmission *> transmissions_;
   std::vector<ti::ActuatorData> actuator_states_;
   std::vector<ti::ActuatorData> actuator_commands_;
+  std::vector<ti::ActuatorData> actuator_position_commands_;
   std::vector<ti::JointData> joint_states_;
   std::vector<ti::JointData> joint_commands_;
+  std::vector<ti::JointData> joint_position_commands_;
 
   // Gravity vector
   std::vector<KDL::Vector> accel_vectors_;
@@ -111,11 +121,15 @@ private:
   std::vector<double> actuator_vel_;
   std::vector<double> actuator_eff_;
   std::vector<double> actuator_cmd_;
+  std::vector<double> actuator_pos_cmd_;
   std::vector<double> joint_pos_;
   std::vector<double> joint_vel_;
   std::vector<double> joint_eff_;
   std::vector<double> joint_cmd_;
+  std::vector<double> joint_pos_cmd_;
+
   std::vector<double> raw_joint_cmd_;
+  std::vector<double> raw_joint_pos_cmd_;
 
 };
 

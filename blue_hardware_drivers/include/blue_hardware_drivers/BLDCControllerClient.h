@@ -59,6 +59,7 @@ class BLDCControllerClient {
     void queueSetIAOffset(comm_id_t board_id, float value);
     void queueSetIBOffset(comm_id_t board_id, float value);
     void queueSetICOffset(comm_id_t board_id, float value);
+
     // Drive Commands
     void queueSetCommand(comm_id_t board_id, float value);
     void queueSetPosCommand(comm_id_t board_id, float position, float feedforward);
@@ -68,6 +69,9 @@ class BLDCControllerClient {
     void queueGetState(comm_id_t board_id);
     void queueSetCommandAndGetState(comm_id_t board_id, float value);
     void queueSetPosCommandAndGetState(comm_id_t board_id, float position, float feedforward);
+
+    // Init Motor State Commands
+    void queueSetRevolutions(comm_id_t board_id, int16_t value);
 
     // Send queued packets and receive from boards
     void exchange();
@@ -80,6 +84,10 @@ class BLDCControllerClient {
 
     // Clear the RS485 Buffer
     void resetBuffer();
+
+    // Check if a watchdog reset has occurred on a given board
+    bool checkWDGRST(comm_id_t board_id);
+    void queueClearWDGRST(comm_id_t board_id);
 
     // Result Commands
     void resultGetRotorPosition(comm_id_t board_id, float* result);
@@ -96,6 +104,7 @@ class BLDCControllerClient {
     Buffer payload_buf_;
     Buffer tx_buf_;
     std::unordered_map<comm_id_t, Buffer> rx_bufs_;
+    std::unordered_map<comm_id_t, bool> reset_flags_;
 
     int allocs_ = 0;
 

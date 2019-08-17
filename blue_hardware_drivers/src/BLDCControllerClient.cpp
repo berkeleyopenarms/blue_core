@@ -15,7 +15,6 @@
 #include "blue_hardware_drivers/Packets.h"
 #include "blue_hardware_drivers/crc16.h"
 #include "blue_hardware_drivers/Buffer.h"
-#include "json/json.h"
 
 namespace blue_hardware_drivers {
 
@@ -48,166 +47,8 @@ void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& 
 
   for (auto id : boards) {
     rx_bufs_[id].init(COMM_MAX_BUF);
+    reset_flags_[id] = false;
   }
-}
-
-bool BLDCControllerClient::initMotor(comm_id_t board_id){
-  uint32_t len = 0;
-  std::string data = "";
-
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Calibrating board: " << (int) board_id << std::endl;
-#endif
-
-  readFlash(board_id, COMM_NVPARAMS_OFFSET, 2, data);
-#ifdef DEBUG_CALIBRATION_DATA
-  for (unsigned char c : data)
-    printf("%02x:", c);
-  std::cout << std::endl;
-#endif
-
-  std::stringstream buf;
-  buf << data;
-  buf.read(reinterpret_cast<char*>(&len), sizeof(len));
-
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Calibration length: " << len << std::endl;
-#endif
-  data = "";
-  readFlash(board_id, COMM_NVPARAMS_OFFSET+2, len, data);
-  
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << data << std::endl;
-#endif
-
-  Json::Reader reader;
-  Json::Value calibrations;
-  reader.parse(data, calibrations);
-
-  if ( calibrations["angle"].isNull()
-    || calibrations["inv"].isNull()
-    || calibrations["epm"].isNull()
-    || calibrations["torque"].isNull()
-    || calibrations["zero"].isNull()
-    || calibrations["ia_off"].isNull()
-    || calibrations["ib_off"].isNull()
-    || calibrations["ic_off"].isNull()
-    ) {
-    return false;
-  }
-
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Zero Angle: " << calibrations["angle"].asUInt() << std::endl;
-#endif
-    queueSetZeroAngle(board_id, (uint16_t) calibrations["angle"].asUInt());
-    exchange();
-
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Invert Phases: " << calibrations["inv"].asUInt() << std::endl;
-#endif
-  queueSetInvertPhases(board_id, (uint8_t) calibrations["inv"].asUInt());
-  exchange();
-
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Encoder Revs Per Magnetic Revolution: " << calibrations["epm"].asUInt() << std::endl;
-#endif
-  queueSetERevsPerMRev(board_id, (uint8_t) calibrations["epm"].asUInt());
-  exchange();
-
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Torque Constant: " << calibrations["torque"].asFloat() << std::endl;
-#endif
-  queueSetTorqueConstant(board_id, calibrations["torque"].asFloat());
-  exchange();
-
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Position Offset: " << calibrations["zero"].asFloat() << std::endl;
-#endif
-  queueSetPositionOffset(board_id, calibrations["zero"].asFloat());
-  exchange();
-
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Phases A Current: " << calibrations["ia_off"].asFloat() << std::endl;
-#endif
-  queueSetIAOffset(board_id, calibrations["ia_off"].asFloat());
-  exchange();
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Phases B Current: " << calibrations["ib_off"].asFloat() << std::endl;
-#endif
-  queueSetIBOffset(board_id, calibrations["ib_off"].asFloat());
-  exchange();
-#ifdef DEBUG_CALIBRATION_DATA
-  std::cout << "Phases C Current: " << calibrations["ic_off"].asFloat() << std::endl;
-#endif
-  queueSetICOffset(board_id, calibrations["ic_off"].asFloat());
-  exchange();
-
-  if (calibrations.isMember("eac_type")) {
-    std::string eac_type = calibrations["eac_type"].asString();
-
-    if (eac_type.compare("int8") == 0) {
-#ifdef DEBUG_CALIBRATION_DATA
-      std::cout << "EAC calibration available" << std::endl;
-#endif
-
-
-
-      Json::Value eac_table = calibrations["eac_table"];
-
-#ifdef DEBUG_CALIBRATION_DATA
-      std::cout << eac_table << std::endl;
-#endif
-
-      if (eac_table.isArray()) {
-        size_t eac_table_len = eac_table.size();
-
-        // Copy the table values into a contiguous block of memory
-        std::vector<uint8_t> eac_table_values(eac_table_len);
-        for (size_t i = 0; i < eac_table_len; i++) {
-          eac_table_values[i] = eac_table[(unsigned int) i].asInt();
-        }
-
-        size_t slice_len = COMM_SINGLE_SET_EAC_TABLE_LENGTH;
-        for (size_t i = 0; i < eac_table_len; i += slice_len) {
-          queueSetEACTable(board_id, i, &eac_table_values[i], std::min(slice_len, eac_table_len - i));
-          exchange();
-        }
-      }
-
-      queueSetEACOffset(board_id, calibrations["eac_offset"].asFloat());
-      exchange();
-
-      queueSetEACScale(board_id, calibrations["eac_scale"].asFloat());
-      exchange();
-    } else {
-
-#ifdef DEBUG_CALIBRATION_DATA
-      std::cout << "Unsupported EAC type \"" << eac_type << "\", ignoring" << std::endl;
-#endif
-    }
-  }
-
-  if (calibrations["torque"].asFloat() > 1) {
-    queueSetDirectCurrentControllerKp(board_id, 0.5f);
-    exchange();
-    queueSetDirectCurrentControllerKi(board_id, 0.1f);
-    exchange();
-    queueSetQuadratureCurrentControllerKp(board_id, 1.0f);
-    exchange();
-    queueSetQuadratureCurrentControllerKi(board_id, 0.2f);
-    exchange();
-  } else {
-    queueSetDirectCurrentControllerKp(board_id, 0.5f);
-    exchange();
-    queueSetDirectCurrentControllerKi(board_id, 0.1f);
-    exchange();
-    queueSetQuadratureCurrentControllerKp(board_id, 1.0f);
-    exchange();
-    queueSetQuadratureCurrentControllerKi(board_id, 0.2f);
-    exchange();
-  }
-
-  return true;
 }
 
 // Sends packets to boards and collects data
@@ -289,6 +130,13 @@ void BLDCControllerClient::transmit() {
     sub_packet_buf_.clear();
     // Acquire packet byte format
     auto packet = it->second; // Get packet pointer (value in [key, value] pair)
+#ifdef DEBUG_TRANSMIT
+    if (packet == NULL) {
+      std::cerr << "Generating packet for board: " << (int) it->first << " is NULL" << std::endl;
+      assert(0);
+    }
+#endif
+
     packet->dump(sub_packet_buf_);
 
 #ifdef DEBUG_TRANSMIT
@@ -377,6 +225,13 @@ bool BLDCControllerClient::receive( comm_id_t board_id, std::string & err ) {
   ser_read_check(reinterpret_cast<uint8_t*>(&flags), sizeof(flags), err);
   if ((flags & COMM_FG_BOARD) != COMM_FG_BOARD) {
     return false;
+  }
+
+  // Check if there was a watchdog reset
+  if (flags & COMM_FG_CRASH) {
+    reset_flags_[board_id] = true;
+  } else {
+    reset_flags_[board_id] = false;
   }
 
   comm_msg_len_t packet_len = 0;
@@ -473,6 +328,10 @@ crc16_t BLDCControllerClient::computeCRC( const uint8_t* buf, size_t len ) {
   return crc16_finalize(crc);
 }
 
+bool BLDCControllerClient::checkWDGRST(comm_id_t board_id) {
+  return reset_flags_[board_id];
+}
+
 void BLDCControllerClient::resetBoards() {
   Packet* packet = new ResetPacket(0);
   queuePacket(0, packet);
@@ -505,6 +364,11 @@ void BLDCControllerClient::queueLeaveBootloader(comm_id_t board_id, uint32_t jum
   }
 
   Packet* packet = new JumpToAddrPacket(board_id, jump_addr);
+  queuePacket(board_id, packet);
+}
+
+void BLDCControllerClient::queueClearWDGRST(comm_id_t board_id) {
+  Packet* packet = new ClearWDGRSTPacket(board_id);
   queuePacket(board_id, packet);
 }
 
@@ -682,19 +546,23 @@ void BLDCControllerClient::queueSetCommandAndGetState(comm_id_t board_id, float 
 }
 
 void BLDCControllerClient::queueSetPosCommandAndGetState(comm_id_t board_id, float position, float feedforward) {
-  const static size_t num_registers = 2; // Number of registers in this write 
+  const static size_t num_registers = 2; // Number of registers in this write
   float values[num_registers] = {position, feedforward};
 
   Packet* packet = new ReadWriteRegPacket(board_id,
     COMM_REG_RO_ROTOR_P, 9,                                          // Read
     COMM_REG_VOL_SETPOINT_P, sizeof(position) + sizeof(feedforward), // Write
-              reinterpret_cast<uint8_t*> (&values), num_registers  
+              reinterpret_cast<uint8_t*> (&values), num_registers
   );
 
   queuePacket(board_id, packet);
 }
 
 
+void BLDCControllerClient::queueSetRevolutions(comm_id_t board_id, int16_t value) {
+  Packet* packet = new WriteRegPacket(board_id, COMM_REG_RO_ROTOR_REVS, sizeof(value), reinterpret_cast<uint8_t*> (&value));
+  queuePacket(board_id, packet);
+}
 
 /*              End of Transmission Packet Abstract Functions                   */
 

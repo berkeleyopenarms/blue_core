@@ -43,6 +43,10 @@ void ResetPacket::dump(Buffer& buf) {
   Packet::dump(buf);
 }
 
+void ClearWDGRSTPacket::dump(Buffer& buf) {
+  Packet::dump(buf);
+}
+
 void JumpToAddrPacket::dump(Buffer& buf) {
   Packet::dump(buf);
   buf.write(reinterpret_cast<uint8_t*> (&jump_addr_), sizeof(jump_addr_));

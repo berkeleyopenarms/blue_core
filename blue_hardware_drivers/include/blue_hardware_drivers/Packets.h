@@ -84,6 +84,17 @@ class ResetPacket : public Packet {
     void dump(Buffer& buf);
 };
 
+/* Clear Watchdog Timeout Flag */
+class ClearWDGRSTPacket : public Packet {
+  private:
+    comm_id_t target_id_;
+  public:
+    ClearWDGRSTPacket (comm_id_t id) :
+      Packet( id, COMM_FC_CLEAR_IWDGRST ) {}
+
+    void dump(Buffer& buf);
+};
+
 /* Move Instruction Pointer (Use for switching out of bootloader) */
 class JumpToAddrPacket : public Packet {
   private:

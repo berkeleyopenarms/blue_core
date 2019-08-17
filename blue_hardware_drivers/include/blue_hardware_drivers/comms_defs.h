@@ -49,12 +49,14 @@ constexpr comm_id_t COMM_ID_MAX = UINT8_MAX;
 using comm_fg_t = uint8_t;
 constexpr comm_fg_t COMM_FG_COMP = 0x00;
 constexpr comm_fg_t COMM_FG_BOARD = 0x01;
+constexpr comm_fg_t COMM_FG_CRASH = 0x02;
 
 using comm_fc_t = uint8_t;
 constexpr comm_fc_t COMM_FC_NOP = 0x00;
 constexpr comm_fc_t COMM_FC_REG_READ = 0x01;
 constexpr comm_fc_t COMM_FC_REG_WRITE = 0x02;
 constexpr comm_fc_t COMM_FC_REG_READ_WRITE = 0x03;
+constexpr comm_fc_t COMM_FC_CLEAR_IWDGRST = 0x10;
 constexpr comm_fc_t COMM_FC_SYSTEM_RESET = 0x80;
 constexpr comm_fc_t COMM_FC_JUMP_TO_ADDR = 0x81;
 constexpr comm_fc_t COMM_FC_FLASH_SECTOR_COUNT = 0x82;
@@ -124,7 +126,8 @@ constexpr comm_addr_t COMM_REG_RO_ACCEL_Z = 0x3008;
 constexpr comm_addr_t COMM_REG_RO_REC_START = 0x3009;
 constexpr comm_addr_t COMM_REG_RO_REC_LEN = 0x300a;
 constexpr comm_addr_t COMM_REG_RO_REC_RESET = 0x300b;
-constexpr comm_addr_t COMM_REG_RO_ROTOR_P_RAW = 0x300c;
+constexpr comm_addr_t COMM_REG_RO_ROTOR_P_RAW = 0x3010;
+constexpr comm_addr_t COMM_REG_RO_ROTOR_REVS = 0x3011;
 
 using comm_reg_count_t = uint8_t;
 
