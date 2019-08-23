@@ -141,7 +141,7 @@ void BlueHW::doSwitch(const std::list<hardware_interface::ControllerInfo>& start
           std::begin(gripper_hardware_effort_controllers),
           std::end(gripper_hardware_effort_controllers),
           it->type) != std::end(gripper_hardware_effort_controllers)) {
-      motor_driver_.setControlMode(kinematics_.getJointCount() - 1, blue_hardware_drivers::COMM_CTRL_MODE_CURRENT);
+      motor_driver_.setControlMode(params_.motor_ids[kinematics_.getJointCount() - 1], blue_hardware_drivers::COMM_CTRL_MODE_CURRENT);
     }
   }
 
