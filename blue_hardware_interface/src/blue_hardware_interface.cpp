@@ -4,6 +4,7 @@
 #include <ros/assert.h>
 #include <std_msgs/Float64.h>
 #include <sensor_msgs/Imu.h>
+#include <urdf/model.h>
 
 namespace ti = transmission_interface;
 
