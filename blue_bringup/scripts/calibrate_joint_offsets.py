@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import time
 import sys
 import numpy as np
 import rospy
