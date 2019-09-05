@@ -10,12 +10,16 @@ def get_actuator_positions(side):
 
     motor_names = rospy.get_param(
         "{}_arm/blue_hardware/motor_names".format(side))
+    # Should include 7 joint motors and 1 gripper motor
+    assert(motor_names.size() == 8)
+
     motor_msg = rospy.wait_for_message(
         "{}_arm/blue_hardware/motor_states".format(side),
         MotorState)
 
+    # Retrieve actuator positions for motors only
     motor_positions = []
-    for name in motor_names:
+    for name in motor_names[:7]:
         motor_index = motor_msg.name.index(name)
         motor_positions.append(motor_msg.position[motor_index])
 
