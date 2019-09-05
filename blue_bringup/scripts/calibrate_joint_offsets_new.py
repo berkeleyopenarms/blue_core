@@ -47,9 +47,9 @@ def new(actuator_angles):
         def propagate_through_differential(lift_angle, roll_angle):
             lift_ratio = 7.1875
             roll_ratio = 8.2444852941
-            right_actuator_angle = lift_angle * lift_ratio + roll_angle * roll_ratio
             left_actuator_angle = -lift_angle * lift_ratio + roll_angle * roll_ratio
-            return (right_actuator_angle, left_actuator_angle)
+            right_actuator_angle = lift_angle * lift_ratio + roll_angle * roll_ratio
+            return (left_actuator_angle, right_actuator_angle)
 
         # Propagate and return!
         actuator_angles = np.hstack((
@@ -85,7 +85,7 @@ def new(actuator_angles):
         0  # Gripper roll
     ]
 
-    return actuator_angles + \
+    return actuator_angles - \
         actuator_angles_from_joint_angles(calibration_joint_positions)
 
 
