@@ -11,7 +11,7 @@ def get_actuator_positions(side):
     motor_names = rospy.get_param(
         "{}_arm/blue_hardware/motor_names".format(side))
     # Should include 7 joint motors and 1 gripper motor
-    assert(motor_names.size() == 8)
+    assert(len(motor_names) == 8)
 
     motor_msg = rospy.wait_for_message(
         "{}_arm/blue_hardware/motor_states".format(side),
@@ -36,8 +36,8 @@ def actuator_angles_from_joint_angles(joint_angles, side):
     def backpropagate_differential_transmission(
             lift_angle, roll_angle, lift_ratio, roll_ratio):
 
-        left_actuator_angle = -lift_angle * lift_ratio + roll_angle * roll_ratio
-        right_actuator_angle = lift_angle * lift_ratio + roll_angle * roll_ratio
+        left_actuator_angle = -lift_angle * lift_ratio - roll_angle * roll_ratio
+        right_actuator_angle = lift_angle * lift_ratio - roll_angle * roll_ratio
         return (left_actuator_angle, right_actuator_angle)
 
     # Get gear ratios and compute actuator angles
@@ -68,7 +68,7 @@ def actuator_angles_from_joint_angles(joint_angles, side):
 
     # Convert to numpy array and return
     actuator_angles = np.array(actuator_angles)
-    assert(actuator_angles.size() == (7,))
+    assert(actuator_angles.shape == (7,))
     return actuator_angles
 
 
