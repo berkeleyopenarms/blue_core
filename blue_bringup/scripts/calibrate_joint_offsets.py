@@ -36,8 +36,8 @@ def actuator_angles_from_joint_angles(joint_angles, side):
     def backpropagate_differential_transmission(
             lift_angle, roll_angle, lift_ratio, roll_ratio):
 
-        left_actuator_angle = -lift_angle * lift_ratio - roll_angle * roll_ratio
-        right_actuator_angle = lift_angle * lift_ratio - roll_angle * roll_ratio
+        left_actuator_angle = -lift_angle * lift_ratio + roll_angle * roll_ratio
+        right_actuator_angle = lift_angle * lift_ratio + roll_angle * roll_ratio
         return (left_actuator_angle, right_actuator_angle)
 
     # Get gear ratios and compute actuator angles
