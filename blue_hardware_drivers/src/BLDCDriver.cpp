@@ -278,7 +278,7 @@ void BLDCDriver::engageControl() {
     while (!success && ros::ok()) {
       // Initialize the motor
       try {
-        device_.queueSetTimeout(id, 1000);
+        device_.queueSetTimeout(id, 300);
         device_.exchange();
         success = true;
       }

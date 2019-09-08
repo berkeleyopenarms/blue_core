@@ -38,7 +38,7 @@ void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& 
   // Then set up serial library
   ser_.setPort(port);
   ser_.setBaudrate(COMM_DEFAULT_BAUD_RATE);
-  ser_.setTimeout(serial::Timeout::max(), 4, 1, 4, 1);
+  ser_.setTimeout(serial::Timeout::max(), 1, 1, 1, 1);
   ser_.open();
 
   tx_buf_.init(COMM_MAX_BUF);
