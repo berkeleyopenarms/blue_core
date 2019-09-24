@@ -47,13 +47,19 @@ void BLDCControllerClient::init(std::string port, const std::vector<comm_id_t>& 
 
   for (auto id : boards) {
     rx_bufs_[id].init(COMM_MAX_BUF);
-    reset_flags_[id] = false;
+    board_flags_[id];
   }
 }
 
 // Sends packets to boards and collects data
 void BLDCControllerClient::exchange() {
+
+  typedef std::chrono::high_resolution_clock Time;
+  using fsec = std::chrono::duration<double>;
+  static auto last_successful_transmission = Time::now();
+
   std::string err = "";
+
   transmit();
   // Receive data from each board in order
   for (auto it = packet_queue_.begin(); it != packet_queue_.end(); it++) {
@@ -65,11 +71,15 @@ void BLDCControllerClient::exchange() {
         success = receive(board_id, err);
         if (err != "")
         {
-          throw comms_error("Board " + std::to_string((int)board_id) + ": " + err);
+          std::string elapsed = std::to_string(fsec(Time::now() - last_successful_transmission).count());
+          throw comms_error("Board " + std::to_string((int)board_id) + ": " + err + 
+                            "\n\t\t\t\t\tTime since last successful comms: " + elapsed);
         }
       }
     }
   }
+
+  last_successful_transmission = Time::now();
   // Empty the queue
   clearQueue();
 #ifdef DEBUG_ALLOCS
@@ -228,11 +238,18 @@ bool BLDCControllerClient::receive( comm_id_t board_id, std::string & err ) {
   }
 
   // Check if there was a watchdog reset
-  if (flags & COMM_FG_CRASH) {
-    reset_flags_[board_id] = true;
+  if (flags & COMM_FG_RESET) {
+    board_flags_[board_id].reset = true;
   } else {
-    reset_flags_[board_id] = false;
+    board_flags_[board_id].reset = false;
   }
+  if (flags & COMM_FG_TIMEOUT) {
+    board_flags_[board_id].timeout = true;
+  } else {
+    board_flags_[board_id].timeout = false;
+  }
+
+
 
   comm_msg_len_t packet_len = 0;
   ser_read_check(reinterpret_cast<uint8_t*>(&packet_len), sizeof(packet_len), err);
@@ -329,7 +346,11 @@ crc16_t BLDCControllerClient::computeCRC( const uint8_t* buf, size_t len ) {
 }
 
 bool BLDCControllerClient::checkWDGRST(comm_id_t board_id) {
-  return reset_flags_[board_id];
+  return board_flags_[board_id].reset;
+}
+
+bool BLDCControllerClient::checkTimeout(comm_id_t board_id) {
+  return board_flags_[board_id].timeout;
 }
 
 void BLDCControllerClient::resetBoards() {
