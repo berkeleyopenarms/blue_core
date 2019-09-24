@@ -156,9 +156,13 @@ void BLDCDriver::update(
   bool reset = false;
   for (auto id : board_ids_) {
     if (device_.checkWDGRST(id)) {
-      ROS_WARN("Watchdog reset detected on board %d, reloading state.", id);
+      ROS_ERROR("Watchdog reset detected on board %d, reloading state.", id);
       reloadMotor(id);
       reset = true;
+    }
+    else if (device_.checkTimeout(id)) {
+      ROS_ERROR("Timeout detected on board %d, reloading control mode.", id);
+      setControlMode(id, board_control_modes_[id]);
     }
   }
 

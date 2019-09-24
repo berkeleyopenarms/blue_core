@@ -87,6 +87,7 @@ class BLDCControllerClient {
 
     // Check if a watchdog reset has occurred on a given board
     bool checkWDGRST(comm_id_t board_id);
+    bool checkTimeout(comm_id_t board_id);
     void queueClearWDGRST(comm_id_t board_id);
 
     // Result Commands
@@ -103,8 +104,14 @@ class BLDCControllerClient {
     Buffer sub_packet_buf_;
     Buffer payload_buf_;
     Buffer tx_buf_;
+
+    typedef struct comm_flags {
+      bool reset = false;
+      bool timeout = false;
+    } comm_flags_t;
+
     std::unordered_map<comm_id_t, Buffer> rx_bufs_;
-    std::unordered_map<comm_id_t, bool> reset_flags_;
+    std::unordered_map<comm_id_t, comm_flags_t> board_flags_;
 
     int allocs_ = 0;
 
