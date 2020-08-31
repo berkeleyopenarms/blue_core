@@ -15,7 +15,7 @@ using namespace blue_hardware_drivers;
 
 const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
 /* const double MAX_CURRENT = 2.8; */
-const unsigned int CONTROL_LOOP_FREQ = 1000;
+const unsigned int CONTROL_LOOP_FREQ = 10000;
 const unsigned int BAUD_RATE = 1000000;
 
 ros::Time last_time;
@@ -38,13 +38,13 @@ int main(int argc, char **argv) {
   std::vector<comm_id_t> board_list;
   std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
   board_list.push_back(1); // BASE
-  //board_list.push_back(2);
-  //board_list.push_back(3);
-  //board_list.push_back(4);
-  //board_list.push_back(5);
-  //board_list.push_back(6);
-  //board_list.push_back(7);
-  //board_list.push_back(8);
+  board_list.push_back(2);
+  board_list.push_back(3);
+  board_list.push_back(4);
+  board_list.push_back(5);
+  board_list.push_back(6);
+  board_list.push_back(7);
+  board_list.push_back(8);
 
   char* port = argv[1];
   BLDCControllerClient device;
@@ -142,16 +142,28 @@ int main(int argc, char **argv) {
   int counter = 0;
   ros::Rate r(CONTROL_LOOP_FREQ);
 
-  int num_packets_per_log = 100;
+  int num_packets_per_log = 1000;
   int errors = 0;
   int num_packets = 0;
   while (ros::ok()) {
+    std::map <int, int> error_counter = {
+      {1, 0},
+      {2, 0},
+      {3, 0},
+      {4, 0},
+      {5, 0},
+      {6, 0},
+      {7, 0},
+      {8, 0},
+    };
     for (int i = 0; i < num_packets_per_log; i ++) { // "low pass filter"
       for (auto id : board_list) {
         device.queueSetCommandAndGetRotorPosition(id, 0);
       }
       try { device.exchange(); }
       catch(comms_error e) {
+        int board_id = e.what()[6] - '0';
+        error_counter[board_id] = error_counter[board_id] + 1;
         ROS_ERROR("%s\n", e.what());
         device.clearQueue();
         errors++;
@@ -166,6 +178,9 @@ int main(int argc, char **argv) {
     num_packets += num_packets_per_log;
     dt = get_period() / (float) num_packets_per_log;
     ROS_INFO("comm time: dt: %f, freq: %f", dt, 1.0 / dt);
+    for (auto id : board_list) {
+      ROS_INFO("board: %d, errors: %d", id, error_counter[id]);
+    }
   }
   r.sleep();
 
