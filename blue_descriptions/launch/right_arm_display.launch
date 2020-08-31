@@ -3,7 +3,7 @@
     name="model" />
   <arg
     name="gui"
-    default="True" />
+    default="False" />
   <param name="robot_description"
       command="$(find xacro)/xacro '$(find blue_descriptions)/robots/blue_right_v2.urdf.xacro'" />
   <param
@@ -17,9 +17,9 @@
     name="joint_state_publisher"
     pkg="joint_state_publisher"
     type="joint_state_publisher" />
-  <node
-    name="rviz"
-    pkg="rviz"
-    type="rviz"
-    args="-d $(find blue_descriptions)/urdf.rviz" />
+  <!-- <node -->
+    <!-- name="rviz" -->
+    <!-- pkg="rviz" -->
+    <!-- type="rviz" -->
+    <!-- args="-d $(find blue_descriptions)/urdf.rviz" /> -->
 </launch>
