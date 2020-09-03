@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>blue_descriptions</name>
   <version>1.0.0</version>
   <description>URDF files, 3D models, and other physical descriptors</description>

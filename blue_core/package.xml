@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>blue_core</name>
   <version>0.0.0</version>
   <description>The blue_core metapackage contains all the basic software for running and using a Blue robot arm</description>

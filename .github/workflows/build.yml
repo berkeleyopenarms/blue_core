@@ -1,0 +1,68 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build: # Iterates on all ROS 1 distributions in Linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ros_distribution:
+          - kinetic
+          - melodic
+          # Noetic build is broken because there's currently no release for the serial dependency:
+          # https://github.com/wjwwood/serial/issues/222
+          # - noetic
+
+        # Define the Docker image(s) associated with each ROS distribution.
+        # The include syntax allows additional variables to be defined, like
+        # docker_image in this case. See documentation:
+        # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
+        #
+        # Platforms are defined in REP 3, and REP 2000:
+        # https://ros.org/reps/rep-0003.html
+        # https://ros.org/reps/rep-2000.html
+        include:
+          # Kinetic Kame (May 2016 - May 2021)
+          - docker_image: ubuntu:xenial
+            ros_distribution: kinetic
+            # Setting ros_version is helpful to customize the workflow
+            # depending on whether a ROS 1, or ROS 2 is being tested.
+            # See 'if: ros_version ==' below for an example.
+            ros_version: 1
+
+          # Melodic Morenia (May 2018 - May 2023)
+          - docker_image: ubuntu:bionic
+            ros_distribution: melodic
+            ros_version: 1
+
+          # # Noetic Ninjemys (May 2020 - May 2025)
+          # - docker_image: ubuntu:focal
+          #   ros_distribution: noetic
+          #   ros_version: 1
+
+    container:
+      image: ${{ matrix.docker_image }}
+    steps:
+      - name: setup ROS environment
+        uses: ros-tooling/setup-ros@0.0.25
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
+      - name: build and test ROS1
+        if: ${{ matrix.ros_version == 1 }}
+        uses: ros-tooling/action-ros-ci@0.0.19
+        with:
+          package-name: |
+            blue_bringup
+            blue_controller_manager
+            blue_controllers
+            blue_descriptions
+            blue_hardware_interface
+            blue_hardware_drivers
+            blue_msgs
+          target-ros1-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ""

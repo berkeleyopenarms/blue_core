@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(blue_hardware_drivers)
+
+# add modules for finding JSONCPP
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
@@ -15,15 +18,18 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   blue_msgs
 )
+find_package(JSONCPP REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES blue_hardware_drivers
   CATKIN_DEPENDS roscpp rospy sensor_msgs serial std_msgs
+  DEPENDS JSONCPP
 )
+include_directories(include include/blue_hardware_drivers)
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
+  ${JSONCPP_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME}
@@ -32,7 +38,9 @@ add_library(${PROJECT_NAME}
   src/Packets.cpp
   src/crc16.cpp
   src/Buffer.cpp
-  json_src/json.cpp
+)
+target_link_libraries(${PROJECT_NAME}
+  ${JSONCPP_LIBRARY}
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -57,11 +65,11 @@ target_link_libraries(BLDCDriver_communication_freq_test
 
 
 ## Mark executables and/or libraries for installation
-#install(TARGETS BLDCDriver
-#  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-#)
+install(TARGETS ${PROJECT_NAME}
+ ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 install(TARGETS BLDCDriver_communication_freq_test
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -70,8 +78,9 @@ install(TARGETS BLDCDriver_communication_freq_test
 )
 
 ## Mark cpp header files for installation
-install(DIRECTORY include/blue_hardware_drivers
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+install(DIRECTORY include/
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
 )
 
 ## Mark Python scripts for installation

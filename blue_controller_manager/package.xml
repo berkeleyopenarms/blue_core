@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>blue_controller_manager</name>
   <version>0.0.0</version>
   <description>
@@ -24,11 +24,11 @@
   <depend>blue_hardware_interface</depend>
   <depend>joint_limits_interface</depend>
   <depend>kdl_parser</depend>
-  <depend>orocos_kdl</depend>
+  <depend condition="$ROS_DISTRO != noetic">orocos_kdl</depend>
+  <depend condition="$ROS_DISTRO == noetic">liborocos-kdl-dev</depend>
   <depend>roscpp</depend>
   <depend>urdf</depend>
   <depend>control_toolbox</depend>
   <depend>control_msgs</depend>
   <depend>blue_msgs</depend>
-
 </package>

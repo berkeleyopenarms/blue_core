@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>blue_bringup</name>
   <version>0.0.0</version>
   <description>Bringup scripts and launch files for Blue</description>

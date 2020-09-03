@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>blue_controllers</name>
   <version>0.0.0</version>
   <description>Source code for our custom controller plugins</description>
@@ -27,7 +27,8 @@
   <depend>gripper_action_controller</depend>
   <depend>joint_trajectory_controller</depend>
   <depend>kdl_parser</depend>
-  <depend>orocos_kdl</depend>
+  <depend condition="$ROS_DISTRO != noetic">orocos_kdl</depend>
+  <depend condition="$ROS_DISTRO == noetic">liborocos-kdl-dev</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

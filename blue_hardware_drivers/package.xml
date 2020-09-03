@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>blue_hardware_drivers</name>
   <version>0.0.0</version>
   <description>The blue_hardware_drivers package</description>
@@ -22,5 +22,6 @@
   <depend>std_msgs</depend>
   <depend>blue_msgs</depend>
   <depend>transmission_interface</depend>
+  <depend>libjsoncpp-dev</depend>
 
 </package>
