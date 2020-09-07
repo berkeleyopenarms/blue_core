@@ -80,7 +80,7 @@ install(TARGETS BLDCDriver_communication_freq_test
 ## Mark cpp header files for installation
 install(DIRECTORY include/
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
+  FILES_MATCHING PATTERN "*.h*"
 )
 
 ## Mark Python scripts for installation
@@ -92,3 +92,12 @@ install(PROGRAMS scripts/comms.py scripts/bldc_driver.py scripts/bldc_driver_fre
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
+
+# set CMake module path for Cython
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+include(UseCython)
+add_custom_target(ReplicatePythonSourceTree ALL ${CMAKE_COMMAND} -P
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ReplicatePythonSourceTree.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_subdirectory(src/cython)

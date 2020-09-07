@@ -4,7 +4,7 @@
 #include "std_msgs/Float64.h"
 #include "std_msgs/Float32.h"
 #include "sensor_msgs/JointState.h"
-#include "blue_hardware_drivers/BLDCControllerClient.h"
+#include "blue_hardware_drivers/BLDCControllerClient.hpp"
 #include <vector>
 #include <string>
 #include "math.h"

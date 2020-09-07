@@ -14,7 +14,7 @@
 #include "time.h"
 
 #include "blue_msgs/MotorState.h"
-#include "blue_hardware_drivers/BLDCControllerClient.h"
+#include "blue_hardware_drivers/BLDCControllerClient.hpp"
 
 namespace blue_hardware_drivers {
 
