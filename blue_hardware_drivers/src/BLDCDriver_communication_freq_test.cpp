@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 
   BLDCControllerClient device;
   std::vector<comm_id_t> board_list;
-  std::vector<comm_id_t> board_test_list{1, 2, 3, 4, 5, 6, 7, 8};
+  // std::vector<comm_id_t> board_test_list{1, 2, 3, 4, 5, 6, 7, 8};
   std::vector<comm_id_t> board_test_list = board_list;
   int num_boards;
   try {
