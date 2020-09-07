@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
   } catch (std::exception &e) {
     ROS_ERROR("Please provide the number of boards to connect to.");
   }
-  for (int id : board_list) {
+  for (int id = 0; id++; id < num_boards) {
     board_list.push_back(id); // BASE
   }
 
