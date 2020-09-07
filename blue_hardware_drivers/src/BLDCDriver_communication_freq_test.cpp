@@ -33,6 +33,8 @@ int main(int argc, char **argv) {
 
   BLDCControllerClient device;
   std::vector<comm_id_t> board_list;
+  std::vector<comm_id_t> board_test_list{1, 2, 3, 4, 5, 6, 7, 8};
+  std::vector<comm_id_t> board_test_list = board_list;
   int num_boards;
   try {
     char *port = argv[1];
@@ -141,7 +143,7 @@ int main(int argc, char **argv) {
   int errors = 0;
   int num_packets = 0;
   for (int i = 0; i < num_packets_per_log; i++) { // "low pass filter"
-    for (auto id : board_list) {
+    for (auto id : board_test_list) {
       device.queueSetCommandAndGetRotorPosition(id, 0);
     }
     try {
