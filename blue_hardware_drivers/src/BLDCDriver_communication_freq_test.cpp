@@ -31,27 +31,7 @@ float get_period() {
   return period.toSec();
 }
 
-int main(int argc, char **argv) {
-  ros::init(argc, argv, "comms", ros::init_options::AnonymousName);
-
-  ros::NodeHandle n;
-  std::vector<comm_id_t> board_list;
-  std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
-  board_list.push_back(1); // BASE
-  //board_list.push_back(2);
-  //board_list.push_back(3);
-  //board_list.push_back(4);
-  //board_list.push_back(5);
-  //board_list.push_back(6);
-  //board_list.push_back(7);
-  //board_list.push_back(8);
-
-  char* port = argv[1];
-  BLDCControllerClient device;
-  try {
-    device.init(port, board_list);
-  } catch (std::exception& e) { ROS_ERROR("Please Provide USB\n%s\n", e.what()); }
-
+void enumerate_boards(BLDCControllerClient &device, std::vector<comm_id_t> &board_list) {
   // Put all boards into bootloader!
   int count = 0;
   while (count < 3) {
@@ -105,12 +85,40 @@ int main(int argc, char **argv) {
       }
     }
   }
+}
 
+int main(int argc, char **argv) {
+  ros::init(argc, argv, "comms", ros::init_options::AnonymousName);
+
+  ros::NodeHandle n;
+  std::vector<comm_id_t> board_list;
+  std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
+
+
+  char* num_boards = argv[1];
+  char* port = argv[2];
+  char* enumerate = argv[3];
+  for (int i = 0; i < std::stoi(num_boards); i++) {
+    board_list.push_back(i+1);
+  }
+
+  BLDCControllerClient device;
+  try {
+    device.init(port, board_list);
+  } catch (std::exception& e) { ROS_ERROR("Please Provide USB\n%s\n", e.what()); }
+
+  try {
+    if (*enumerate == 'T') {
+      enumerate_boards(device, board_list);
+    }
+  } catch (std::exception& e) { ROS_ERROR("Please choose whether to enumerate (T/F)\n%s\n", e.what()); }
+
+  bool success = false;
   // Command the motor to 0 before initializing it.
   for (auto id : board_list) {
     success = false;
     while (!success) {
-      try { 
+      try {
         device.queueSetCommand(id, 0);
         device.exchange();
         success = true;
