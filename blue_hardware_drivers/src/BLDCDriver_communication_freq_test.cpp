@@ -1,28 +1,23 @@
-#include "ros/ros.h"
-#include "serial/serial.h"
-#include "std_msgs/String.h"
-#include "std_msgs/Float64.h"
-#include "std_msgs/Float32.h"
-#include "sensor_msgs/JointState.h"
 #include "blue_hardware_drivers/BLDCControllerClient.h"
-#include <vector>
-#include <string>
 #include "math.h"
-#include <numeric>
+#include "ros/ros.h"
+#include "sensor_msgs/JointState.h"
+#include "serial/serial.h"
+#include "std_msgs/Float32.h"
+#include "std_msgs/Float64.h"
+#include "std_msgs/String.h"
 #include "time.h"
+#include <cstdlib>>
+#include <numeric>
+#include <string>
+#include <vector>
 
 using namespace blue_hardware_drivers;
 
-const unsigned int ENCODER_ANGLE_PERIOD = 1 << 14;
-/* const double MAX_CURRENT = 2.8; */
 const unsigned int CONTROL_LOOP_FREQ = 1000;
-const unsigned int BAUD_RATE = 1000000;
 
 ros::Time last_time;
-
-ros::Time get_time() {
-  return ros::Time::now();
-}
+ros::Time get_time() { return ros::Time::now(); }
 
 float get_period() {
   ros::Time current_time = ros::Time::now();
@@ -35,22 +30,24 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "comms", ros::init_options::AnonymousName);
 
   ros::NodeHandle n;
-  std::vector<comm_id_t> board_list;
-  std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
-  board_list.push_back(1); // BASE
-  //board_list.push_back(2);
-  //board_list.push_back(3);
-  //board_list.push_back(4);
-  //board_list.push_back(5);
-  //board_list.push_back(6);
-  //board_list.push_back(7);
-  //board_list.push_back(8);
 
-  char* port = argv[1];
   BLDCControllerClient device;
+  std::vector<comm_id_t> board_list;
+  int num_boards;
   try {
+    char *port = argv[1];
     device.init(port, board_list);
-  } catch (std::exception& e) { ROS_ERROR("Please Provide USB\n%s\n", e.what()); }
+  } catch (std::exception &e) {
+    ROS_ERROR("Please Provide USB\n%s\n", e.what());
+  }
+  try {
+    num_boards = atoi(argv[2]);
+  } catch (std::exception &e) {
+    ROS_ERROR("Please provide the number of boards to connect to.");
+  }
+  for (int id : board_list) {
+    board_list.push_back(id); // BASE
+  }
 
   // Put all boards into bootloader!
   int count = 0;
@@ -110,14 +107,13 @@ int main(int argc, char **argv) {
   for (auto id : board_list) {
     success = false;
     while (!success) {
-      try { 
+      try {
         device.queueSetCommand(id, 0);
         device.exchange();
         success = true;
-      }
-      catch(comms_error e) {
-          ROS_ERROR("%s\n", e.what());
-          ROS_ERROR("Could not set board %d to 0 torque, retrying...", id);
+      } catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not set board %d to 0 torque, retrying...", id);
       }
     }
   }
@@ -129,10 +125,9 @@ int main(int argc, char **argv) {
         device.queueSetControlMode(id, COMM_CTRL_MODE_CURRENT);
         device.exchange();
         success = true;
-      }
-      catch(comms_error e) {
-          ROS_ERROR("%s\n", e.what());
-          ROS_ERROR("Could not set board %d to 0 torque, retrying...", id);
+      } catch (comms_error e) {
+        ROS_ERROR("%s\n", e.what());
+        ROS_ERROR("Could not set board %d to 0 torque, retrying...", id);
       }
     }
   }
@@ -142,34 +137,29 @@ int main(int argc, char **argv) {
   int counter = 0;
   ros::Rate r(CONTROL_LOOP_FREQ);
 
-  int num_packets_per_log = 100;
+  int num_packets_per_log = 1000;
   int errors = 0;
   int num_packets = 0;
-  while (ros::ok()) {
-    for (int i = 0; i < num_packets_per_log; i ++) { // "low pass filter"
-      for (auto id : board_list) {
-        device.queueSetCommandAndGetRotorPosition(id, 0);
-      }
-      try { device.exchange(); }
-      catch(comms_error e) {
-        ROS_ERROR("%s\n", e.what());
-        device.clearQueue();
-        errors++;
-        continue;
-      }
-      float pos = 0;
-      for (auto id : board_list) {
-        device.resultGetRotorPosition(id, &pos);
-        //std::cout << "Position: " << pos << std::endl;
-      }
+  for (int i = 0; i < num_packets_per_log; i++) { // "low pass filter"
+    for (auto id : board_list) {
+      device.queueSetCommandAndGetRotorPosition(id, 0);
     }
-    num_packets += num_packets_per_log;
-    dt = get_period() / (float) num_packets_per_log;
-    ROS_INFO("comm time: dt: %f, freq: %f", dt, 1.0 / dt);
+    try {
+      device.exchange();
+    } catch (comms_error e) {
+      ROS_ERROR("%s\n", e.what());
+      device.clearQueue();
+      errors++;
+      continue;
+    }
+    float pos = 0;
+    for (auto id : board_list) {
+      device.resultGetRotorPosition(id, &pos);
+    }
   }
-  r.sleep();
-
-
+  num_packets += num_packets_per_log;
+  dt = get_period() / (float)num_packets_per_log;
+  ROS_INFO("comm time: dt: %f, freq: %f", dt, 1.0 / dt);
+  ROS_INFO("num packets: %f, num_errors: %f", num_packets, errors);
   return 0;
 }
-
