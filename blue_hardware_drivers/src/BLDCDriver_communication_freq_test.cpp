@@ -95,11 +95,16 @@ int main(int argc, char **argv) {
   std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
 
 
-  char* num_boards = argv[1];
+  char* board_nums = argv[1];
   char* port = argv[2];
   char* enumerate = argv[3];
-  for (int i = 0; i < std::stoi(num_boards); i++) {
-    board_list.push_back(i+1);
+
+  std::string num = "";
+  for (unsigned int i = 0; board_nums[i] != '\0'; i++) {
+    if (board_nums[i] == ',')
+      continue;
+    comm_id_t id_num = std::atoi(board_nums + i);
+    board_list.push_back(id_num);
   }
 
   BLDCControllerClient device;
@@ -150,7 +155,7 @@ int main(int argc, char **argv) {
   int counter = 0;
   ros::Rate r(CONTROL_LOOP_FREQ);
 
-  int num_packets_per_log = 100;
+  int num_packets_per_log = 1000;
   int errors = 0;
   int num_packets = 0;
   while (ros::ok()) {
@@ -160,7 +165,7 @@ int main(int argc, char **argv) {
       }
       try { device.exchange(); }
       catch(comms_error e) {
-        ROS_ERROR("%s\n", e.what());
+        //ROS_ERROR("%s\n", e.what());
         device.clearQueue();
         errors++;
         continue;
@@ -173,7 +178,9 @@ int main(int argc, char **argv) {
     }
     num_packets += num_packets_per_log;
     dt = get_period() / (float) num_packets_per_log;
-    ROS_INFO("comm time: dt: %f, freq: %f", dt, 1.0 / dt);
+    ROS_INFO("comm time dt: %f, freq: %f, error rate: %.2f%%",
+             dt, 1.0 / dt, float(errors)/num_packets_per_log * 100);
+    errors = 0;
   }
   r.sleep();
 
