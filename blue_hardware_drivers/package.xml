@@ -17,6 +17,7 @@
 
   <depend>roscpp</depend>
   <depend>rospy</depend>
+  <depend>cython</depend>
   <depend>sensor_msgs</depend>
   <depend>serial</depend>
   <depend>std_msgs</depend>
