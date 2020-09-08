@@ -7,9 +7,6 @@ from libc.stdlib cimport malloc, free
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 
-#  cdef extern from "blue_hardware_drivers/comms_defs.h" namespace "blue_hardware_drivers":
-    #  cdef comm_id_t
-
 ctypedef unsigned char comm_id_t
 
 cdef extern from "blue_hardware_drivers/BLDCControllerClient.hpp" namespace "blue_hardware_drivers":

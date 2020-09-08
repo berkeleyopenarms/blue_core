@@ -5,7 +5,7 @@
 
  # fetch values from package.xml
  setup_args = generate_distutils_setup(
-         packages=['ros_cython_example'],
+         packages=['blue_hardware_drivers'],
          package_dir={'': 'src'},
          requires=['std_msgs', 'rospy']
  )

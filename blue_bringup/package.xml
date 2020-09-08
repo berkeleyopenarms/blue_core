@@ -11,6 +11,8 @@
   <author email="phil80301@berkeley.edu">Philipp Wu</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
 
   <exec_depend>blue_controller_manager</exec_depend>
   <exec_depend>blue_msgs</exec_depend>
