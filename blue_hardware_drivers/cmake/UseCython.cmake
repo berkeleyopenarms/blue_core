@@ -82,9 +82,9 @@ set( CYTHON_C_EXTENSION "c" )
 # placed in the "generated_file" argument. Finally all the *.py and *.pyx files.
 function( compile_pyx _name generated_file )
   # Default to assuming all files are C.
-  set( cxx_arg "" )
-  set( extension ${CYTHON_C_EXTENSION} )
-  set( pyx_lang "C" )
+  set( cxx_arg "--cplus" )
+  set( extension ${CYTHON_CXX_EXTENSION} )
+  set( pyx_lang "CXX" )
   set( comment "Compiling Cython C source for ${_name}..." )
 
   set( cython_include_directories "" )

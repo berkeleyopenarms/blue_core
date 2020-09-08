@@ -1,13 +1,20 @@
 # distutils: language = c++
+# cython: c_string_type=unicode, c_string_encoding=utf8
 
 from libcpp cimport bool
 import cython
 from libc.stdlib cimport malloc, free
+from libcpp.string cimport string
+from libcpp.vector cimport vector
 
-cdef extern from "blue_hardware_drivers/BLDCControllerClient.hpp":
+#  cdef extern from "blue_hardware_drivers/comms_defs.h" namespace "blue_hardware_drivers":
+    #  cdef comm_id_t
+
+ctypedef unsigned char comm_id_t
+
+cdef extern from "blue_hardware_drivers/BLDCControllerClient.hpp" namespace "blue_hardware_drivers":
     cppclass BLDCControllerClient:
-        BLDCControllerClient() except +
-        init(str port, int* boards)
+        BLDCControllerClient(string port, vector[comm_id_t] boards) except +
 
         #  #  queuePacket(int board_id, Packet* packet);
         #
@@ -80,22 +87,23 @@ cdef extern from "blue_hardware_drivers/BLDCControllerClient.hpp":
         #  bool initMotor(int board_id);
 
 cdef class PyBLDCControllerClient:
-    cdef BLDCControllerClient _bldc_client
+    cdef BLDCControllerClient*c_bldc_client
 
-    def __init__(
+    def __cinit__(
         PyBLDCControllerClient self,
-        port,
+        string c_port,
         boards
     ):
-        self._bldc_client = BLDCControllerClient()
-        cdef int* c_boards
-        c_boards = <int*> malloc(len(boards) * sizeof(int))
+        cdef vector[comm_id_t] c_boards
         for i in range(len(boards)):
-            c_boards[i] = boards[i]
-        self._bldc_client.init(port, c_boards)
+            c_boards.push_back(i)
+        self.c_bldc_client = new BLDCControllerClient(c_port, c_boards)
 
     #  def queue_get_rotor_position(self, board_id):
         #  self._bldc_client.queueGetRotorPosition(board_id)
+
+    def __dealloc__(self):
+        del self.c_bldc_client
 
     def exchange(self):
         self._bldc_client.exchange()
