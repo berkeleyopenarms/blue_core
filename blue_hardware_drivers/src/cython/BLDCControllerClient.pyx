@@ -16,51 +16,49 @@ cdef extern from "blue_hardware_drivers/BLDCControllerClient.hpp" namespace "blu
     cppclass BLDCControllerClient:
         BLDCControllerClient(string port, vector[comm_id_t] boards) except +
 
-        #  #  queuePacket(int board_id, Packet* packet);
-        #
         #  # Initialize Board ID for Disco Bus Protocol
-        #  queueConfirmID(int board_id);
-        #  queueEnumerate(int board_id);
-        #  getEnumerateResponse(int board_id, int* response_id);
-        #
+        queueConfirmID(comm_id_t board_id);
+        queueEnumerate(comm_id_t board_id);
+        getEnumerateResponse(comm_id_t board_id, int* response_id);
+
         #  # Program Counter Adjustments
-        #  #  queueLeaveBootloader(int board_id, uint32_t jump_addr);
-        #
-        #  # Calibration Setup
-        #  #  queueSetTimeout(int board_id, uint16_t value);
-        #  #  queueSetControlMode(int board_id, comm_ctrl_mode_t control_mode);
-        #  #  queueSetZeroAngle(int board_id, uint16_t value);
-        #  #  queueSetERevsPerMRev(int board_id, uint8_t value);
-        #  #  queueSetInvertPhases(int board_id, uint8_t value);
-        #  queueSetTorqueConstant(int board_id, float value);
-        #  queueSetPositionOffset(int board_id, float value);
-        #  queueSetEACScale(int board_id, float value);
-        #  queueSetEACOffset(int board_id, float value);
-        #  #  queueSetEACTable(int board_id, size_t start_index, uint8_t *values, size_t count);
-        #  queueSetDirectCurrentControllerKp(int board_id, float value);
-        #  queueSetDirectCurrentControllerKi(int board_id, float value);
-        #  queueSetQuadratureCurrentControllerKp(int board_id, float value);
-        #  queueSetQuadratureCurrentControllerKi(int board_id, float value);
-        #  queueSetVelocityControllerKp(int board_id, float value);
-        #  queueSetVelocityControllerKi(int board_id, float value);
-        #  queueSetPositionControllerKp(int board_id, float value);
-        #  queueSetPositionControllerKi(int board_id, float value);
-        #  queueSetIAOffset(int board_id, float value);
-        #  queueSetIBOffset(int board_id, float value);
-        #  queueSetICOffset(int board_id, float value);
-        #
+        #  queueLeaveBootloader(comm_id_t board_id, uint32_t jump_addr);
+
+        # Calibration Setup
+        #  queueSetTimeout(comm_id_t board_id, uint16_t value);
+        #  queueSetControlMode(comm_id_t board_id, comm_ctrl_mode_t control_mode);
+        #  queueSetZeroAngle(comm_id_t board_id, uint16_t value);
+        #  queueSetERevsPerMRev(comm_id_t board_id, uint8_t value);
+        #  queueSetInvertPhases(comm_id_t board_id, uint8_t value);
+        #  queueSetTorqueConstant(comm_id_t board_id, float value);
+        #  queueSetPositionOffset(comm_id_t board_id, float value);
+        #  queueSetEACScale(comm_id_t board_id, float value);
+        #  queueSetEACOffset(comm_id_t board_id, float value);
+        #  queueSetEACTable(comm_id_t board_id, size_t start_index, uint8_t *values, size_t count);
+        queueSetDirectCurrentControllerKp(comm_id_t board_id, float value);
+        queueSetDirectCurrentControllerKi(comm_id_t board_id, float value);
+        queueSetQuadratureCurrentControllerKp(comm_id_t board_id, float value);
+        queueSetQuadratureCurrentControllerKi(comm_id_t board_id, float value);
+        queueSetVelocityControllerKp(comm_id_t board_id, float value);
+        queueSetVelocityControllerKi(comm_id_t board_id, float value);
+        queueSetPositionControllerKp(comm_id_t board_id, float value);
+        queueSetPositionControllerKi(comm_id_t board_id, float value);
+        #  queueSetIAOffset(comm_id_t board_id, float value);
+        #  queueSetIBOffset(comm_id_t board_id, float value);
+        #  queueSetICOffset(comm_id_t board_id, float value);
+
         #  # Drive Commands
-        #  queueSetCommand(int board_id, float value);
-        #  queueSetPosCommand(int board_id, float position, float feedforward);
-        #  queueGetRotorPosition(int board_id);
-        #  queueSetCommandAndGetRotorPosition(int board_id, float value);
-        #  queueSetPositionAndGetRotorPosition(int board_id, float value);
-        #  queueGetState(int board_id);
-        #  queueSetCommandAndGetState(int board_id, float value);
-        #  queueSetPosCommandAndGetState(int board_id, float position, float feedforward);
+        queueSetCommand(comm_id_t board_id, float value);
+        queueSetPosCommand(comm_id_t board_id, float position, float feedforward);
+        queueGetRotorPosition(comm_id_t board_id);
+        queueSetCommandAndGetRotorPosition(comm_id_t board_id, float value);
+        queueSetPositionAndGetRotorPosition(comm_id_t board_id, float value);
+        queueGetState(comm_id_t board_id);
+        queueSetCommandAndGetState(comm_id_t board_id, float value);
+        queueSetPosCommandAndGetState(comm_id_t board_id, float position, float feedforward);
 
         # Init Motor State Commands
-        #  queueSetRevolutions(int board_id, int16_t value);
+        #  queueSetRevolutions(comm_id_t board_id, int16_t value);
 
         # Send queued packets and receive from boards
         exchange();
@@ -75,16 +73,16 @@ cdef extern from "blue_hardware_drivers/BLDCControllerClient.hpp" namespace "blu
         resetBuffer();
 
         #  # Check if a watchdog reset has occurred on a given board
-        #  bool checkWDGRST(int board_id);
-        #  bool checkTimeout(int board_id);
-        #  queueClearWDGRST(int board_id);
-        #
+        bool checkWDGRST(comm_id_t board_id);
+        bool checkTimeout(comm_id_t board_id);
+        queueClearWDGRST(comm_id_t board_id);
+
         #  # Result Commands
-        #  resultGetRotorPosition(int board_id, float* result);
-        #  #  resultGetState(int board_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, int32_t* acc_x, int32_t* acc_y, int32_t* acc_z);
-        #
+        resultGetRotorPosition(comm_id_t board_id, float* result);
+        #  resultGetState(comm_id_t board_id, float* position, float* velocity, float* di, float* qi, float* voltage, float* temp, int32_t* acc_x, int32_t* acc_y, int32_t* acc_z);
+
         #  # Setup/Programming Commands
-        #  bool initMotor(int board_id);
+        bool initMotor(comm_id_t board_id);
 
 cdef class PyBLDCControllerClient:
     cdef BLDCControllerClient*c_bldc_client
@@ -99,8 +97,8 @@ cdef class PyBLDCControllerClient:
             c_boards.push_back(i)
         self.c_bldc_client = new BLDCControllerClient(c_port, c_boards)
 
-    #  def queue_get_rotor_position(self, board_id):
-        #  self._bldc_client.queueGetRotorPosition(board_id)
+    def queue_get_rotor_position(self, comm_id_t board_id):
+        self._bldc_client.queueGetRotorPosition(board_id)
 
     def __dealloc__(self):
         del self.c_bldc_client
@@ -117,5 +115,8 @@ cdef class PyBLDCControllerClient:
     def reset_buffer(self):
         self._bldc_client.resetBuffer()
 
-    #  def result_get_rotor_position(self, board_id, result):
-    #      self._bldc_client.resultGetRotorPosition(board_id, result)
+    def init_motor(self, board_id):
+        self._bldc_client.initMotor(board_id)
+
+    def result_get_rotor_position(self, board_id, result):
+        self._bldc_client.resultGetRotorPosition(board_id, result)
