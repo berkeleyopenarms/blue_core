@@ -95,8 +95,8 @@ int main(int argc, char **argv) {
   std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
 
 
-  char* board_nums = argv[1];
-  char* port = argv[2];
+  char* port = argv[1];
+  char* board_nums = argv[2];
   char* enumerate = argv[3];
 
   std::string num = "";
