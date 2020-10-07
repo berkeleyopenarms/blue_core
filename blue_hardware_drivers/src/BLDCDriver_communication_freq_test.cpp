@@ -31,27 +31,7 @@ float get_period() {
   return period.toSec();
 }
 
-int main(int argc, char **argv) {
-  ros::init(argc, argv, "comms", ros::init_options::AnonymousName);
-
-  ros::NodeHandle n;
-  std::vector<comm_id_t> board_list;
-  std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
-  board_list.push_back(1); // BASE
-  //board_list.push_back(2);
-  //board_list.push_back(3);
-  //board_list.push_back(4);
-  //board_list.push_back(5);
-  //board_list.push_back(6);
-  //board_list.push_back(7);
-  //board_list.push_back(8);
-
-  char* port = argv[1];
-  BLDCControllerClient device;
-  try {
-    device.init(port, board_list);
-  } catch (std::exception& e) { ROS_ERROR("Please Provide USB\n%s\n", e.what()); }
-
+void enumerate_boards(BLDCControllerClient &device, std::vector<comm_id_t> &board_list) {
   // Put all boards into bootloader!
   int count = 0;
   while (count < 3) {
@@ -105,12 +85,45 @@ int main(int argc, char **argv) {
       }
     }
   }
+}
 
+int main(int argc, char **argv) {
+  ros::init(argc, argv, "comms", ros::init_options::AnonymousName);
+
+  ros::NodeHandle n;
+  std::vector<comm_id_t> board_list;
+  std::map<comm_id_t, std::vector<double>> velocity_history_mapping;
+
+
+  char* port = argv[1];
+  char* board_nums = argv[2];
+  char* enumerate = argv[3];
+
+  std::string num = "";
+  for (unsigned int i = 0; board_nums[i] != '\0'; i++) {
+    if (board_nums[i] == ',')
+      continue;
+    comm_id_t id_num = std::atoi(board_nums + i);
+    board_list.push_back(id_num);
+  }
+
+  BLDCControllerClient device;
+  try {
+    device.init(port, board_list);
+  } catch (std::exception& e) { ROS_ERROR("Please Provide USB\n%s\n", e.what()); }
+
+  try {
+    if (*enumerate == 'T') {
+      enumerate_boards(device, board_list);
+    }
+  } catch (std::exception& e) { ROS_ERROR("Please choose whether to enumerate (T/F)\n%s\n", e.what()); }
+
+  bool success = false;
   // Command the motor to 0 before initializing it.
   for (auto id : board_list) {
     success = false;
     while (!success) {
-      try { 
+      try {
         device.queueSetCommand(id, 0);
         device.exchange();
         success = true;
@@ -142,7 +155,7 @@ int main(int argc, char **argv) {
   int counter = 0;
   ros::Rate r(CONTROL_LOOP_FREQ);
 
-  int num_packets_per_log = 100;
+  int num_packets_per_log = 1000;
   int errors = 0;
   int num_packets = 0;
   while (ros::ok()) {
@@ -152,7 +165,7 @@ int main(int argc, char **argv) {
       }
       try { device.exchange(); }
       catch(comms_error e) {
-        ROS_ERROR("%s\n", e.what());
+        //ROS_ERROR("%s\n", e.what());
         device.clearQueue();
         errors++;
         continue;
@@ -165,11 +178,12 @@ int main(int argc, char **argv) {
     }
     num_packets += num_packets_per_log;
     dt = get_period() / (float) num_packets_per_log;
-    ROS_INFO("comm time: dt: %f, freq: %f", dt, 1.0 / dt);
+    ROS_INFO("comm time dt: %f, freq: %f, error rate: %.2f%%",
+             dt, 1.0 / dt, float(errors)/num_packets_per_log * 100);
+    errors = 0;
   }
   r.sleep();
 
 
   return 0;
 }
-

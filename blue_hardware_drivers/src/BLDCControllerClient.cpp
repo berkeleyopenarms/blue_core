@@ -72,6 +72,7 @@ void BLDCControllerClient::exchange() {
         if (err != "")
         {
           std::string elapsed = std::to_string(fsec(Time::now() - last_successful_transmission).count());
+          resetBuffer();
           throw comms_error("Board " + std::to_string((int)board_id) + ": " + err + 
                             "\n\t\t\t\t\tTime since last successful comms: " + elapsed);
         }
