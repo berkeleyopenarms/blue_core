@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
 
   ros::NodeHandle n;
   std::vector<comm_id_t> board_list;
-  std::map<comm_id_t, std::vector<double> > velocity_history_mapping;
+  std::map<comm_id_t, std::vector<double>> velocity_history_mapping;
 
 
   char* port = argv[1];
@@ -187,4 +187,3 @@ int main(int argc, char **argv) {
 
   return 0;
 }
-
